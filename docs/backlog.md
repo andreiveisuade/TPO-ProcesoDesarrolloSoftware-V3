@@ -1,6 +1,6 @@
 # Backlog consolidado de mejoras pendientes
 
-Junta lo que quedó abierto en `docs/trabajo/oportunidades.md`, `spring-practicas.md`, `smells.md`, `tests.md`, `auditoria.md`, `api-propuesta.md`, en la sección 6 de `dominio.md` y en el tablero. Se cruzó con `git log v2..main` y con el código de `main`: no se lista lo que ya está hecho (O1-O5, S1-S4, D1, D2, BS1, DF1, DF3, BSF1, título ADMIN, `@Valid` de permisos y rol, 401 sin token, `GET /api/creditos`, `tipoPlan` en `CreditoResponse`, `esValido(String, String)` en `TokenService`).
+Junta lo que quedó abierto en las revisiones de la iteración 3 (oportunidades, prácticas de Spring, bad smells, auditoría, propuesta de API), en `docs/trabajo/tests.md`, en la sección 6 de `dominio.md` y en el tablero. Se cruzó con `git log v2..main` y con el código de `main`: no se lista lo que ya está hecho (O1-O5, S1-S4, D1, D2, BS1, DF1, DF3, BSF1, título ADMIN, `@Valid` de permisos y rol, 401 sin token, `GET /api/creditos`, `tipoPlan` en `CreditoResponse`, `esValido(String, String)` en `TokenService`).
 
 `…/` = `backend/src/main/java/com/uade/tpejemplo/`. Rutas de front relativas a `frontend/src/`. Tamaño: S (pocas líneas), M (varios archivos), L (cambia el modelo). Tamaño con `*` = estimación, la fuente no lo da. Fechas: 27/10 y 03/11 son iteraciones, 17/11 es la entrega final.
 

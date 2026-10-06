@@ -516,7 +516,7 @@ doc = f'''<!doctype html>
 </section>
 
 <section id="revision"><h2>Mejoras de la revisión</h2>
-<p>Después de las diez mejoras, una revisión de solo lectura (<a href="../trabajo/oportunidades.md">oportunidades</a>, <a href="../trabajo/spring-practicas.md">prácticas de Spring</a>, <a href="../trabajo/smells.md">bad smells</a>) encontró usos flojos de los conceptos y código muerto. Entraron las que tapaban un hueco visible y eran chicas.</p>
+<p>Después de las diez mejoras, una revisión de solo lectura (oportunidades, prácticas de Spring, bad smells; lo que quedó abierto está en el <a href="../backlog.md">backlog</a>) encontró usos flojos de los conceptos y código muerto. Entraron las que tapaban un hueco visible y eran chicas.</p>
 {rev_html}
 </section>
 
@@ -524,8 +524,7 @@ doc = f'''<!doctype html>
 <div class="cuadro">
 <div><h4>Tests automáticos</h4><p><code>cd backend &amp;&amp; mvn test</code>: <strong>25 tests, 0 fallas</strong>. Son 24 de dominio puro (JUnit 5 + AssertJ, sin contexto de Spring) más <code>contextLoads</code>. <code>InteresSimpleTest</code> y <code>SistemaFrancesTest</code> cubren cada estrategia aislada; <code>CreditoTest</code>, <code>CuotaTest</code> y <code>CobranzaTest</code> cubren M1, M2, M6 y M8. Detalle: <a href="../trabajo/tests.md"><code>docs/trabajo/tests.md</code></a>.</p></div>
 <div><h4>Smoke de la API</h4><p>22 casos con curl contra el backend levantado: 401/404/405 (M5), los dos planes (M9), cobro sobre anulado (M1), 403 sin permiso (M4), vencidas (M6), dashboard por rol y con números correctos (M3, M10). Todos OK. Detalle: <a href="../trabajo/smoke.md"><code>docs/trabajo/smoke.md</code></a>.</p></div>
-<div><h4>Comprobación visual</h4><p>Recorrido completo en el browser con capturas: login, alta, otorgamiento simple y francés, cobro, vencida, anulación, 403 forzado, dashboard ADMIN y SUPERVISOR, Swagger con token. Las dos fallas encontradas (listado sin refrescar tras anular y título “Modo Supervisor” para el ADMIN) se corrigieron en O1 y <code>d35fc0e</code>. Detalle: <a href="../trabajo/visual.md"><code>docs/trabajo/visual.md</code></a>, capturas en <a href="../trabajo/capturas/"><code>docs/trabajo/capturas/</code></a>.</p></div>
-<div><h4>Auditoría</h4><p>Contraste de M1-M10 con el código y con el apunte de la clase 10, antes de la revisión: <a href="../trabajo/auditoria.md"><code>docs/trabajo/auditoria.md</code></a>.</p></div>
+<div><h4>Comprobación visual</h4><p>Recorrido completo en el browser con capturas: login, alta, otorgamiento simple y francés, cobro, vencida, anulación, 403 forzado, dashboard ADMIN y SUPERVISOR, Swagger con token. Las dos fallas encontradas (listado sin refrescar tras anular y título “Modo Supervisor” para el ADMIN) se corrigieron en O1 y <code>d35fc0e</code>. Detalle: <a href="../trabajo/visual.md"><code>docs/trabajo/visual.md</code></a>, capturas en <a href="../trabajo/capturas/final/"><code>docs/trabajo/capturas/final/</code></a>.</p></div>
 </div>
 </section>
 
