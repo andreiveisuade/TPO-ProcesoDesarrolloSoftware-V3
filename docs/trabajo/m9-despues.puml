@@ -1,0 +1,41 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Calibri
+skinparam defaultFontSize 12
+skinparam ClassBackgroundColor #FFFFFF
+skinparam ClassBorderColor #1D2B4F
+skinparam ClassHeaderBackgroundColor #FFFFFF
+skinparam ArrowColor #2E75B6
+skinparam NoteBackgroundColor #FFF8E1
+skinparam NoteBorderColor #B38600
+hide empty members
+class Credito <<Context>> {
+  -tipoPlan : TipoPlan
+  +totalADevolver()
+}
+enum TipoPlan {
+  INTERES_SIMPLE
+  SISTEMA_FRANCES
+  +calculo() : CalculoDeCuota
+}
+interface CalculoDeCuota <<Strategy>> {
+  +importeCuota(capital, tasa, cuotas)
+  +totalADevolver(capital, tasa, cuotas)
+}
+class InteresSimple <<ConcreteStrategy>>
+class SistemaFrances <<ConcreteStrategy>>
+class CreditoRequest {
+  -tipoPlan : TipoPlan
+}
+Credito --> TipoPlan
+TipoPlan --> CalculoDeCuota
+CalculoDeCuota <|.. InteresSimple
+CalculoDeCuota <|.. SistemaFrances
+CreditoRequest ..> TipoPlan
+note right of SistemaFrances #E0F0E0
+  cuota = C·i / (1 − (1+i)^−n)
+end note
+note right of InteresSimple #E0F0E0
+  total = C · (1 + tasa/100)
+end note
+@enduml

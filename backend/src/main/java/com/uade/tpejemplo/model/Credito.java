@@ -10,7 +10,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -55,20 +54,23 @@ public class Credito implements ICredito {
     @Column(name = "cantidad_cuotas", nullable = false)
     private Integer cantidadCuotas;
 
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo_plan", nullable = false, columnDefinition = "varchar(20) default 'INTERES_SIMPLE'")
+    private TipoPlan tipoPlan;
+
     @Column(name = "anulado", nullable = false)
     private boolean anulado = false;
 
-    private static final int DECIMALES = 2;
-    private static final BigDecimal CIEN = new BigDecimal("100");
-
     private Credito(Cliente cliente, BigDecimal deudaOriginal, LocalDate fecha,
-                    BigDecimal tasaInteres, Integer cantidadCuotas) {
+                    BigDecimal tasaInteres, Integer cantidadCuotas, TipoPlan tipoPlan) {
         this.cliente = cliente;
         this.deudaOriginal = deudaOriginal;
         this.fecha = fecha;
         this.tasaInteres = tasaInteres;
         this.cantidadCuotas = cantidadCuotas;
-        this.importeCuota = calcularImporteCuota();
+        this.tipoPlan = tipoPlan;
+        this.importeCuota = tipoPlan.calculo().importeCuota(deudaOriginal, tasaInteres, cantidadCuotas);
         this.anulado = false;
     }
 
@@ -78,39 +80,12 @@ public class Credito implements ICredito {
      * el, asi que ninguno de los tres se recibe desde afuera.
      */
     public static Credito nuevo(Cliente cliente, BigDecimal deudaOriginal, LocalDate fecha,
-                                BigDecimal tasaInteres, Integer cantidadCuotas) {
-        return new Credito(cliente, deudaOriginal, fecha, tasaInteres, cantidadCuotas);
+                                BigDecimal tasaInteres, Integer cantidadCuotas, TipoPlan tipoPlan) {
+        return new Credito(cliente, deudaOriginal, fecha, tasaInteres, cantidadCuotas, tipoPlan);
     }
 
-    /**
-     * Sistema de interes simple sobre el capital.
-     *
-     * La tasa es un porcentaje unico sobre el total prestado, no una tasa
-     * anual ni mensual: el plazo define en cuantas cuotas se devuelve, no
-     * cuanto interes se paga. Un credito de 10.000 al 45% se devuelve
-     * siempre por 14.500, sea en 6 cuotas o en 24.
-     *
-     *     totalADevolver = deudaOriginal * (1 + tasaInteres / 100)
-     *     importeCuota    = totalADevolver / cantidadCuotas
-     *
-     * Se eligio interes simple y no sistema frances porque el sistema no
-     * modela amortizacion: la cuota no se descompone en capital e interes,
-     * y todas las cuotas valen lo mismo.
-     */
     public BigDecimal totalADevolver() {
-        BigDecimal coeficiente = BigDecimal.ONE.add(tasaInteres.divide(CIEN, 4, RoundingMode.HALF_UP));
-        return deudaOriginal.multiply(coeficiente).setScale(DECIMALES, RoundingMode.HALF_UP);
-    }
-
-    /**
-     * El total se reparte en cuotas iguales. Cuando la division no es exacta
-     * el redondeo hace que la suma de las cuotas difiera del total en unos
-     * centavos; el total a devolver es el valor de referencia.
-     */
-    private BigDecimal calcularImporteCuota() {
-        return totalADevolver().divide(
-            BigDecimal.valueOf(cantidadCuotas), DECIMALES, RoundingMode.HALF_UP
-        );
+        return tipoPlan.calculo().totalADevolver(deudaOriginal, tasaInteres, cantidadCuotas);
     }
 
     /**
