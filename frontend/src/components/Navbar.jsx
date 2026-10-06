@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../store/slices/authSlice';
+import { ROLES } from '../utils/roles';
 
 // Barra superior con el usuario logueado y los links que corresponden a su rol.
 export default function Navbar() {
@@ -9,8 +10,8 @@ export default function Navbar() {
   
   const user = useSelector((state) => state.auth.user);
 
-  const isAdmin = user?.rol === 'ADMIN';
-  const isSupervisor = user?.rol === 'SUPERVISOR';
+  const isAdmin = user?.rol === ROLES.ADMIN;
+  const isSupervisor = user?.rol === ROLES.SUPERVISOR;
 
   const handleLogout = () => {
     dispatch(logout());

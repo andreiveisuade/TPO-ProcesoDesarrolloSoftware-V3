@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchUsuariosAdmin, cambiarRol } from '../store/slices/permisosSlice'; 
+import { ROLES } from '../utils/roles';
 
 // Panel del ADMIN para cambiar el rol de los usuarios.
 const PanelAdmin = () => {
@@ -8,7 +9,7 @@ const PanelAdmin = () => {
   const { lista: usuarios, loading, error } = useSelector((state) => state.permisos);
   const { user } = useSelector((state) => state.auth);
   
-  const isAdmin = user?.rol === 'ADMIN';
+  const isAdmin = user?.rol === ROLES.ADMIN;
 
   useEffect(() => {
     if (isAdmin) {
@@ -49,7 +50,7 @@ const PanelAdmin = () => {
                 <tr key={u.id} style={styles.tr}>
                   <td style={styles.td}>{u.username}</td>
                   <td style={styles.td}>
-                    <span style={u.rol === 'SUPERVISOR' ? styles.tagSupervisor : styles.tagUser}>
+                    <span style={u.rol === ROLES.SUPERVISOR ? styles.tagSupervisor : styles.tagUser}>
                       {u.rol}
                     </span>
                   </td>
@@ -60,8 +61,8 @@ const PanelAdmin = () => {
                       disabled={loading}
                       style={styles.select}
                     >
-                      <option value="USER">USER</option>
-                      <option value="SUPERVISOR">SUPERVISOR</option>
+                      <option value={ROLES.USER}>{ROLES.USER}</option>
+                      <option value={ROLES.SUPERVISOR}>{ROLES.SUPERVISOR}</option>
                     </select>
                   </td>
                 </tr>
