@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+// Casos de uso de cobranzas: registrar y anular. Las reglas las decide el modelo.
 @Service
 @RequiredArgsConstructor
 public class CobranzaServiceImpl implements CobranzaService {

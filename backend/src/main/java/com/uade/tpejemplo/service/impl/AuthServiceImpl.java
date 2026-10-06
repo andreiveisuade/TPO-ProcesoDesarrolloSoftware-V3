@@ -18,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+// Login y registro: autentica contra Spring Security y emite el token.
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {

@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+// Endpoint de estadisticas del dashboard.
+// MVC: controlador; traduce HTTP a casos de uso y no tiene reglas de negocio
 @RestController
 @Tag(name = "Dashboard")
 @RequestMapping("/api/dashboard")

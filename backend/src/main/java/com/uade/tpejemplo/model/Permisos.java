@@ -8,10 +8,8 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-/**
- * Permisos de anulacion de un usuario. Viajan siempre juntos y se
- * otorgan juntos: son un valor, no dos booleans sueltos.
- */
+// Permisos de anulacion de un usuario. Viajan y se otorgan juntos:
+// son un valor, no dos booleans sueltos.
 @Embeddable
 @Getter
 @EqualsAndHashCode

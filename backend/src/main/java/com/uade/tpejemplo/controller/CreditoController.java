@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+// Endpoints de creditos: otorgar, consultar y anular.
+// MVC: controlador; traduce HTTP a casos de uso y no tiene reglas de negocio
 @RestController
 @Tag(name = "Créditos")
 @RequestMapping("/api/creditos")

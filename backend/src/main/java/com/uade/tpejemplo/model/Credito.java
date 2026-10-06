@@ -15,6 +15,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+// Credito otorgado a un cliente: genera sus cuotas, calcula saldo y estado
+// y decide si se puede anular.
+// Strategy: contexto; delega el calculo de la cuota en CalculoDeCuota segun TipoPlan
 @Entity
 @Table(name = "creditos")
 @Getter
@@ -42,11 +45,9 @@ public class Credito implements ICredito {
     @Column(name = "tasa_interes", nullable = false, precision = 5, scale = 2)
     private BigDecimal tasaInteres;
 
-    /**
-     * Derivado de la deuda, la tasa y la cantidad de cuotas. Se guarda para
-     * que el credito conserve el importe con el que se otorgo aunque despues
-     * cambie la forma de calcularlo.
-     */
+    // Derivado de la deuda, la tasa y la cantidad de cuotas. Se guarda para
+    // que el credito conserve el importe con el que se otorgo aunque despues
+    // cambie la forma de calcularlo.
     @NotNull
     @Column(name = "importe_cuota", nullable = false, precision = 12, scale = 2)
     private BigDecimal importeCuota;
@@ -80,11 +81,9 @@ public class Credito implements ICredito {
         this.anulado = false;
     }
 
-    /**
-     * Unica forma de dar de alta un credito. El id lo asigna la base, las
-     * cuotas las genera el propio credito y el importe de cuota lo calcula
-     * el, asi que ninguno de los tres se recibe desde afuera.
-     */
+    // Unica forma de dar de alta un credito. El id lo asigna la base, las
+    // cuotas las genera el propio credito y el importe de cuota lo calcula
+    // el, asi que ninguno de los tres se recibe desde afuera.
     public static Credito nuevo(Cliente cliente, BigDecimal deudaOriginal, LocalDate fecha,
                                 BigDecimal tasaInteres, Integer cantidadCuotas, TipoPlan tipoPlan) {
         return new Credito(cliente, deudaOriginal, fecha, tasaInteres, cantidadCuotas, tipoPlan);
@@ -94,14 +93,9 @@ public class Credito implements ICredito {
         return importeCuota.multiply(BigDecimal.valueOf(cantidadCuotas));
     }
 
-    /**
-     * Genera el plan de cuotas del credito: una cuota por cada periodo,
-     * numeradas desde 1 y con vencimiento mensual a partir de la fecha
-     * de otorgamiento.
-     *
-     * Es una regla del credito, no del caso de uso que lo da de alta:
-     * por eso vive en la entidad y no en el servicio.
-     */
+    // Es una regla del credito, no del caso de uso que lo da de alta:
+    // por eso vive en la entidad y no en el servicio.
+    // Creator: el credito crea sus cuotas
     public List<Cuota> generarPlanDeCuotas() {
         for (int numeroCuota = cuotas.size() + 1; numeroCuota <= cantidadCuotas; numeroCuota++) {
             cuotas.add(new Cuota(this, numeroCuota, importeCuota, fecha.plusMonths(numeroCuota)));
@@ -113,6 +107,7 @@ public class Credito implements ICredito {
         return Collections.unmodifiableList(cuotas);
     }
 
+    // Information Expert: el credito calcula su estado y su saldo
     public EstadoCredito estado() {
         if (anulado) {
             return EstadoCredito.ANULADO;
@@ -138,6 +133,7 @@ public class Credito implements ICredito {
         return cuotas.stream().anyMatch(Cuota::estaPagada);
     }
 
+    // Information Expert: el credito decide si puede anularse
     public boolean puedeAnularse() {
         return !anulado && !tieneCobranzas();
     }

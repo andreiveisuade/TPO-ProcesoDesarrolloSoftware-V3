@@ -18,6 +18,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Optional;
 
+// Filtro que lee el token Bearer de cada request y autentica al usuario.
 @Component
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
@@ -54,11 +55,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         return SecurityContextHolder.getContext().getAuthentication() == null;
     }
 
-    /**
-     * Un token invalido, vencido o de un usuario que ya no existe no es un
-     * error del filtro: la request sigue sin autenticar y quien decide si eso
-     * alcanza es la cadena de seguridad.
-     */
+    // Un token invalido, vencido o de un usuario que ya no existe no es un
+    // error del filtro: la request sigue sin autenticar y quien decide si eso
+    // alcanza es la cadena de seguridad.
     private void autenticar(String token, HttpServletRequest request) {
         Optional<String> username = tokenService.extraerUsername(token);
         if (username.isEmpty()) {

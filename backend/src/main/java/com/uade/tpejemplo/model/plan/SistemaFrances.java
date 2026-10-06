@@ -6,10 +6,8 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 
-/**
- * La tasa es mensual sobre el saldo: cuota fija = C * i / (1 - (1 + i)^-n).
- * Con tasa 0 la cuota es el capital dividido en partes iguales.
- */
+// La tasa es mensual sobre el saldo: cuota fija = C * i / (1 - (1 + i)^-n).
+// Con tasa 0 la cuota es el capital dividido en partes iguales.
 public class SistemaFrances implements CalculoDeCuota {
 
     private static final MathContext PRECISION = MathContext.DECIMAL64;

@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+// Casos de uso de creditos: otorgar, consultar y anular. Las reglas las decide el modelo.
 @Service
 @RequiredArgsConstructor
 public class CreditoServiceImpl implements CreditoService {
@@ -94,6 +95,7 @@ public class CreditoServiceImpl implements CreditoService {
     private Credito buscarCredito(Long id) {
         Credito credito = creditoRepository.buscarConCuotas(id)
             .orElseThrow(() -> new ResourceNotFoundException("Crédito", "id", id));
+        // Precarga las cobranzas de las cuotas en la misma sesion: Cuota.estaPagada() las necesita (M8).
         cuotaRepository.buscarPorCredito(id);
         return credito;
     }

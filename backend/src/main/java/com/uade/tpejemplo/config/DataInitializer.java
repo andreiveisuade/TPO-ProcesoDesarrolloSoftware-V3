@@ -10,10 +10,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-/**
- * Usuarios semilla para poder entrar al sistema con la base en memoria.
- * La contrasena de cada uno es igual a su nombre de usuario.
- */
+// Usuarios semilla para entrar con la base en memoria; la contrasena
+// de cada uno es igual a su nombre de usuario.
 @Component
 @RequiredArgsConstructor
 @Slf4j

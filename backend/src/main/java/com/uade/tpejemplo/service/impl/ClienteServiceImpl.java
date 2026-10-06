@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+// Casos de uso de clientes: alta, busqueda y listado.
 @Service
 @RequiredArgsConstructor
 public class ClienteServiceImpl implements ClienteService {

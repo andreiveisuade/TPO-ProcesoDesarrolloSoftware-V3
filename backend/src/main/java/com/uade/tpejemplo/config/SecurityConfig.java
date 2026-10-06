@@ -25,6 +25,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.config.Customizer;
 
+// Cadena de seguridad: JWT sin sesion, rutas publicas y reglas por rol.
 @Configuration
 @RequiredArgsConstructor
 @EnableWebSecurity

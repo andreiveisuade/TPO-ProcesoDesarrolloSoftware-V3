@@ -15,7 +15,7 @@ public interface IUsuario {
 
     IPermisos getPermisos();
 
-    /** Recibe la clase concreta porque es lo que JPA persiste como embebido. */
+    // Recibe la clase concreta porque es lo que JPA persiste como embebido.
     void otorgarPermisos(Permisos permisos);
 
     void asignarRol(Rol rol);

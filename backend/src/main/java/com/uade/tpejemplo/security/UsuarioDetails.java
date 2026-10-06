@@ -10,14 +10,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 
-/**
- * Adapta el Usuario del dominio a lo que espera Spring Security.
- *
- * Antes la entidad implementaba UserDetails y resolvia cuatro de sus
- * siete miembros con un return true hardcodeado. Aca se implementan
- * solo los tres que el dominio sabe contestar: los otros cuatro quedan
- * con el default de la interfaz, que ya devuelve true.
- */
+// Expone el Usuario del dominio como UserDetails; implementa solo lo que el
+// dominio sabe contestar y el resto queda con el default de la interfaz.
+// Adapter: adapta Usuario a UserDetails de Spring Security
 @Getter
 @RequiredArgsConstructor
 public class UsuarioDetails implements UserDetails {

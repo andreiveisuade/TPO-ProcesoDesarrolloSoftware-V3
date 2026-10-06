@@ -14,6 +14,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+// Endpoints de login y registro.
+// MVC: controlador; traduce HTTP a casos de uso y no tiene reglas de negocio
 @RestController
 @Tag(name = "Auth")
 @SecurityRequirements

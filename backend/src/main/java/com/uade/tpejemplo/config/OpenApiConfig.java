@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Configuration;
     info = @Info(title = "Dashboard de préstamos", version = "v3"),
     security = @SecurityRequirement(name = "bearerAuth")
 )
+// Configuracion de Swagger con autenticacion Bearer.
 @SecurityScheme(name = "bearerAuth", type = SecuritySchemeType.HTTP, scheme = "bearer", bearerFormat = "JWT")
 public class OpenApiConfig {
 }

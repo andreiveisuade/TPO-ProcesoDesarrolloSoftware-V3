@@ -7,6 +7,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+// Cliente de la financiera, identificado por su DNI.
 @Entity
 @Table(name = "clientes")
 @Getter

@@ -14,6 +14,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+// Cuota de un credito: sabe si esta pagada o vencida y registra su cobranza.
 @Entity
 @Table(name = "cuotas", uniqueConstraints = @UniqueConstraint(columnNames = {"id_credito", "numero"}))
 @Getter
@@ -41,15 +42,13 @@ public class Cuota implements ICuota {
     @Column(name = "fecha_vencimiento", nullable = false)
     private LocalDate fechaVencimiento;
 
-    /** Sin getter: la cuota contesta estaPagada(), no entrega la lista. */
+    // Sin getter: la cuota contesta estaPagada(), no entrega la lista.
     @Getter(AccessLevel.NONE)
     @OneToMany(mappedBy = "cuota", fetch = FetchType.LAZY)
     private List<Cobranza> cobranzas = new ArrayList<>();
 
-    /**
-     * Visible solo dentro del paquete model: una cuota no se crea suelta,
-     * la crea el credito al generar su plan.
-     */
+    // Visible solo dentro del paquete model: una cuota no se crea suelta,
+    // la crea el credito al generar su plan.
     Cuota(Credito credito, Integer numero, BigDecimal importe, LocalDate fechaVencimiento) {
         this.credito = credito;
         this.numero = numero;
@@ -57,10 +56,9 @@ public class Cuota implements ICuota {
         this.fechaVencimiento = fechaVencimiento;
     }
 
-    /**
-     * Una cuota esta pagada cuando tiene una cobranza vigente. Las
-     * anuladas no cuentan: anular una cobranza es deshacer el pago.
-     */
+    // Una cuota esta pagada cuando tiene una cobranza vigente. Las
+    // anuladas no cuentan: anular una cobranza es deshacer el pago.
+    // Information Expert: la cuota sabe si esta pagada
     public boolean estaPagada() {
         return cobranzas.stream().anyMatch(cobranza -> !cobranza.isAnulada());
     }
@@ -69,10 +67,9 @@ public class Cuota implements ICuota {
         return !estaPagada() && fechaVencimiento.isBefore(LocalDate.now());
     }
 
-    /**
-     * La cuota crea su propia cobranza: es quien sabe si ya esta pagada y
-     * cuanto vale, asi que es quien puede rechazar el cobro.
-     */
+    // La cuota crea su propia cobranza: es quien sabe si ya esta pagada y
+    // cuanto vale, asi que es quien puede rechazar el cobro.
+    // Creator: la cuota crea su cobranza
     public Cobranza registrarCobranza(BigDecimal importe) {
         if (credito.isAnulado()) {
             throw new BusinessException(

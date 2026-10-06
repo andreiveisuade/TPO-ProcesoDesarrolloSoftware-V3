@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.List;
 
+// Arma las estadisticas del dashboard a partir de los creditos y las cobranzas.
 @Service
 public class DashboardServiceImpl implements DashboardService {
 

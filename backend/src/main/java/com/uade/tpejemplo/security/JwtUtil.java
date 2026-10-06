@@ -13,6 +13,8 @@ import java.util.Date;
 import java.util.Optional;
 import java.util.function.Function;
 
+// Genera y valida los JWT de la sesion.
+// Adapter: adapta jjwt a TokenService
 @Component
 public class JwtUtil implements TokenService {
 

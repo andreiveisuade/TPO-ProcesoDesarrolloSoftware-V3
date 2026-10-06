@@ -15,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
+// Endpoints del ADMIN para gestionar usuarios, roles y permisos.
+// MVC: controlador; traduce HTTP a casos de uso y no tiene reglas de negocio
 @RestController
 @Tag(name = "Admin")
 @RequestMapping("/api/admin")

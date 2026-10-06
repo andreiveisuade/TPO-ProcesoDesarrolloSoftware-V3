@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+// Endpoints de cobranzas: registrar, listar y anular.
+// MVC: controlador; traduce HTTP a casos de uso y no tiene reglas de negocio
 @RestController
 @Tag(name = "Cobranzas")
 @RequestMapping("/api/cobranzas")

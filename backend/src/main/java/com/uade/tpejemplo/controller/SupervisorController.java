@@ -14,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
+// Endpoints del SUPERVISOR para ver usuarios y ajustar sus permisos.
+// MVC: controlador; traduce HTTP a casos de uso y no tiene reglas de negocio
 @RestController
 @Tag(name = "Supervisor")
 @RequestMapping("/api/supervisor")

@@ -17,6 +17,8 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 import java.time.LocalDateTime;
 import java.util.List;
 
+// Traduce las excepciones a respuestas HTTP con un ErrorResponse uniforme.
+// MVC: el controlador no arma errores; el handler los traduce a la vista (JSON)
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {

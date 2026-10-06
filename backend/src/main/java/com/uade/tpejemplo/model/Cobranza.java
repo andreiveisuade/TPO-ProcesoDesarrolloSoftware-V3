@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+// Pago de una cuota; sabe si todavia se puede anular.
 @Entity
 @Table(name = "cobranzas")
 @Getter
@@ -44,20 +45,17 @@ public class Cobranza implements ICobranza {
         this.anulada = false;
     }
 
-    /**
-     * Visible solo dentro del paquete model: una cobranza no se crea
-     * suelta, la crea su cuota. La fecha la pone la propia cobranza (es
-     * el momento del cobro), no quien la registra.
-     */
+    // Visible solo dentro del paquete model: una cobranza no se crea
+    // suelta, la crea su cuota. La fecha la pone la propia cobranza (es
+    // el momento del cobro), no quien la registra.
     static Cobranza registrar(Cuota cuota, BigDecimal importe) {
         return new Cobranza(cuota, importe);
     }
 
-    /**
-     * Solo se puede anular una cobranza del mismo dia: la cobranza es
-     * quien conoce su fecha, asi que es quien decide si todavia se
-     * puede deshacer.
-     */
+    // Solo se puede anular una cobranza del mismo dia: la cobranza es
+    // quien conoce su fecha, asi que es quien decide si todavia se
+    // puede deshacer.
+    // Information Expert: la cobranza decide si todavia se puede anular
     public void anular() {
         if (!fechaCobranza.isEqual(LocalDate.now())) {
             throw new BusinessException("Solo se pueden anular cobranzas del día de hoy.");

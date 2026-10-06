@@ -25,7 +25,7 @@ public class CreditoRequest {
     @NotNull(message = "La fecha es obligatoria")
     private LocalDate fecha;
 
-    /** Porcentaje unico sobre el capital: 45 significa 45 %. */
+    // Porcentaje unico sobre el capital: 45 significa 45 %.
     @NotNull(message = "La tasa de interes es obligatoria")
     @DecimalMin(value = "0", message = "La tasa de interes no puede ser negativa")
     @DecimalMax(value = "999.99", message = "La tasa de interes es demasiado alta")
