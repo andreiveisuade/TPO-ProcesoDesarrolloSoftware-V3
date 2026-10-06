@@ -15,6 +15,10 @@ public interface IUsuario {
 
     IPermisos getPermisos();
 
+    boolean puedeAnularCredito();
+
+    boolean puedeAnularCobranza();
+
     // Recibe la clase concreta porque es lo que JPA persiste como embebido.
     void otorgarPermisos(Permisos permisos);
 
