@@ -14,7 +14,6 @@ class CreditoTest {
     private Credito creditoDeTresCuotas() {
         Credito credito = Credito.nuevo(Cliente.nuevo("30111222", "Ana"), new BigDecimal("900"),
             LocalDate.now(), BigDecimal.ZERO, 3, TipoPlan.INTERES_SIMPLE);
-        credito.generarPlanDeCuotas();
         return credito;
     }
 

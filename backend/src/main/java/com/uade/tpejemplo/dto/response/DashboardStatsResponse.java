@@ -14,4 +14,6 @@ public class DashboardStatsResponse {
     private Long cantidadCreditos;
     private BigDecimal montoTotalFinanciado;
     private BigDecimal montoTotalCobrado;
+    private BigDecimal saldoPendiente;
+    private BigDecimal montoVencido;
 }

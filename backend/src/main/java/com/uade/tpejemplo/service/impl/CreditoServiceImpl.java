@@ -40,7 +40,6 @@ public class CreditoServiceImpl implements CreditoService {
             request.getCantidadCuotas(),
             request.getTipoPlan()
         ));
-        cuotaRepository.saveAll(credito.generarPlanDeCuotas());
 
         return CreditoResponse.desde(credito);
     }

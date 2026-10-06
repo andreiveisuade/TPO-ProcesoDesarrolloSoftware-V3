@@ -14,7 +14,6 @@ class CuotaTest {
     private Credito creditoOtorgado(LocalDate fecha) {
         Credito credito = Credito.nuevo(Cliente.nuevo("30111222", "Ana"), new BigDecimal("200"),
             fecha, BigDecimal.ZERO, 2, TipoPlan.INTERES_SIMPLE);
-        credito.generarPlanDeCuotas();
         return credito;
     }
 
