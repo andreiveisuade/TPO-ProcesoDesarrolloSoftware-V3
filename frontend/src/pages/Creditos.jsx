@@ -94,7 +94,7 @@ export default function Creditos() {
           {creditosSeguros.map(cr => (
             <div key={cr.id} style={{ ...styles.creditoBox, opacity: cr.anulado ? 0.6 : 1 }}>
               <p>
-                <strong>ID #{cr.id}</strong> — Deuda: ${cr.deudaOriginal} + {cr.tasaInteres}% = ${cr.totalADevolver} — {cr.cantidadCuotas} cuotas de ${cr.importeCuota}
+                <strong>ID #{cr.id}</strong> — Deuda: ${cr.deudaOriginal} — {cr.tipoPlan === 'SISTEMA_FRANCES' ? `Sistema francés ${cr.tasaInteres}% mensual` : `Interés simple ${cr.tasaInteres}% total`} = ${cr.totalADevolver} — {cr.cantidadCuotas} cuotas de ${cr.importeCuota}
                 {' '}— Saldo: ${cr.saldo}
                 <span style={cr.estado === 'ANULADO' ? styles.badgeAnulado : undefined}> [{cr.estado}]</span>
               </p>

@@ -11,7 +11,6 @@ const Dashboard = () => {
   const puedeVerDashboard = user?.rol === 'SUPERVISOR' || user?.rol === 'ADMIN';
 
   useEffect(() => {
-    // Solo disparamos la petición si el usuario es supervisor
     if (puedeVerDashboard) {
       dispatch(fetchEstadisticas());
     }
