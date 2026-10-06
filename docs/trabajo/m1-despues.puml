@@ -1,0 +1,29 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Calibri
+skinparam defaultFontSize 12
+skinparam ClassBackgroundColor #FFFFFF
+skinparam ClassBorderColor #1D2B4F
+skinparam ClassHeaderBackgroundColor #FFFFFF
+skinparam ArrowColor #2E75B6
+skinparam NoteBackgroundColor #FFF8E1
+skinparam NoteBorderColor #B38600
+skinparam SequenceLifeLineBorderColor #1D2B4F
+skinparam ParticipantBackgroundColor #FFFFFF
+skinparam ParticipantBorderColor #1D2B4F
+skinparam SequenceGroupBackgroundColor #F4F8FC
+hide empty members
+participant "CobranzaServiceImpl" as S
+participant Cuota as Q
+participant "Credito" as K #DDEBF7
+participant Cobranza as C
+S -> Q : registrarCobranza(importe)
+Q -> K : isAnulado()
+alt crédito anulado
+  Q --> S : BusinessException
+end
+Q -> Q : estaPagada()
+Q -> Q : importe == this.importe ?
+Q -> C : registrar(this, importe)
+Q --> S : cobranza
+@enduml
