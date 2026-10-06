@@ -43,7 +43,7 @@ const cobranzasSlice = createSlice({
       .addCase(fetchCobranzasPorCredito.rejected,  (state) => { state.loading = false; })
       
       .addCase(addCobranza.pending,                (state) => { state.loading = true;  state.error = null; })
-      .addCase(addCobranza.fulfilled,              (state, action) => { state.loading = false; state.lista.push(action.payload); })
+      .addCase(addCobranza.fulfilled,              (state, action) => { state.loading = false; })
       .addCase(addCobranza.rejected,               (state, action) => { state.loading = false; state.error = action.payload; })
 
       .addCase(anularCobranzaThunk.pending,        (state) => { state.loading = true; state.error = null; })
