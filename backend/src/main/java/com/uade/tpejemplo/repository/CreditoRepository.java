@@ -25,6 +25,11 @@ public interface CreditoRepository extends JpaRepository<Credito, Long> {
         """)
     List<Credito> buscarPorClienteConCuotas(@Param("dni") String dni);
 
+    @Query("""
+        SELECT DISTINCT c FROM Credito c JOIN FETCH c.cliente LEFT JOIN FETCH c.cuotas
+        """)
+    List<Credito> buscarTodosConCuotas();
+
     @Query("SELECT COUNT(c) FROM Credito c WHERE c.anulado = false")
     long contarVigentes();
 
