@@ -54,7 +54,9 @@ public class SecurityConfig {
                 .requestMatchers("/api/dashboard/**").hasAnyRole("SUPERVISOR", "ADMIN")
                 .anyRequest().authenticated()
             )
-            .exceptionHandling(e -> e.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
+            .exceptionHandling(e -> e
+                .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
+                .accessDeniedHandler((req, res, ex) -> res.setStatus(HttpStatus.FORBIDDEN.value())))
             .authenticationProvider(authenticationProvider())
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
