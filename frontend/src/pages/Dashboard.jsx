@@ -46,6 +46,14 @@ const Dashboard = () => {
            <h3>Monto Total Cobrado</h3>
            <p style={styles.valor}>{formatMoneda(estadisticas?.montoTotalCobrado)}</p>
         </div>
+        <div style={styles.tarjeta}>
+           <h3>Saldo Pendiente</h3>
+           <p style={styles.valor}>{formatMoneda(estadisticas?.saldoPendiente)}</p>
+        </div>
+        <div style={styles.tarjeta}>
+           <h3>Monto Vencido</h3>
+           <p style={styles.valor}>{formatMoneda(estadisticas?.montoVencido)}</p>
+        </div>
       </div>
     </div>
   );

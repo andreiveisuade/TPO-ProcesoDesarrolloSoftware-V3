@@ -2,6 +2,7 @@ package com.uade.tpejemplo.service.impl;
 
 import com.uade.tpejemplo.dto.response.DashboardStatsResponse;
 import com.uade.tpejemplo.model.Credito;
+import com.uade.tpejemplo.model.Cuota;
 import com.uade.tpejemplo.model.EstadoCredito;
 import com.uade.tpejemplo.repository.ClienteRepository;
 import com.uade.tpejemplo.repository.CreditoRepository;
@@ -44,6 +45,18 @@ public class DashboardServiceImpl implements DashboardService {
         BigDecimal totalFinanciado = creditoRepository.sumarDeudaOriginalVigente();
         BigDecimal totalCobrado = cobranzaRepository.sumarImporteVigente();
 
-        return new DashboardStatsResponse(clientes, creditos, totalFinanciado, totalCobrado);
+        // Information Expert: el saldo lo sabe el credito y el vencimiento la cuota
+        BigDecimal saldoPendiente = todos.stream()
+            .map(Credito::saldo)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal montoVencido = todos.stream()
+            .filter(credito -> !credito.isAnulado())
+            .flatMap(credito -> credito.getCuotas().stream())
+            .filter(Cuota::estaVencida)
+            .map(Cuota::getImporte)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return new DashboardStatsResponse(clientes, creditos, totalFinanciado, totalCobrado,
+            saldoPendiente, montoVencido);
     }
 }
