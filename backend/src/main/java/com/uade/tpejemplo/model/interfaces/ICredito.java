@@ -1,5 +1,7 @@
 package com.uade.tpejemplo.model.interfaces;
 
+import com.uade.tpejemplo.model.EstadoCredito;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -26,5 +28,17 @@ public interface ICredito {
 
     List<? extends ICuota> generarPlanDeCuotas();
 
-    void anular(boolean tieneCobranzas);
+    List<? extends ICuota> getCuotas();
+
+    EstadoCredito estado();
+
+    BigDecimal saldo();
+
+    boolean estaCancelado();
+
+    boolean tieneCobranzas();
+
+    boolean puedeAnularse();
+
+    void anular();
 }

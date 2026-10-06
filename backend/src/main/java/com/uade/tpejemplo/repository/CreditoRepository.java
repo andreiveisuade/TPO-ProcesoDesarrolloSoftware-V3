@@ -3,15 +3,27 @@ package com.uade.tpejemplo.repository;
 import com.uade.tpejemplo.model.Credito;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface CreditoRepository extends JpaRepository<Credito, Long> {
 
-    List<Credito> findByClienteDni(String dni);
+    @Query("""
+        SELECT DISTINCT c FROM Credito c JOIN FETCH c.cliente LEFT JOIN FETCH c.cuotas
+        WHERE c.id = :id
+        """)
+    Optional<Credito> buscarConCuotas(@Param("id") Long id);
+
+    @Query("""
+        SELECT DISTINCT c FROM Credito c JOIN FETCH c.cliente LEFT JOIN FETCH c.cuotas
+        WHERE c.cliente.dni = :dni
+        """)
+    List<Credito> buscarPorClienteConCuotas(@Param("dni") String dni);
 
     @Query("SELECT COUNT(c) FROM Credito c WHERE c.anulado = false")
     long contarVigentes();

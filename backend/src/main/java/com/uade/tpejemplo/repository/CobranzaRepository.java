@@ -15,9 +15,6 @@ public interface CobranzaRepository extends JpaRepository<Cobranza, Long> {
     @Query("SELECT c FROM Cobranza c JOIN FETCH c.cuota WHERE c.cuota.credito.id = :idCredito")
     List<Cobranza> buscarPorCredito(@Param("idCredito") Long idCredito);
 
-    @Query("SELECT COUNT(c) > 0 FROM Cobranza c WHERE c.cuota.credito.id = :idCredito")
-    boolean existeCobranzaDelCredito(@Param("idCredito") Long idCredito);
-
     @Query("SELECT COALESCE(SUM(c.importe), 0) FROM Cobranza c WHERE c.anulada = false")
     BigDecimal sumarImporteVigente();
 }
