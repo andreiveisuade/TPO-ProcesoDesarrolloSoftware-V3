@@ -45,7 +45,16 @@ Rutas Java relativas a `backend/src/main/java/com/uade/tpejemplo/`. Reporte comp
 | LIM | Limpieza del repo: `.factorypath` sin trackear, `docs/trabajo` fuera del `git archive`, docs de proceso borrados, README corto | `.gitattributes`, `README.md`, `docs/` | Entrega |
 | CU | Casos de uso V3: fichas, diagrama, trazabilidad y verificación por API | `docs/casos-de-uso/README.md`, `docs/casos-de-uso/verificar-cu.sh` | Documentación |
 | H1 | Anular una cobranza ya anulada se rechaza (400), como el crédito | `model/Cobranza.java` `anular` | Information Expert |
-| Tests | 26 tests (25 de dominio + contexto), 0 fallas | `backend/src/test/java/com/uade/tpejemplo/model/**` | JUnit 5 + AssertJ |
+| Tests | 26 tests (25 de dominio + contexto), 0 fallas | `backend/src/test/java/com/uade/tpejemplo/` | JUnit 5 + AssertJ |
+
+Desglose de los 26 tests:
+
+- `model/CreditoTest`: 8
+- `model/CuotaTest`: 7
+- `model/plan/InteresSimpleTest`: 4
+- `model/plan/SistemaFrancesTest`: 4
+- `model/CobranzaTest`: 2
+- `TpEjemploApplicationTests` (`contextLoads`): 1
 
 ## Pendientes
 

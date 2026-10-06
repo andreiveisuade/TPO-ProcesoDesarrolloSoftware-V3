@@ -683,7 +683,16 @@ cd frontend &amp;&amp; npm install &amp;&amp; npm run dev   # Vite, proxy /api �
     <section class="doc-section" id="verificar">
       <h2>Cómo se verifica</h2>
       <ul>
-        <li><strong>Tests</strong>: <code>cd backend &amp;&amp; mvn test</code>: 26 tests, 0 fallas. 25 tests unitarios de dominio (JUnit 5 + AssertJ, sin Spring) en <code>backend/src/test/java/com/uade/tpejemplo/model/</code>: <code>CreditoTest</code>, <code>CuotaTest</code>, <code>CobranzaTest</code>, <code>plan/InteresSimpleTest</code>, <code>plan/SistemaFrancesTest</code>, más <code>contextLoads</code>.</li>
+        <li><strong>Tests</strong>: <code>cd backend &amp;&amp; mvn test</code>: 26 tests, 0 fallas. 25 tests unitarios de dominio (JUnit 5 + AssertJ, sin Spring) en <code>backend/src/test/java/com/uade/tpejemplo/model/</code>, más <code>contextLoads</code>:
+          <ul>
+            <li><code>CreditoTest</code>: 8</li>
+            <li><code>CuotaTest</code>: 7</li>
+            <li><code>plan/InteresSimpleTest</code>: 4</li>
+            <li><code>plan/SistemaFrancesTest</code>: 4</li>
+            <li><code>CobranzaTest</code>: 2</li>
+            <li><code>TpEjemploApplicationTests</code> (<code>contextLoads</code>): 1</li>
+          </ul>
+        </li>
         <li><strong>Smoke</strong>: backend levantado y probado con curl, caso por caso contra M1..M10 (códigos, cálculo de cuotas, anulaciones, permisos, dashboard): 22 casos OK. El build del front no se probó ahí.</li>
         <li><strong>Verificación final</strong>: API y browser sobre <code>main</code> el 06/10, incluidos tokens alterados y vencidos; las dos fallas (401 en vez de 403, 500 en vez de 400) se corrigieron después.</li>
         <li><strong>Comprobación visual</strong>: recorrido completo en el browser; capturas de la UI final y del dark theme en el reporte.</li>
