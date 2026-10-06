@@ -24,12 +24,12 @@ Vista -> Ct : DELETE /anular/{id}
 Ct -> Ct : @AuthenticationPrincipal\nUsuarioDetails.getUsuario()
 Ct -> S : anularCredito(id, usuario)
 S -> U : getPermisos()
-S -> P : permiteAnularCredito()
+S -> P : isPuedeAnularCredito()
 alt sin permiso
   S --> Ct : AccessDeniedException
   Ct --> Vista : 403
 else con permiso
-  S -> K : anular(...)
+  S -> K : anular()
   Ct --> Vista : 204
 end
 @enduml
