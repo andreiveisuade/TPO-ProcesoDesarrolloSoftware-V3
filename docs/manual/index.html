@@ -408,6 +408,7 @@ body.lightbox-locked { overflow: hidden; }
     <nav class="toc" id="toc">
       <p class="toc-group-label">Qué construimos</p>
       <ol>
+        <li><a href="#stack" data-target="stack">Stack</a></li>
         <li><a href="#resumen" data-target="resumen">Qué es y actores</a></li>
         <li><a href="#requerimientos" data-target="requerimientos">Requerimientos</a></li>
         <li><a href="#reglas" data-target="reglas">Reglas de negocio</a></li>
@@ -442,12 +443,39 @@ body.lightbox-locked { overflow: hidden; }
       las del front, a <code>frontend/src/</code>.
     </p>
 
+    <section class="doc-section" id="stack">
+      <h2>Stack</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Tecnología</th><th>Qué es y para qué la usamos</th></tr></thead>
+        <tbody>
+          <tr><td>Java 21</td><td>Lenguaje del backend.</td></tr>
+          <tr><td>Maven</td><td>Build y dependencias del backend (<code>backend/pom.xml</code>); <code>mvn spring-boot:run</code> lo levanta y <code>mvn test</code> corre los tests.</td></tr>
+          <tr><td>Spring Boot 3.4</td><td>Framework que arma la aplicación: servidor web embebido, inyección de dependencias y configuración por <code>application.properties</code>.</td></tr>
+          <tr><td>Spring Web</td><td>Parte de Spring para exponer la API REST: los <code>@RestController</code> de <code>controller/</code>.</td></tr>
+          <tr><td>Bean Validation</td><td>Anotaciones como <code>@NotNull</code> o <code>@Positive</code> en <code>dto/request/</code>; <code>@Valid</code> en el controller rechaza con 400 lo mal formado.</td></tr>
+          <tr><td>Spring Data JPA / Hibernate</td><td>JPA es el estándar Java para mapear clases a tablas; Hibernate lo implementa. Mapea <code>model/</code> y da los <code>repository/</code> con consultas <code>@Query</code>.</td></tr>
+          <tr><td>H2</td><td>Base de datos SQL en memoria: no hay que instalar nada y se borra al reiniciar. Es la base del proyecto.</td></tr>
+          <tr><td>Spring Security</td><td>Controla quién entra a cada ruta: roles en <code>config/SecurityConfig.java</code> y filtro de token por request.</td></tr>
+          <tr><td>JWT / jjwt</td><td>JWT es un token firmado que el cliente manda en cada request en vez de una sesión; jjwt es la librería que lo genera y valida, adaptada en <code>security/JwtUtil.java</code>.</td></tr>
+          <tr><td>Lombok</td><td>Genera getters, constructores y builders con anotaciones (<code>@Getter</code>, <code>@RequiredArgsConstructor</code>) para no escribirlos a mano.</td></tr>
+          <tr><td>springdoc-openapi / Swagger</td><td>Genera la documentación de la API desde las anotaciones de los controllers y la sirve navegable en <code>/swagger-ui.html</code>.</td></tr>
+          <tr><td>Spring Boot Actuator</td><td>Endpoints de diagnóstico de la aplicación (como health). Está como dependencia en <code>pom.xml</code>.</td></tr>
+          <tr><td>JUnit 5 + AssertJ</td><td>Framework de tests y librería de aserciones; vienen en <code>spring-boot-starter-test</code>. Los usan los tests de <code>model/</code>.</td></tr>
+          <tr><td>React 19</td><td>Librería para construir la interfaz con componentes; las pantallas están en <code>frontend/src/pages/</code>.</td></tr>
+          <tr><td>React Router</td><td>Navegación entre pantallas del front sin recargar la página.</td></tr>
+          <tr><td>Redux Toolkit / React Redux</td><td>Estado global del front (usuario logueado, listas) en <code>store/slices/</code>, con thunks que llaman a la API.</td></tr>
+          <tr><td>Vite</td><td>Servidor de desarrollo y build del front; su proxy manda <code>/api</code> a <code>localhost:8080</code> (<code>frontend/vite.config.js</code>).</td></tr>
+          <tr><td>ESLint</td><td>Revisa el código del front en busca de errores y malas prácticas (<code>npm run lint</code>).</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
     <section class="doc-section" id="resumen">
       <h2>Qué es y actores</h2>
       <p>
         Sistema interno de una financiera para otorgar préstamos en cuotas a clientes y registrar el cobro de esas
         cuotas. El cliente no usa el sistema: lo opera personal interno. Backend Spring Boot 3.4 (Java 21, JPA, H2 en
-        memoria, Spring Security con JWT); frontend React 19 + Redux Toolkit + Vite.
+        memoria, Spring Security con JWT); frontend React 19 + Redux Toolkit + Vite. Qué es cada pieza: <a href="#stack">Stack</a>.
       </p>
       <div class="table-wrap"><table>
         <thead><tr><th>Actor</th><th>Cómo nace</th><th>Qué puede hacer</th></tr></thead>
