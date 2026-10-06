@@ -1,0 +1,344 @@
+@startuml clases-v3-general
+title Dashboard de préstamos V3 — vista general MVC
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam shadowing false
+left to right direction
+hide empty members
+
+package "Vista (React)" {
+  class "api/auth.js" as VAuth <<component>>
+  class "api/clientes.js" as VClientes <<component>>
+  class "api/creditos.js" as VCreditos <<component>>
+  class "api/cobranzas.js" as VCobranzas <<component>>
+  class "api/admin.js" as VAdmin <<component>>
+  class "api/supervisor.js" as VSupervisor <<component>>
+  class "store/dashboardSlice.js" as VDashboard <<component>>
+}
+
+package "Controlador" {
+  class AuthController <<RestController>> {
+    + register(RegisterRequest) : AuthResponse
+    + login(LoginRequest) : AuthResponse
+  }
+  class ClienteController <<RestController>> {
+    + crear(ClienteRequest) : ClienteResponse
+    + buscarPorDni(String) : ClienteResponse
+    + listarTodos() : List<ClienteResponse>
+  }
+  class CreditoController <<RestController>> {
+    + crear(CreditoRequest) : CreditoResponse
+    + buscarPorId(Long) : CreditoResponse
+    + listarPorCliente(String) : List<CreditoResponse>
+    + anularCredito(Long, UsuarioDetails) : void
+  }
+  class CobranzaController <<RestController>> {
+    + registrar(CobranzaRequest) : CobranzaResponse
+    + listarPorCredito(Long) : List<CobranzaResponse>
+    + anularCobranza(Long, UsuarioDetails) : void
+  }
+  class AdminController <<RestController>> {
+    + listarUsuarios() : List<UsuarioResponse>
+    + actualizarPermisos(Long, PermisosRequest) : UsuarioResponse
+    + actualizarRol(Long, RolRequest) : UsuarioResponse
+  }
+  class SupervisorController <<RestController>> {
+    + obtenerUsuarios() : List<UsuarioResponse>
+    + actualizarPermisosAnulacion(Long, PermisosRequest) : UsuarioResponse
+  }
+  class DashboardController <<RestController>> {
+    + obtenerEstadisticas() : DashboardStatsResponse
+  }
+}
+
+package "Modelo" {
+  package "service" {
+    interface AuthService {
+      + registrar(RegisterRequest) : AuthResponse
+      + login(LoginRequest) : AuthResponse
+    }
+    interface ClienteService {
+      + crear(ClienteRequest) : ClienteResponse
+      + buscarPorDni(String) : ClienteResponse
+      + listarTodos() : List<ClienteResponse>
+    }
+    interface CreditoService {
+      + crear(CreditoRequest) : CreditoResponse
+      + buscarPorId(Long) : CreditoResponse
+      + listarPorCliente(String) : List<CreditoResponse>
+      + anularCredito(Long, IUsuario) : void
+    }
+    interface CobranzaService {
+      + registrar(CobranzaRequest) : CobranzaResponse
+      + listarPorCredito(Long) : List<CobranzaResponse>
+      + anularCobranza(Long, IUsuario) : void
+    }
+    interface AdminService {
+      + listarTodos() : List<UsuarioResponse>
+      + listarUsuarios() : List<UsuarioResponse>
+      + actualizarPermisos(Long, PermisosRequest) : UsuarioResponse
+      + actualizarRol(Long, RolRequest) : UsuarioResponse
+    }
+    interface DashboardService {
+      + obtenerEstadisticasGenerales() : DashboardStatsResponse
+    }
+    interface TokenService <<Target>> {
+      + generarToken(String) : String
+      + extraerUsername(String) : String
+      + esValido(String, UserDetails) : boolean
+    }
+    class AuthServiceImpl
+    class ClienteServiceImpl
+    class CreditoServiceImpl
+    class CobranzaServiceImpl
+    class AdminServiceImpl
+    class DashboardServiceImpl
+  }
+
+  package "security" {
+    class JwtUtil <<Adapter>> {
+      - secret : String
+      - expirationMs : long
+      + generarToken(String) : String
+      + extraerUsername(String) : String
+      + esValido(String, UserDetails) : boolean
+    }
+    class "io.jsonwebtoken.Jwts" as Jwts <<Adaptee>>
+    class JwtAuthFilter {
+      # doFilterInternal(HttpServletRequest, HttpServletResponse, FilterChain) : void
+    }
+    class UserDetailsServiceImpl {
+      + loadUserByUsername(String) : UserDetails
+    }
+    interface "UserDetails" as UserDetails <<Target>>
+    class UsuarioDetails <<Adapter>> {
+      + getAuthorities() : Collection<GrantedAuthority>
+      + getPassword() : String
+      + getUsername() : String
+    }
+  }
+
+  package "model (detalle en clases-v3-modelo)" as M {
+    class Cliente
+    class Credito
+    class Cuota
+    class Cobranza
+    interface IUsuario <<Adaptee>>
+    class Usuario
+  }
+}
+
+VAuth ..> AuthController : HTTP /api/auth
+VClientes ..> ClienteController : HTTP /api/clientes
+VCreditos ..> CreditoController : HTTP /api/creditos
+VCobranzas ..> CobranzaController : HTTP /api/cobranzas
+VAdmin ..> AdminController : HTTP /api/admin
+VSupervisor ..> SupervisorController : HTTP /api/supervisor
+VDashboard ..> DashboardController : HTTP /api/dashboard
+
+AuthController --> "1" AuthService
+ClienteController --> "1" ClienteService
+CreditoController --> "1" CreditoService
+CobranzaController --> "1" CobranzaService
+AdminController --> "1" AdminService
+SupervisorController --> "1" AdminService
+DashboardController --> "1" DashboardService
+
+AuthService <|.. AuthServiceImpl
+ClienteService <|.. ClienteServiceImpl
+CreditoService <|.. CreditoServiceImpl
+CobranzaService <|.. CobranzaServiceImpl
+AdminService <|.. AdminServiceImpl
+DashboardService <|.. DashboardServiceImpl
+
+AuthServiceImpl --> "1" TokenService
+AuthServiceImpl ..> Usuario : crea
+ClienteServiceImpl ..> Cliente : crea
+CreditoServiceImpl ..> Credito : crea / anula
+CobranzaServiceImpl ..> Cuota : registrarCobranza
+CobranzaServiceImpl ..> Cobranza : anula
+AdminServiceImpl ..> Usuario : permisos / rol
+DashboardServiceImpl ..> Credito : estadísticas
+
+TokenService <|.. JwtUtil
+JwtUtil ..> Jwts : delega
+JwtAuthFilter --> "1" TokenService
+JwtAuthFilter --> "1" UserDetailsServiceImpl
+UserDetailsServiceImpl ..> UsuarioDetails : crea
+UserDetails <|.. UsuarioDetails
+UsuarioDetails --> "1" IUsuario : usuario
+IUsuario <|.. Usuario
+
+note top of JwtUtil
+  Adapter (objeto): TokenService es lo que
+  esperan AuthServiceImpl y JwtAuthFilter;
+  JwtUtil traduce a la API de jjwt.
+end note
+note bottom of UsuarioDetails
+  Adapter: Spring Security pide UserDetails;
+  UsuarioDetails envuelve al IUsuario del dominio.
+end note
+@enduml
+
+@startuml clases-v3-modelo
+title Dashboard de préstamos V3 — detalle del Modelo
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+hide empty members
+
+package "model.interfaces" {
+  interface ICliente {
+    + getDni() : String
+    + getNombre() : String
+  }
+  interface ICredito {
+    + totalADevolver() : BigDecimal
+    + generarPlanDeCuotas() : List<ICuota>
+    + estado() : EstadoCredito
+    + saldo() : BigDecimal
+    + estaCancelado() : boolean
+    + tieneCobranzas() : boolean
+    + puedeAnularse() : boolean
+    + anular() : void
+  }
+  interface ICuota {
+    + estaPagada() : boolean
+    + estaVencida() : boolean
+    + registrarCobranza(BigDecimal) : ICobranza
+  }
+  interface ICobranza {
+    + isAnulada() : boolean
+    + anular() : void
+  }
+  interface IUsuario {
+    + getRol() : Rol
+    + getPermisos() : IPermisos
+    + otorgarPermisos(Permisos) : void
+    + asignarRol(Rol) : void
+  }
+  interface IPermisos {
+    + permiteAnularCredito() : boolean
+    + permiteAnularCobranza() : boolean
+  }
+  interface IRol {
+    + autoridad() : String
+  }
+  interface CalculoDeCuota <<Strategy>> {
+    + importeCuota(BigDecimal capital, BigDecimal tasa, int cuotas) : BigDecimal
+    + totalADevolver(BigDecimal capital, BigDecimal tasa, int cuotas) : BigDecimal
+  }
+}
+
+package "model" {
+  class Cliente {
+    - dni : String
+    - nombre : String
+    + {static} nuevo(String, String) : Cliente
+  }
+  class Credito <<Context>> {
+    - id : Long
+    - deudaOriginal : BigDecimal
+    - fecha : LocalDate
+    - tasaInteres : BigDecimal
+    - importeCuota : BigDecimal
+    - cantidadCuotas : Integer
+    - tipoPlan : TipoPlan
+    - anulado : boolean
+    + {static} nuevo(Cliente, BigDecimal, LocalDate, BigDecimal, Integer, TipoPlan) : Credito
+    + totalADevolver() : BigDecimal
+    + generarPlanDeCuotas() : List<Cuota>
+    + estado() : EstadoCredito
+    + saldo() : BigDecimal
+    + estaCancelado() : boolean
+    + tieneCobranzas() : boolean
+    + puedeAnularse() : boolean
+    + anular() : void
+  }
+  class Cuota {
+    - id : Long
+    - numero : Integer
+    - importe : BigDecimal
+    - fechaVencimiento : LocalDate
+    + estaPagada() : boolean
+    + estaVencida() : boolean
+    + registrarCobranza(BigDecimal) : Cobranza
+  }
+  class Cobranza {
+    - id : Long
+    - importe : BigDecimal
+    - fechaCobranza : LocalDate
+    - anulada : boolean
+    + anular() : void
+  }
+  class Usuario {
+    - id : Long
+    - username : String
+    - password : String
+    + {static} nuevo(String, String, Rol, Permisos) : Usuario
+    + otorgarPermisos(Permisos) : void
+    + asignarRol(Rol) : void
+  }
+  class Permisos <<Embeddable>> {
+    - puedeAnularCredito : boolean
+    - puedeAnularCobranza : boolean
+    + {static} de(boolean, boolean) : Permisos
+    + {static} ninguno() : Permisos
+    + {static} todos() : Permisos
+    + permiteAnularCredito() : boolean
+    + permiteAnularCobranza() : boolean
+  }
+  enum Rol {
+    ADMIN
+    SUPERVISOR
+    USER
+    + autoridad() : String
+  }
+  enum EstadoCredito {
+    VIGENTE
+    CANCELADO
+    ANULADO
+  }
+  enum TipoPlan {
+    INTERES_SIMPLE
+    SISTEMA_FRANCES
+    - calculo : CalculoDeCuota
+    + calculo() : CalculoDeCuota
+  }
+}
+
+package "model.plan" {
+  class InteresSimple <<ConcreteStrategy>> {
+    + importeCuota(BigDecimal, BigDecimal, int) : BigDecimal
+    + totalADevolver(BigDecimal, BigDecimal, int) : BigDecimal
+  }
+  class SistemaFrances <<ConcreteStrategy>> {
+    + importeCuota(BigDecimal, BigDecimal, int) : BigDecimal
+    + totalADevolver(BigDecimal, BigDecimal, int) : BigDecimal
+  }
+}
+
+ICliente <|.. Cliente
+ICredito <|.. Credito
+ICuota <|.. Cuota
+ICobranza <|.. Cobranza
+IUsuario <|.. Usuario
+IPermisos <|.. Permisos
+IRol <|.. Rol
+CalculoDeCuota <|.. InteresSimple
+CalculoDeCuota <|.. SistemaFrances
+
+Credito "0..*" --> "1" Cliente : cliente
+Credito "1" *-- "1..*" Cuota : cuotas
+Cuota "1" *-- "0..*" Cobranza : cobranzas
+Credito --> "1" TipoPlan : tipoPlan
+TipoPlan --> "1" CalculoDeCuota : calculo
+Credito ..> EstadoCredito : estado()
+Usuario --> "1" Rol : rol
+Usuario *-- "1" Permisos : permisos
+
+note right of TipoPlan
+  Strategy: Credito delega importeCuota y
+  totalADevolver en tipoPlan.calculo().
+  El plan se fija al otorgar el crédito.
+end note
+@enduml
