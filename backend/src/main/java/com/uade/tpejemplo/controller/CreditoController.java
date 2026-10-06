@@ -25,6 +25,11 @@ public class CreditoController {
         return ResponseEntity.status(HttpStatus.CREATED).body(creditoService.crear(request));
     }
 
+    @GetMapping
+    public ResponseEntity<List<CreditoResponse>> listarTodos() {
+        return ResponseEntity.ok(creditoService.listarTodos());
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<CreditoResponse> buscarPorId(@PathVariable Long id) {
         return ResponseEntity.ok(creditoService.buscarPorId(id));

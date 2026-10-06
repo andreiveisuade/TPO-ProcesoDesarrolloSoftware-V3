@@ -52,6 +52,16 @@ public class CreditoServiceImpl implements CreditoService {
 
     @Transactional(readOnly = true)
     @Override
+    public List<CreditoResponse> listarTodos() {
+        List<Credito> creditos = creditoRepository.buscarTodosConCuotas();
+        cuotaRepository.buscarTodasConCobranzas();
+        return creditos.stream()
+            .map(CreditoResponse::desde)
+            .toList();
+    }
+
+    @Transactional(readOnly = true)
+    @Override
     public List<CreditoResponse> listarPorCliente(String dniCliente) {
         if (!clienteRepository.existsById(dniCliente)) {
             throw new ResourceNotFoundException("Cliente", "DNI", dniCliente);
