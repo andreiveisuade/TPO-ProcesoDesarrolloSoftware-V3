@@ -11,7 +11,7 @@ export default function Creditos() {
   
   const [dni, setDni] = useState('');
   const [buscado, setBuscado] = useState(false);
-  const [form, setForm] = useState({ dniCliente:'', deudaOriginal:'', fecha:'', tasaInteres:'', cantidadCuotas:'' });
+  const [form, setForm] = useState({ dniCliente:'', deudaOriginal:'', fecha:'', tasaInteres:'', cantidadCuotas:'', tipoPlan:'INTERES_SIMPLE' });
 
   const buscar = async (e) => {
     e.preventDefault();
@@ -30,7 +30,7 @@ export default function Creditos() {
     };
     const result = await dispatch(addCredito(payload));
     if (result.meta.requestStatus === 'fulfilled') {
-      setForm({ dniCliente:'', deudaOriginal:'', fecha:'', tasaInteres:'', cantidadCuotas:'' });
+      setForm({ dniCliente:'', deudaOriginal:'', fecha:'', tasaInteres:'', cantidadCuotas:'', tipoPlan:'INTERES_SIMPLE' });
       if (form.dniCliente === dni) dispatch(fetchCreditosPorCliente(dni));
     }
   };
@@ -74,6 +74,10 @@ export default function Creditos() {
           <input style={styles.input} placeholder="Fecha" value={form.fecha} onChange={e => setForm({...form, fecha: e.target.value})} type="date" required />
           <input style={styles.input} placeholder="Interés % (ej: 45)" value={form.tasaInteres} onChange={e => setForm({...form, tasaInteres: e.target.value})} type="number" min="0" step="0.01" required />
           <input style={styles.input} placeholder="Cant. cuotas" value={form.cantidadCuotas} onChange={e => setForm({...form, cantidadCuotas: e.target.value})} type="number" min="1" required />
+          <select style={styles.input} value={form.tipoPlan} onChange={e => setForm({...form, tipoPlan: e.target.value})}>
+            <option value="INTERES_SIMPLE">Interés simple (% total)</option>
+            <option value="SISTEMA_FRANCES">Sistema francés (% mensual)</option>
+          </select>
           <button style={{...styles.btn, gridColumn:'span 2'}} disabled={loading}>
             {loading ? 'Guardando...' : 'Crear crédito'}
           </button>
