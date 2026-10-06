@@ -8,8 +8,8 @@ import Creditos from './pages/Creditos';
 import Cobranzas from './pages/Cobranzas';
 import Dashboard from './pages/Dashboard.jsx';
 import GestorPermisos from './pages/GestorPermisos'
-import AdminRoute from './components/AdminRoute';
-import SupervisorRoute from './components/SupervisorRoute';
+import RoleRoute from './components/RoleRoute';
+import { ROLES } from './utils/roles';
 import PanelAdmin from './pages/PanelAdmin';
 
 // Rutas de la aplicacion y la barra de navegacion; cada ruta protegida pasa por su guarda de rol.
@@ -24,8 +24,8 @@ export default function App() {
         <Route path="/creditos"  element={<PrivateRoute><Creditos /></PrivateRoute>} />
         <Route path="/cobranzas" element={<PrivateRoute><Cobranzas /></PrivateRoute>} />
         <Route path="/estadisticas" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-        <Route path="/admin/roles" element={<AdminRoute> <PanelAdmin /> </AdminRoute>} />
-        <Route path="/supervisor/permisos-anulacion" element={<SupervisorRoute><GestorPermisos /></SupervisorRoute>} />
+        <Route path="/admin/roles" element={<RoleRoute roles={[ROLES.ADMIN]}><PanelAdmin /></RoleRoute>} />
+        <Route path="/supervisor/permisos-anulacion" element={<RoleRoute roles={[ROLES.SUPERVISOR]}><GestorPermisos /></RoleRoute>} />
         <Route path="*"          element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>

@@ -1,21 +1,15 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchUsuariosSupervisor, togglePermiso } from '../store/slices/permisosSlice';
-import { ROLES } from '../utils/roles';
 
 // Tabla del SUPERVISOR para otorgar o quitar permisos de anulacion.
 const GestorPermisos = () => {
   const dispatch = useDispatch();
   const { lista: usuarios, loading, error } = useSelector((state) => state.permisos);
-  
-  const { user } = useSelector((state) => state.auth);
-  const isSupervisor = user?.rol === ROLES.SUPERVISOR;
 
   useEffect(() => {
-    if (isSupervisor) {
-      dispatch(fetchUsuariosSupervisor());
-    }
-  }, [dispatch, isSupervisor]);
+    dispatch(fetchUsuariosSupervisor());
+  }, [dispatch]);
 
   const handleCheckboxChange = (usuario, campoPermiso) => {
     const nuevosPermisos = {
@@ -26,10 +20,6 @@ const GestorPermisos = () => {
     
     dispatch(togglePermiso({ id: usuario.id, permisos: nuevosPermisos }));
   };
-
-  if (!isSupervisor) {
-    return <div style={styles.center}>No tienes permisos para gestionar anulaciones.</div>;
-  }
 
   return (
     <div style={styles.page}>
@@ -92,7 +82,6 @@ const GestorPermisos = () => {
 const styles = {
   page: { padding: '20px', fontFamily: 'Arial, sans-serif', maxWidth: '800px', margin: '0 auto' },
   title: { color: 'var(--color-text)', borderBottom: '2px solid var(--color-border)', paddingBottom: '10px' },
-  center: { display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', fontSize: '1.2rem' },
   card: { background: 'var(--color-surface)', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px var(--color-shadow)', marginTop: '20px' },
   table: { width: '100%', borderCollapse: 'collapse' },
   th: { padding: '12px', textAlign: 'left', borderBottom: '2px solid var(--color-border)', color: 'var(--color-text-muted)' },

@@ -7,23 +7,14 @@ import { ROLES } from '../utils/roles';
 const PanelAdmin = () => {
   const dispatch = useDispatch();
   const { lista: usuarios, loading, error } = useSelector((state) => state.permisos);
-  const { user } = useSelector((state) => state.auth);
-  
-  const isAdmin = user?.rol === ROLES.ADMIN;
 
   useEffect(() => {
-    if (isAdmin) {
-      dispatch(fetchUsuariosAdmin());
-    }
-  }, [dispatch, isAdmin]);
+    dispatch(fetchUsuariosAdmin());
+  }, [dispatch]);
 
   const handleRoleChange = (usuarioId, nuevoRol) => {
     dispatch(cambiarRol({ id: usuarioId, nuevoRol }));
   };
-
-  if (!isAdmin) {
-    return <div style={styles.center}>Acceso denegado. Se requieren permisos de Administrador.</div>;
-  }
 
   return (
     <div style={styles.page}>
@@ -78,7 +69,6 @@ const PanelAdmin = () => {
 const styles = {
   page: { padding: '20px', fontFamily: 'Arial, sans-serif', maxWidth: '800px', margin: '0 auto' },
   title: { color: 'var(--color-text)', borderBottom: '2px solid var(--color-border)', paddingBottom: '10px' },
-  center: { display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', fontSize: '1.2rem' },
   card: { background: 'var(--color-surface)', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px var(--color-shadow)' },
   table: { width: '100%', borderCollapse: 'collapse' },
   th: { padding: '12px', textAlign: 'left', borderBottom: '2px solid var(--color-border)', color: 'var(--color-text-muted)' },
