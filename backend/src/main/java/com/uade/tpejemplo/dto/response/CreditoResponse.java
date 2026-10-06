@@ -31,6 +31,7 @@ public class CreditoResponse {
     private boolean anulado;
     private EstadoCredito estado;
     private BigDecimal saldo;
+    private boolean puedeAnularse;
 
     public static CreditoResponse desde(ICredito credito) {
         return CreditoResponse.builder()
@@ -48,6 +49,7 @@ public class CreditoResponse {
             .anulado(credito.isAnulado())
             .estado(credito.estado())
             .saldo(credito.saldo())
+            .puedeAnularse(credito.puedeAnularse())
             .build();
     }
 }
