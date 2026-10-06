@@ -683,7 +683,7 @@ cd frontend &amp;&amp; npm install &amp;&amp; npm run dev   # Vite, proxy /api �
     <section class="doc-section" id="verificar">
       <h2>Cómo se verifica</h2>
       <ul>
-        <li><strong>Tests</strong>: <code>cd backend &amp;&amp; mvn test</code>: 25 tests, 0 fallas. 24 tests unitarios de dominio (JUnit 5 + AssertJ, sin Spring) en <code>backend/src/test/java/com/uade/tpejemplo/model/</code>: <code>CreditoTest</code>, <code>CuotaTest</code>, <code>CobranzaTest</code>, <code>plan/InteresSimpleTest</code>, <code>plan/SistemaFrancesTest</code>, más <code>contextLoads</code>.</li>
+        <li><strong>Tests</strong>: <code>cd backend &amp;&amp; mvn test</code>: 26 tests, 0 fallas. 25 tests unitarios de dominio (JUnit 5 + AssertJ, sin Spring) en <code>backend/src/test/java/com/uade/tpejemplo/model/</code>: <code>CreditoTest</code>, <code>CuotaTest</code>, <code>CobranzaTest</code>, <code>plan/InteresSimpleTest</code>, <code>plan/SistemaFrancesTest</code>, más <code>contextLoads</code>.</li>
         <li><strong>Smoke</strong>: backend levantado y probado con curl, caso por caso contra M1..M10 (códigos, cálculo de cuotas, anulaciones, permisos, dashboard): 22 casos OK. El build del front no se probó ahí.</li>
         <li><strong>Verificación final</strong>: API y browser sobre <code>main</code> el 06/10, incluidos tokens alterados y vencidos; las dos fallas (401 en vez de 403, 500 en vez de 400) se corrigieron después.</li>
         <li><strong>Comprobación visual</strong>: recorrido completo en el browser; capturas de la UI final y del dark theme en el reporte.</li>
@@ -727,7 +727,6 @@ cd frontend &amp;&amp; npm install &amp;&amp; npm run dev   # Vite, proxy /api �
         <li>TPO-014: el paquete <code>com.uade.tpejemplo</code> y <code>TpEjemploApplication</code> no nombran el sistema.</li>
         <li>TPO-012: smells del frontend, fuera de alcance por decisión.</li>
         <li>Trazabilidad: <code>Cobranza</code> no sabe quién cobró ni quién anuló; <code>Credito</code> no sabe quién lo otorgó.</li>
-        <li><code>Cobranza.anular</code> no rechaza una cobranza ya anulada: responde 204 (<code>model/Cobranza.java</code>, H1).</li>
         <li>El front ve los permisos y el rol nuevos recién al volver a loguearse; el backend los aplica desde la request siguiente (<code>store/slices/authSlice.js</code>, H4).</li>
         <li>La fecha del crédito es libre: acepta pasado y futuro (<code>dto/request/CreditoRequest.java</code>).</li>
         <li>Interés simple: la suma de cuotas puede diferir del total en centavos.</li>

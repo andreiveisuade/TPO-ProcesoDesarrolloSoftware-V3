@@ -178,7 +178,7 @@ Fuente: `casos-de-uso-v3.puml` (renderizado con `plantuml -tsvg` y `-tpng`). Sup
 - **Pantalla**: `pages/Cobranzas.jsx` (botón Anular por cobranza).
 - **Verificación**: Test `model/CobranzaTest.java:13` `seRegistraConFechaDeHoyYSePuedeAnularElMismoDia`, `model/CuotaTest.java:39` `cobranzaAnuladaDejaLaCuotaImpaga`, `model/CreditoTest.java:93`; Smoke "M2: anular cobranza (admin) y luego el crédito…", "M2: anular cobranza con `user` sin permiso"; API (UC15 x4 y "recobrar cuota liberada").
 - **Evolución**: TPO-005 (la cuota quedaba trabada como pagada) cerrado en V1; permiso validado en el backend desde V3 (M4).
-- **Huecos**: anular una cobranza ya anulada responde **204** en vez de rechazarla (H1). El rechazo "de otro día" no tiene test ni caso de smoke: la fecha la fija `LocalDate.now()` en el constructor y no hay forma de simular otro día (comentario en `model/CobranzaTest.java`).
+- **Huecos**: anular una cobranza ya anulada respondía **204** (H1); corregido, ahora 400. El rechazo "de otro día" no tiene test ni caso de smoke: la fecha la fija `LocalDate.now()` en el constructor y no hay forma de simular otro día (comentario en `model/CobranzaTest.java`).
 
 ### UC16 Ver estadísticas
 
@@ -301,7 +301,7 @@ Además: `mvn test` → 25 tests, 0 fallas.
 
 ### Hallazgos
 
-- **H1 (UC15)**: anular dos veces la misma cobranza responde 204. `model/Cobranza.java:59` `anular` no mira si ya está anulada, mientras que `model/Credito.java:141` `anular` sí rechaza la doble anulación. No rompe datos, pero las dos anulaciones del sistema se comportan distinto.
+- **H1 (UC15)**: anular dos veces la misma cobranza responde 204. `model/Cobranza.java:59` `anular` no mira si ya está anulada, mientras que `model/Credito.java:141` `anular` sí rechaza la doble anulación. No rompe datos, pero las dos anulaciones del sistema se comportan distinto. Corregido después: `Cobranza.anular` rechaza la segunda con `BusinessException`, test `CobranzaTest` `noSePuedeAnularDosVeces`.
 - **H2 (UC14)**: `GET /api/cobranzas/credito/999` responde 200 con lista vacía; `service/impl/CobranzaServiceImpl.java:42` no verifica que el crédito exista. UC10, en el mismo caso, responde 404.
 - **H3 (UC16)**: "Créditos activos" y "Monto total financiado" miden cosas distintas (cartera vigente vs. todo lo prestado y no anulado). Ver la observación de UC16.
 - **H4 (UC19, UC20)**: backend y front no ven los permisos y el rol al mismo tiempo. El backend usa el valor nuevo desde la request siguiente (`security/JwtAuthFilter.java:69`); el front sigue mostrando el que tenía al loguear (`store/slices/authSlice.js:23,42`). Del lado de la seguridad está bien (manda el backend); el costo es de usabilidad: el botón o el link aparece recién al volver a iniciar sesión.

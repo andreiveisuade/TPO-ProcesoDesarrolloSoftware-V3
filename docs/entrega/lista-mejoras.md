@@ -44,7 +44,8 @@ Rutas Java relativas a `backend/src/main/java/com/uade/tpejemplo/`. Reporte comp
 | COM | Comentarios: 1-3 líneas por clase, una línea por patrón, una por componente del front | `backend/src/main/java/**`, `frontend/src/**` | Bad smell: comentarios |
 | LIM | Limpieza del repo: `.factorypath` sin trackear, `docs/trabajo` fuera del `git archive`, docs de proceso borrados, README corto | `.gitattributes`, `README.md`, `docs/` | Entrega |
 | CU | Casos de uso V3: fichas, diagrama, trazabilidad y verificación por API | `docs/casos-de-uso/README.md`, `docs/casos-de-uso/verificar-cu.sh` | Documentación |
-| Tests | 25 tests (24 de dominio + contexto), 0 fallas | `backend/src/test/java/com/uade/tpejemplo/model/**` | JUnit 5 + AssertJ |
+| H1 | Anular una cobranza ya anulada se rechaza (400), como el crédito | `model/Cobranza.java` `anular` | Information Expert |
+| Tests | 26 tests (25 de dominio + contexto), 0 fallas | `backend/src/test/java/com/uade/tpejemplo/model/**` | JUnit 5 + AssertJ |
 
 ## Pendientes
 
@@ -60,7 +61,6 @@ Rutas Java relativas a `backend/src/main/java/com/uade/tpejemplo/`. Reporte comp
 | Tests | `@WebMvcTest` de códigos HTTP, `@DataJpaTest` del dashboard, seguridad, `Clock` inyectable | `backend/src/test` | Siguiente iteración |
 | H8 | Trazabilidad: qué usuario cobró o anuló | `model/Cobranza.java`, `model/Credito.java` | Modelo nuevo y cambio de API |
 | H4 | El front ve permisos y rol nuevos recién al volver a loguearse | `frontend/src/store/slices/authSlice.js` | Necesita `GET /usuarios/me` (A-1 del backlog) |
-| H1 | Anular una cobranza ya anulada responde 204 en vez de rechazarse | `model/Cobranza.java` `anular` | Hallazgo de los casos de uso |
 | M9 | Tasa con unidad declarada por plan; cuota con capital/interés separados | `model/TipoPlan.java`, `model/Cuota.java` | Límites del Strategy actual (ver reporte) |
 
 Descartados con motivo: `EstadoCredito` como State (O9: es un valor derivado) y Strategy/Adapter "para mostrar" (O10: no tapan huecos).

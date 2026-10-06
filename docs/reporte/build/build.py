@@ -476,7 +476,7 @@ tecnologias = '''<dl class="tec">
 <dt>Lombok</dt><dd>Genera getters, constructores y loggers con anotaciones (<code>@Getter</code>, <code>@RequiredArgsConstructor</code>, <code>@Slf4j</code>). Reduce código repetido en entidades y DTO.</dd>
 <dt>springdoc-openapi / Swagger UI</dt><dd>Lee los controladores y publica el contrato de la API (OpenAPI) en una página navegable. Lo usamos como documentación viva y para probar endpoints con token.</dd>
 <dt>React, Redux y Vite</dt><dd>React construye la interfaz con componentes; Redux guarda el estado del cliente (usuario, créditos); Vite levanta el servidor de desarrollo y arma el build.</dd>
-<dt>JUnit 5 + AssertJ</dt><dd>Framework de tests y librería de aserciones de Java. Con ellos están los 25 tests del dominio.</dd>
+<dt>JUnit 5 + AssertJ</dt><dd>Framework de tests y librería de aserciones de Java. Con ellos están los 26 tests.</dd>
 <dt>Maven</dt><dd>Herramienta de build de Java: baja dependencias, compila y corre los tests (<code>mvn test</code>).</dd>
 <dt>PlantUML</dt><dd>Genera diagramas UML a partir de texto. Con él están hechos los diagramas antes/después y el diagrama de clases.</dd>
 </dl>'''
@@ -492,7 +492,7 @@ pendientes = '''<ul>
 <li><strong>Smells</strong>: BS2 (armado de <code>ErrorResponse</code> repetido), BS3, BS4, BS6; front DF2, BSF2, BSF4, BSF5, BSF6 (TPO-012).</li>
 <li><strong>Tests</strong>: <code>@WebMvcTest</code> de los códigos HTTP, <code>@DataJpaTest</code> del dashboard, seguridad 401/403, <code>Clock</code> inyectable para <code>Cobranza.anular()</code> y <code>Cuota.estaVencida()</code>.</li>
 <li><strong>Trazabilidad</strong>: qué usuario cobró o anuló (H8).</li>
-<li><strong>Hallazgos de los casos de uso</strong>: el front ve los permisos y el rol nuevos recién al volver a loguearse (H4); anular una cobranza ya anulada responde 204 en vez de rechazarse (H1).</li>
+<li><strong>Hallazgos de los casos de uso</strong>: el front ve los permisos y el rol nuevos recién al volver a loguearse (H4). Anular una cobranza ya anulada respondía 204: corregido, ahora se rechaza (H1).</li>
 <li>Descartados con motivo: <code>EstadoCredito</code> como State (O9) y Strategy/Adapter “para mostrar” (O10).</li>
 </ul>'''
 
@@ -550,7 +550,7 @@ doc = f'''<!doctype html>
 
 <section id="verificacion"><h2>Verificación</h2>
 <div class="cuadro">
-<div><h4>Tests automáticos</h4><p><code>cd backend &amp;&amp; mvn test</code>: <strong>25 tests, 0 fallas</strong>. Son 24 de dominio puro (JUnit 5 + AssertJ, sin contexto de Spring) más <code>contextLoads</code>. <code>InteresSimpleTest</code> y <code>SistemaFrancesTest</code> cubren cada estrategia aislada; <code>CreditoTest</code>, <code>CuotaTest</code> y <code>CobranzaTest</code> cubren M1, M2, M6 y M8.</p></div>
+<div><h4>Tests automáticos</h4><p><code>cd backend &amp;&amp; mvn test</code>: <strong>26 tests, 0 fallas</strong>. Son 25 de dominio puro (JUnit 5 + AssertJ, sin contexto de Spring) más <code>contextLoads</code>. <code>InteresSimpleTest</code> y <code>SistemaFrancesTest</code> cubren cada estrategia aislada; <code>CreditoTest</code>, <code>CuotaTest</code> y <code>CobranzaTest</code> cubren M1, M2, M6 y M8.</p></div>
 <div><h4>Smoke de la API</h4><p>22 casos con curl contra el backend levantado: 401/404/405 (M5), los dos planes (M9), cobro sobre anulado (M1), 403 sin permiso (M4), vencidas (M6), dashboard por rol y con números correctos (M3, M10). Todos OK.</p></div>
 <div><h4>Verificación final</h4><p>Recorrido de API y visual sobre <code>main</code> el 06/10: tokens alterados o vencidos (O2), cálculo de los dos planes, estados y saldo, permisos, dashboard. Encontró 401 donde correspondía 403 y 500 en requests mal formadas, corregidos en F1 y F2. Los casos de uso se volvieron a recorrer por API con <code>docs/casos-de-uso/verificar-cu.sh</code>.</p></div>
 <div><h4>Comprobación visual</h4><p>Recorrido completo en el browser con capturas: login, alta, otorgamiento simple y francés, cobro, vencida, anulación, 403 forzado, dashboard ADMIN y SUPERVISOR, Swagger con token. Las dos fallas encontradas (listado sin refrescar tras anular y título “Modo Supervisor” para el ADMIN) se corrigieron en O1 y <code>d35fc0e</code>.</p></div>
