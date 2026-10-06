@@ -1,0 +1,754 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Manual — Dashboard de préstamos</title>
+<style>
+
+/* ============ tokens ============ */
+:root {
+  --paper: #FFFFFF;
+  --bg: #F2F0ED;
+  --bg-raised: #FAF8F6;
+  --ink: #201A16;
+  --ink-soft: #574C44;
+  --ink-faint: #857971;
+  --line: #DED8D2;
+  --line-strong: #C2B9B1;
+  --accent: #B4531F;
+  --accent-ink: #FFFFFF;
+  --accent-soft: #F7EBE3;
+  --accent-soft-line: #E5C9B5;
+  --ok: #2E7D4F;
+  --ok-soft: #E6F4EB;
+  --pend: #93630F;
+  --pend-soft: #FBF1DC;
+  --shadow: 0 1px 2px rgba(30, 20, 15, 0.06), 0 6px 20px -8px rgba(30, 20, 15, 0.12);
+  --radius: 3px;
+  --font-display: Georgia, "Iowan Old Style", "Palatino Linotype", "Times New Roman", serif;
+  --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #221C18;
+    --bg: #151110;
+    --bg-raised: #1D1815;
+    --ink: #EFE9E4;
+    --ink-soft: #B4A79E;
+    --ink-faint: #84776F;
+    --line: #332B26;
+    --line-strong: #493E37;
+    --accent: #E8944A;
+    --accent-ink: #2A1608;
+    --accent-soft: #30231A;
+    --accent-soft-line: #54392451;
+    --ok: #82CB9C;
+    --ok-soft: #17301F;
+    --pend: #E3B667;
+    --pend-soft: #322916;
+    --shadow: 0 1px 2px rgba(0,0,0,0.35), 0 8px 24px -10px rgba(0,0,0,0.55);
+  }
+}
+
+:root[data-theme="dark"] {
+  --paper: #221C18;
+  --bg: #151110;
+  --bg-raised: #1D1815;
+  --ink: #EFE9E4;
+  --ink-soft: #B4A79E;
+  --ink-faint: #84776F;
+  --line: #332B26;
+  --line-strong: #493E37;
+  --accent: #E8944A;
+  --accent-ink: #2A1608;
+  --accent-soft: #30231A;
+  --accent-soft-line: #543924;
+  --ok: #82CB9C;
+  --ok-soft: #17301F;
+  --pend: #E3B667;
+  --pend-soft: #322916;
+  --shadow: 0 1px 2px rgba(0,0,0,0.35), 0 8px 24px -10px rgba(0,0,0,0.55);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ============ layout ============ */
+.layout {
+  display: grid;
+  grid-template-columns: 264px minmax(0, 1fr);
+  gap: 0;
+  max-width: 1360px;
+  margin: 0 auto;
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: 100vh;
+  overflow-y: auto;
+  padding: 28px 20px 40px;
+  border-right: 1px solid var(--line);
+  background: var(--bg-raised);
+}
+
+.brand {
+  font-family: var(--font-display);
+  font-size: 19px;
+  line-height: 1.25;
+  margin: 0 0 4px;
+}
+.brand-sub {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--ink-faint);
+  margin: 0 0 20px;
+}
+
+#tocFilter {
+  width: 100%;
+  padding: 7px 10px;
+  margin-bottom: 16px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+}
+#tocFilter:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+
+.toc ol { list-style: none; margin: 0; padding: 0; }
+.toc a {
+  display: block;
+  padding: 5px 10px;
+  margin-bottom: 1px;
+  font-size: 14px;
+  color: var(--ink-soft);
+  text-decoration: none;
+  border-left: 2px solid transparent;
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+.toc a:hover { background: var(--accent-soft); color: var(--ink); }
+.toc a.active {
+  border-left-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+}
+.toc-group-label {
+  margin: 18px 0 6px;
+  padding-left: 10px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--ink-faint);
+}
+
+.content { padding: 44px 48px 120px; min-width: 0; }
+
+/* ============ tipografía ============ */
+h1 {
+  font-family: var(--font-display);
+  font-size: 34px;
+  line-height: 1.2;
+  margin: 0 0 8px;
+  font-weight: 400;
+}
+.lede { font-size: 18px; color: var(--ink-soft); margin: 0 0 12px; max-width: 68ch; }
+
+.doc-section { padding-top: 48px; scroll-margin-top: 12px; }
+.doc-section > h2 {
+  font-family: var(--font-display);
+  font-size: 25px;
+  font-weight: 400;
+  margin: 0 0 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+}
+h3 { font-size: 16px; margin: 26px 0 8px; }
+p { max-width: 72ch; }
+a { color: var(--accent); }
+
+code {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-soft-line);
+  border-radius: var(--radius);
+  padding: 1px 5px;
+}
+pre {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  overflow-x: auto;
+  box-shadow: var(--shadow);
+}
+pre code { background: none; border: none; padding: 0; font-size: 13px; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 14px 0;
+  font-size: 14.5px;
+  background: var(--paper);
+  box-shadow: var(--shadow);
+}
+th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+td ul { margin: 0; padding-left: 18px; }
+td li + li { margin-top: 4px; }
+.capas td:first-child { width: 1%; white-space: nowrap; }
+th {
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--ink-faint);
+  background: var(--bg-raised);
+  border-bottom: 1px solid var(--line-strong);
+}
+tr:last-child td { border-bottom: none; }
+.table-wrap { overflow-x: auto; }
+
+.tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+.tag-ok { background: var(--ok-soft); color: var(--ok); }
+.tag-pend { background: var(--pend-soft); color: var(--pend); }
+
+.callout {
+  margin: 18px 0;
+  padding: 14px 18px;
+  background: var(--accent-soft);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+.callout p { margin: 0; }
+.callout p + p { margin-top: 8px; }
+
+/* ============ diagramas ============ */
+figure.diagram {
+  position: relative;
+  margin: 20px 0 8px;
+  padding: 18px;
+  /* fondo claro siempre: PlantUML dibuja el texto en negro */
+  background: #FFFFFF;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow-x: auto;
+}
+figure.diagram .diagram-click { cursor: zoom-in; }
+figure.diagram svg, figure.diagram img { max-width: 100%; height: auto; display: block; margin: 0 auto; }
+/* Un diagrama muy alto se achica a la altura de la pantalla; el detalle se ve ampliado. */
+figure.diagram.compacto svg { max-height: 70vh; width: auto; }
+figure.diagram::after {
+  content: "Click para ampliar";
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  padding: 2px 8px;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: #6B6259;
+  background: #F2F0ED;
+  border: 1px solid #DED8D2;
+  border-radius: 10px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+}
+figure.diagram:hover::after { opacity: 1; }
+figcaption {
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--ink-faint);
+  text-align: center;
+}
+
+/* ============ lightbox ============ */
+body.lightbox-locked { overflow: hidden; }
+
+.lightbox {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  flex-direction: column;
+  background: rgba(20, 15, 12, 0.86);
+}
+.lightbox.open { display: flex; }
+
+.lightbox-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 14px;
+  background: var(--bg-raised);
+  border-bottom: 1px solid var(--line);
+}
+.lightbox-title {
+  flex: 1;
+  font-size: 14px;
+  color: var(--ink-soft);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lightbox-zoom-group { display: flex; align-items: center; gap: 6px; }
+.lightbox-zoom-label {
+  min-width: 48px;
+  text-align: center;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-faint);
+}
+.lightbox-btn {
+  padding: 5px 11px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+.lightbox-btn:hover { background: var(--accent-soft); border-color: var(--accent-soft-line); }
+
+.lightbox-scroll {
+  flex: 1;
+  overflow: auto;
+  padding: 24px;
+  cursor: grab;
+  overscroll-behavior: contain;
+}
+.lightbox-scroll.grabbing { cursor: grabbing; }
+.lightbox-canvas {
+  margin: 0 auto;
+  background: #FFFFFF;
+  border-radius: var(--radius);
+}
+.lightbox-canvas svg { display: block; width: 100%; height: 100%; }
+
+@media (max-width: 640px) {
+  .lightbox-title { display: none; }
+}
+
+/* ============ mobile ============ */
+.menu-toggle {
+  display: none;
+  position: fixed;
+  z-index: 20;
+  top: 12px;
+  left: 12px;
+  padding: 8px 13px;
+  font: inherit;
+  font-size: 14px;
+  color: var(--accent-ink);
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .menu-toggle { display: block; }
+  .sidebar {
+    position: fixed;
+    z-index: 15;
+    inset: 0 auto 0 0;
+    width: 264px;
+    transform: translateX(-100%);
+    transition: transform 0.2s ease;
+  }
+  .sidebar.open { transform: none; box-shadow: var(--shadow); }
+  .content { padding: 64px 20px 90px; }
+}
+</style>
+</head>
+<body>
+
+<button class="menu-toggle" id="menuToggle" aria-expanded="false">Índice</button>
+
+<div class="layout">
+
+  <nav class="sidebar" id="sidebar" aria-label="Índice del manual">
+    <p class="brand">Dashboard de préstamos</p>
+    <p class="brand-sub">Proceso de Desarrollo de Software</p>
+
+    <input type="search" id="tocFilter" placeholder="Filtrar secciones…" aria-label="Filtrar secciones" />
+
+    <nav class="toc" id="toc">
+      <p class="toc-group-label">Qué construimos</p>
+      <ol>
+        <li><a href="#resumen" data-target="resumen">Qué es y actores</a></li>
+        <li><a href="#requerimientos" data-target="requerimientos">Requerimientos</a></li>
+        <li><a href="#reglas" data-target="reglas">Reglas de negocio</a></li>
+        <li><a href="#casos-de-uso" data-target="casos-de-uso">Casos de uso</a></li>
+      </ol>
+
+      <p class="toc-group-label">Cómo está hecho</p>
+      <ol>
+        <li><a href="#mvc" data-target="mvc">Arquitectura MVC</a></li>
+        <li><a href="#dominio" data-target="dominio">Modelo de dominio</a></li>
+        <li><a href="#api" data-target="api">API</a></li>
+        <li><a href="#seguridad" data-target="seguridad">Seguridad</a></li>
+      </ol>
+
+      <p class="toc-group-label">Trabajar en el proyecto</p>
+      <ol>
+        <li><a href="#correr" data-target="correr">Cómo levantarlo</a></li>
+        <li><a href="#verificar" data-target="verificar">Cómo se verifica</a></li>
+        <li><a href="#decisiones" data-target="decisiones">Decisiones de diseño</a></li>
+        <li><a href="#historia" data-target="historia">Historia V0 → V3</a></li>
+        <li><a href="#pendientes" data-target="pendientes">Pendientes y bugs</a></li>
+      </ol>
+    </nav>
+  </nav>
+
+  <main class="content">
+
+    <h1>Dashboard de préstamos</h1>
+    <p class="lede">
+      TPO de Proceso de Desarrollo de Software, grupo 7. UADE, 2.º cuatrimestre 2026. Iteración 3: MVC + patrones
+      (entrega 13/10/2026). Las rutas Java son relativas a <code>backend/src/main/java/com/uade/tpejemplo/</code>;
+      las del front, a <code>frontend/src/</code>.
+    </p>
+
+    <section class="doc-section" id="resumen">
+      <h2>Qué es y actores</h2>
+      <p>
+        Sistema interno de una financiera para otorgar préstamos en cuotas a clientes y registrar el cobro de esas
+        cuotas. El cliente no usa el sistema: lo opera personal interno. Backend Spring Boot 3.4 (Java 21, JPA, H2 en
+        memoria, Spring Security con JWT); frontend React 19 + Redux Toolkit + Vite.
+      </p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Actor</th><th>Cómo nace</th><th>Qué puede hacer</th></tr></thead>
+        <tbody>
+          <tr><td>Visitante</td><td>—</td><td>Registrarse y loguearse (<code>/api/auth/**</code>, <code>config/SecurityConfig.java</code> <code>filterChain</code>)</td></tr>
+          <tr><td>Operador (<code>USER</code>)</td><td>Registro público: siempre <code>USER</code> con <code>Permisos.ninguno()</code> (<code>service/impl/AuthServiceImpl.java</code> <code>registrar</code>)</td><td>Clientes, créditos, cobranzas. Anular solo si tiene el permiso correspondiente</td></tr>
+          <tr><td>Supervisor (<code>SUPERVISOR</code>)</td><td><code>config/DataInitializer.java</code> o un ADMIN le cambia el rol</td><td>Lo del operador + dashboard + otorgar permisos de anulación (<code>controller/SupervisorController.java</code>)</td></tr>
+          <tr><td>Administrador (<code>ADMIN</code>)</td><td>Solo <code>config/DataInitializer.java</code></td><td>Cambiar rol USER↔SUPERVISOR, permisos, dashboard (<code>controller/AdminController.java</code>)</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="doc-section" id="requerimientos">
+      <h2>Requerimientos funcionales vigentes</h2>
+      <ul>
+        <li>Alta, listado y búsqueda por DNI de clientes.</li>
+        <li>Otorgar un crédito eligiendo capital, fecha, tasa, cantidad de cuotas y tipo de plan (interés simple o sistema francés); el sistema genera el plan de cuotas.</li>
+        <li>Listar créditos (todos o de un cliente) con estado (vigente, cancelado, anulado), saldo y cuotas pagadas, pendientes o vencidas.</li>
+        <li>Registrar el cobro de una cuota y listar las cobranzas de un crédito.</li>
+        <li>Anular cobranzas del día y créditos sin cobranzas vigentes, según permisos del usuario.</li>
+        <li>Dashboard con totales de lo vigente para supervisor y administrador.</li>
+        <li>Registro y login con JWT; gestión de roles (ADMIN) y de permisos de anulación (SUPERVISOR, ADMIN).</li>
+      </ul>
+    </section>
+
+    <section class="doc-section" id="reglas">
+      <h2>Reglas de negocio</h2>
+      <p>Cada regla vive en quien tiene el dato (Information Expert). Las validaciones de forma van en los DTO de request.</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>#</th><th>Regla</th><th>Dónde</th></tr></thead>
+        <tbody>
+          <tr><td>R1</td><td>El DNI del cliente es único</td><td><code>service/impl/ClienteServiceImpl.java</code> <code>crear</code></td></tr>
+          <tr><td>R2</td><td>Capital &gt; 0, tasa entre 0 y 999,99, al menos 1 cuota, tipo de plan obligatorio</td><td><code>dto/request/CreditoRequest.java</code></td></tr>
+          <tr><td>R3</td><td>Interés simple: <code>total = capital × (1 + tasa/100)</code>, cuota = total / N con redondeo HALF_UP a 2 decimales</td><td><code>model/plan/InteresSimple.java</code> <code>totalADevolver</code>, <code>importeCuota</code></td></tr>
+          <tr><td>R4</td><td>Sistema francés: cuota = C·i / (1 − (1+i)<sup>−n</sup>), con i = tasa/100 por período; tasa 0 → C/N; total = cuota × N</td><td><code>model/plan/SistemaFrances.java</code> <code>importeCuota</code>, <code>totalADevolver</code></td></tr>
+          <tr><td>R5</td><td>Plan de N cuotas numeradas 1..N, vencimiento <code>fecha + i meses</code></td><td><code>model/Credito.java</code> <code>generarPlanDeCuotas</code></td></tr>
+          <tr><td>R6</td><td>No se cobra sobre un crédito anulado</td><td><code>model/Cuota.java</code> <code>registrarCobranza</code></td></tr>
+          <tr><td>R7</td><td>Una cuota tiene a lo sumo una cobranza vigente; las anuladas no cuentan</td><td><code>model/Cuota.java</code> <code>estaPagada</code>, <code>registrarCobranza</code></td></tr>
+          <tr><td>R8</td><td>El importe cobrado tiene que ser exactamente el de la cuota (no hay pago parcial)</td><td><code>model/Cuota.java</code> <code>registrarCobranza</code></td></tr>
+          <tr><td>R9</td><td>La fecha de la cobranza la pone el sistema (hoy)</td><td><code>model/Cobranza.java</code> constructor</td></tr>
+          <tr><td>R10</td><td>Solo se anulan cobranzas del día</td><td><code>model/Cobranza.java</code> <code>anular</code></td></tr>
+          <tr><td>R11</td><td>No se anula un crédito ya anulado ni uno con cobranzas vigentes</td><td><code>model/Credito.java</code> <code>anular</code>, <code>tieneCobranzas</code></td></tr>
+          <tr><td>R12</td><td>Una cuota está vencida si no está pagada y su vencimiento es anterior a hoy</td><td><code>model/Cuota.java</code> <code>estaVencida</code></td></tr>
+          <tr><td>R13</td><td>Estado del crédito: ANULADO si se anuló; CANCELADO si todas las cuotas están pagas; si no, VIGENTE</td><td><code>model/Credito.java</code> <code>estado</code>, <code>estaCancelado</code></td></tr>
+          <tr><td>R14</td><td>Saldo = suma de cuotas impagas; 0 si está anulado</td><td><code>model/Credito.java</code> <code>saldo</code></td></tr>
+          <tr><td>R15</td><td>Anular un crédito requiere <code>puedeAnularCredito</code>; anular una cobranza, <code>puedeAnularCobranza</code></td><td><code>service/impl/CreditoServiceImpl.java</code> <code>anularCredito</code>; <code>service/impl/CobranzaServiceImpl.java</code> <code>anularCobranza</code></td></tr>
+          <tr><td>R16</td><td>Nadie otorga ni quita el rol ADMIN</td><td><code>service/impl/AdminServiceImpl.java</code> <code>actualizarRol</code></td></tr>
+          <tr><td>R17</td><td>El registro crea siempre un USER sin permisos; username único</td><td><code>service/impl/AuthServiceImpl.java</code> <code>registrar</code></td></tr>
+          <tr><td>R18</td><td>El dashboard cuenta solo créditos no anulados, financiado = suma de deuda original vigente, cobrado = cobranzas no anuladas</td><td><code>repository/CreditoRepository.java</code> <code>contarVigentes</code>, <code>sumarDeudaOriginalVigente</code>; <code>repository/CobranzaRepository.java</code> <code>sumarImporteVigente</code></td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="doc-section" id="casos-de-uso">
+      <h2>Casos de uso</h2>
+      <p>Numeración de los docs V0 (<code>03-casos-de-uso.puml</code>), estado en V3.</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>CU</th><th>Estado</th><th>Nota</th></tr></thead>
+        <tbody>
+          <tr><td>UC01 Registrarse</td><td><span class="tag tag-ok">implementado</span></td><td></td></tr>
+          <tr><td>UC02 Iniciar sesión</td><td><span class="tag tag-ok">implementado</span></td><td>Password incorrecta → 401 (M5)</td></tr>
+          <tr><td>UC03 Emitir token JWT</td><td><span class="tag tag-ok">implementado</span></td><td>Es un mecanismo de UC01/UC02, no un CU</td></tr>
+          <tr><td>UC04 Registrar cliente</td><td><span class="tag tag-ok">implementado</span></td><td>Sin modificación ni baja</td></tr>
+          <tr><td>UC05 Listar clientes</td><td><span class="tag tag-ok">implementado</span></td><td>Sin paginación</td></tr>
+          <tr><td>UC06 Buscar cliente por DNI</td><td><span class="tag tag-pend">solo backend</span></td><td>Sin vista</td></tr>
+          <tr><td>UC07 Otorgar crédito</td><td><span class="tag tag-ok">implementado</span></td><td>Con tipo de plan (M9)</td></tr>
+          <tr><td>UC08 Generar plan de cuotas</td><td><span class="tag tag-ok">implementado</span></td><td>Include de UC07</td></tr>
+          <tr><td>UC09 Consultar crédito</td><td><span class="tag tag-pend">solo backend</span></td><td>Sin vista</td></tr>
+          <tr><td>UC10 Listar créditos</td><td><span class="tag tag-ok">implementado</span></td><td>Por cliente y general (<code>GET /api/creditos</code>)</td></tr>
+          <tr><td>UC11 Anular crédito</td><td><span class="tag tag-ok">implementado</span></td><td>Permiso aplicado en backend (M4); ignora cobranzas anuladas (M8)</td></tr>
+          <tr><td>UC12 Eliminar crédito</td><td><span class="tag">retirado</span></td><td>Duplicaba UC11 salteando su regla</td></tr>
+          <tr><td>UC13 Registrar cobro</td><td><span class="tag tag-ok">implementado</span></td><td>Rechaza crédito anulado (M1); no registra quién cobró</td></tr>
+          <tr><td>UC14 Listar cobranzas del crédito</td><td><span class="tag tag-ok">implementado</span></td><td></td></tr>
+          <tr><td>UC15 Anular cobranza</td><td><span class="tag tag-ok">implementado</span></td><td>Permiso aplicado en backend (M4)</td></tr>
+          <tr><td>UC16 Ver estadísticas</td><td><span class="tag tag-ok">implementado</span></td><td>Números corregidos (M3), también ADMIN (M10)</td></tr>
+          <tr><td>UC17 Administrar metas</td><td><span class="tag">retirado</span></td><td>Con <code>MetaCobranza</code> en V1 (Data class)</td></tr>
+          <tr><td>UC18 Listar usuarios</td><td><span class="tag tag-ok">implementado</span></td><td>ADMIN ve todos menos ADMIN; SUPERVISOR ve todos</td></tr>
+          <tr><td>UC19 Asignar permisos de anulación</td><td><span class="tag tag-ok">implementado</span></td><td>Desde V3 el backend los aplica (M4)</td></tr>
+          <tr><td>Cambiar rol de usuario (nuevo V2)</td><td><span class="tag tag-ok">implementado</span></td><td><code>pages/PanelAdmin.jsx</code>; falta en los docs V0</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="doc-section" id="mvc">
+      <h2>Arquitectura MVC</h2>
+      <p>
+        MVC distribuido, con la vista en el cliente: el <code>@RestController</code> devuelve JSON y la vista se arma en
+        el browser. El único contrato entre vista y controlador son los DTO.
+      </p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Componente</th><th>Paquetes</th></tr></thead>
+        <tbody>
+          <tr><td>Modelo</td><td><code>model/</code>, <code>model/interfaces/</code>, <code>model/plan/</code>, <code>repository/</code>, <code>service/</code> + <code>service/impl/</code>, <code>exception/BusinessException</code>, <code>exception/ResourceNotFoundException</code>, <code>config/DataInitializer</code></td></tr>
+          <tr><td>Controlador</td><td><code>controller/</code>, <code>dto/request/</code>, <code>dto/response/</code>, <code>exception/GlobalExceptionHandler</code>, <code>security/</code>, <code>config/SecurityConfig</code>, <code>config/OpenApiConfig</code></td></tr>
+          <tr><td>Vista</td><td>Frontend: <code>pages/</code>, <code>components/</code>, <code>store/slices/</code>, <code>api/</code> (<code>apiClient.js</code>, único punto HTTP)</td></tr>
+        </tbody>
+      </table></div>
+      <p><strong>Flujo de un request</strong> (anular un crédito):</p>
+      <ol>
+        <li><code>pages/Creditos.jsx</code> oculta el botón si el usuario no tiene el permiso y, si lo tiene, despacha el thunk que llama a <code>api/</code>.</li>
+        <li><code>security/JwtAuthFilter.java</code> valida el token vía <code>service/TokenService</code> y carga el usuario.</li>
+        <li><code>config/SecurityConfig.java</code> exige autenticación para <code>/api/creditos/**</code>.</li>
+        <li><code>controller/CreditoController.java</code> <code>anularCredito</code> toma el <code>UsuarioDetails</code> autenticado y llama al servicio.</li>
+        <li><code>service/impl/CreditoServiceImpl.java</code> <code>anularCredito</code> pregunta a <code>Permisos</code> y le pide al <code>Credito</code> que se anule (<code>model/Credito.java</code> <code>anular</code>).</li>
+        <li>Si algo falla, <code>exception/GlobalExceptionHandler.java</code> traduce: <code>BusinessException</code> → 400, <code>AccessDeniedException</code> → 403, <code>ResourceNotFoundException</code> → 404.</li>
+      </ol>
+      <figure class="diagram">
+        <img src="../diagramas/clases-v3-general.png" alt="Diagrama de clases V3, vista general" />
+        <figcaption>Diagrama de clases V3, general (<code>docs/diagramas/clases-v3-general.png</code>, fuente <code>clases-v3.puml</code>)</figcaption>
+      </figure>
+    </section>
+
+    <section class="doc-section" id="dominio">
+      <h2>Modelo de dominio</h2>
+      <figure class="diagram">
+        <img src="../diagramas/clases-v3-modelo.png" alt="Diagrama de clases V3, modelo" />
+        <figcaption>Modelo V3 (<code>docs/diagramas/clases-v3-modelo.png</code>)</figcaption>
+      </figure>
+      <h3>Estados del crédito</h3>
+      <p>
+        <code>model/EstadoCredito.java</code>: <code>VIGENTE</code>, <code>CANCELADO</code>, <code>ANULADO</code>. Se
+        calcula, no se persiste: <code>model/Credito.java</code> <code>estado</code> mira el boolean <code>anulado</code>
+        y sus cuotas. El crédito es agregado de sus cuotas (<code>@OneToMany</code> lazy, ordenado por número) y
+        responde <code>saldo</code>, <code>estaCancelado</code>, <code>tieneCobranzas</code> y <code>puedeAnularse</code>
+        (M8).
+      </p>
+      <h3>Strategy de cálculo</h3>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Rol</th><th>Clase</th></tr></thead>
+        <tbody>
+          <tr><td>Context</td><td><code>model/Credito.java</code> (constructor y <code>totalADevolver</code> delegan)</td></tr>
+          <tr><td>Strategy</td><td><code>model/interfaces/CalculoDeCuota.java</code></td></tr>
+          <tr><td>ConcreteStrategy</td><td><code>model/plan/InteresSimple.java</code>, <code>model/plan/SistemaFrances.java</code></td></tr>
+          <tr><td>Selección</td><td><code>model/TipoPlan.java</code> (enum persistido, <code>calculo()</code>); viene en <code>CreditoRequest.tipoPlan</code></td></tr>
+        </tbody>
+      </table></div>
+      <h3>Adapter de seguridad</h3>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Rol</th><th>Token (nuevo en V3)</th><th>Usuario (desde V1)</th></tr></thead>
+        <tbody>
+          <tr><td>Target</td><td><code>service/TokenService.java</code></td><td><code>UserDetails</code> de Spring Security</td></tr>
+          <tr><td>Adapter</td><td><code>security/JwtUtil.java</code></td><td><code>security/UsuarioDetails.java</code></td></tr>
+          <tr><td>Adaptee</td><td>librería jjwt</td><td><code>model/interfaces/IUsuario.java</code></td></tr>
+          <tr><td>Client</td><td><code>service/impl/AuthServiceImpl.java</code>, <code>security/JwtAuthFilter.java</code></td><td><code>DaoAuthenticationProvider</code> vía <code>security/UserDetailsServiceImpl.java</code></td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="doc-section" id="api">
+      <h2>API</h2>
+      <p>
+        19 endpoints en 7 controllers bajo <code>/api</code>: auth, clientes, créditos, cobranzas, dashboard, admin y
+        supervisor. Con el backend levantado: Swagger en
+        <a href="http://localhost:8080/swagger-ui.html">http://localhost:8080/swagger-ui.html</a> (botón Authorize con el
+        token de <code>/api/auth/login</code>), especificación en <code>/v3/api-docs</code>. Mapa completo
+        (método, ruta, controller, DTO, roles, códigos) en <a href="../trabajo/api.md"><code>docs/trabajo/api.md</code></a>.
+      </p>
+      <p>
+        Códigos: 400 regla de negocio o validación, 401 sin token o credenciales malas, 403 sin rol o permiso, 404 no
+        existe, 405 método no soportado (<code>exception/GlobalExceptionHandler.java</code>). Todos los errores salen
+        con <code>dto/response/ErrorResponse.java</code>.
+      </p>
+    </section>
+
+    <section class="doc-section" id="seguridad">
+      <h2>Seguridad</h2>
+      <ul>
+        <li><strong>JWT</strong>: login y registro devuelven un token (<code>security/JwtUtil.java</code>, expira en 24 h según <code>jwt.expiration-ms</code>). <code>security/JwtAuthFilter.java</code> lo valida en cada request. Sesión stateless.</li>
+        <li><strong>Roles</strong> (<code>config/SecurityConfig.java</code> <code>filterChain</code>): <code>/api/auth/**</code> y Swagger públicos; <code>/api/admin/**</code> solo ADMIN; <code>/api/supervisor/**</code> solo SUPERVISOR; <code>/api/dashboard/**</code> SUPERVISOR o ADMIN; el resto, cualquier autenticado.</li>
+        <li><strong>Permisos de anulación</strong> (<code>model/Permisos.java</code>): <code>puedeAnularCredito</code> y <code>puedeAnularCobranza</code>, por usuario. Los aplica el servicio (R15); el front solo oculta botones.</li>
+        <li>Sin token → 401 (<code>HttpStatusEntryPoint</code>); con token y sin permiso → 403.</li>
+      </ul>
+    </section>
+
+    <section class="doc-section" id="correr">
+      <h2>Cómo levantarlo en local</h2>
+      <p>Requiere JDK 21, Maven y Node.</p>
+      <pre><code>cd backend &amp;&amp; mvn spring-boot:run       # http://localhost:8080, H2 en memoria
+cd frontend &amp;&amp; npm install &amp;&amp; npm run dev   # Vite, proxy /api → localhost:8080</code></pre>
+      <p>
+        La base es H2 en memoria: se pierde al reiniciar. Consola en <code>/h2-console</code> (JDBC
+        <code>jdbc:h2:mem:tpdb</code>, usuario <code>sa</code>, sin password).
+      </p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Usuario</th><th>Password</th><th>Rol</th><th>Permisos</th></tr></thead>
+        <tbody>
+          <tr><td><code>admin</code></td><td><code>admin</code></td><td>ADMIN</td><td>todos</td></tr>
+          <tr><td><code>supervisor</code></td><td><code>supervisor</code></td><td>SUPERVISOR</td><td>todos</td></tr>
+          <tr><td><code>user</code></td><td><code>user</code></td><td>USER</td><td>ninguno</td></tr>
+        </tbody>
+      </table></div>
+      <p>Fuente: <code>config/DataInitializer.java</code> <code>run</code>.</p>
+    </section>
+
+    <section class="doc-section" id="verificar">
+      <h2>Cómo se verifica</h2>
+      <ul>
+        <li><strong>Tests</strong>: <code>cd backend &amp;&amp; mvn test</code>. 24 tests unitarios de dominio (JUnit 5 + AssertJ, sin Spring) en <code>backend/src/test/java/com/uade/tpejemplo/model/</code>: <code>CreditoTest</code>, <code>CuotaTest</code>, <code>CobranzaTest</code>, <code>plan/InteresSimpleTest</code>, <code>plan/SistemaFrancesTest</code>, más <code>contextLoads</code>. Detalle y lo que falta cubrir: <a href="../trabajo/tests.md"><code>docs/trabajo/tests.md</code></a>.</li>
+        <li><strong>Smoke</strong>: backend levantado y probado con curl, caso por caso contra M1..M10 (códigos, cálculo de cuotas, anulaciones, permisos, dashboard): <a href="../trabajo/smoke.md"><code>docs/trabajo/smoke.md</code></a>. El build del front no se probó ahí.</li>
+      </ul>
+    </section>
+
+    <section class="doc-section" id="decisiones">
+      <h2>Decisiones de diseño</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Decisión</th><th>Por qué</th></tr></thead>
+        <tbody>
+          <tr><td>Reglas en las entidades (<code>Cuota.registrarCobranza</code>, <code>Cobranza.anular</code>, <code>Credito.anular</code>)</td><td>Information Expert: decide quien tiene el dato. Desde V1/V2.</td></tr>
+          <tr><td>Interfaces de servicio colapsadas en V1 y <strong>restituidas en V2</strong></td><td>V1 las sacó por Lazy class (una sola impl). V2 las volvió a poner como convención fijada por la cátedra. Revierte el informe 1 §3.7.</td></tr>
+          <tr><td>Interfaz por cada clase de <code>model/</code> (<code>model/interfaces/</code>)</td><td>Pedido de la cátedra en V2. Los DTO de respuesta y <code>UsuarioDetails</code> consumen la interfaz. <code>IRol</code> no tiene consumidor.</td></tr>
+          <tr><td><code>MetaCobranza</code> eliminada (V1)</td><td>Data class sin uso real; UC17 retirado.</td></tr>
+          <tr><td>Sistema francés <strong>descartado en V2 y reabierto en V3</strong></td><td>El 15/09 se descartó (no se buscaba polimorfismo). En V3 entra como segunda estrategia real para que Strategy no quede con una sola implementación (M9).</td></tr>
+          <tr><td><code>Credito</code> como agregado de sus cuotas, con estado calculado (M8)</td><td>Saca la consulta al repositorio de <code>anularCredito</code> y corrige que se contaran cobranzas anuladas (absorbe M2). Carga con fetch explícito para no caer en N+1.</td></tr>
+          <tr><td>Permisos validados en el servicio con el usuario autenticado (M4)</td><td>En MVC la vista oculta pero el modelo decide. Costo: el servicio queda acoplado a <code>IUsuario</code>.</td></tr>
+          <tr><td><code>JwtUtil</code> detrás de <code>TokenService</code> (M7)</td><td>Los clientes de auth dejan de depender de jjwt. Una sola implementación: es frontera con una librería, no polimorfismo.</td></tr>
+          <tr><td>Dashboard también para ADMIN (M10)</td><td>Cierra TPO-010. Pendiente confirmar con Regulo.</td></tr>
+          <tr><td>React + REST como MVC</td><td>MVC separa componentes, no clases: la vista es una pieza aparte y se comunica por DTO.</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="doc-section" id="historia">
+      <h2>Historia V0 → V3</h2>
+      <ul>
+        <li><strong>V0</strong> (<code>main@2a90af8</code>): proyecto inicial con docs PlantUML, requerimientos y CU.</li>
+        <li><strong>V1</strong> (<code>andrei-iteracion1@86c75cc</code>, 08/09): bad smells; <code>Permisos</code>, <code>Cuota</code> con importe y su cobranza, tasa de interés, panel de supervisor.</li>
+        <li><strong>V2</strong> (<code>main@45e228c</code>, tag <code>v2</code>, 15/09): GRASP + interfaces de modelo y de servicio.</li>
+        <li><strong>V3</strong> (este repo, entrega 13/10): MVC + Strategy + Adapter; bugs TPO-001..004, 007, 010 cerrados; tests de dominio; Swagger.</li>
+      </ul>
+    </section>
+
+    <section class="doc-section" id="pendientes">
+      <h2>Pendientes y bugs abiertos</h2>
+      <ul>
+        <li>TPO-009: <code>jwt.secret</code> en <code>backend/src/main/resources/application.properties</code>, en un repo público.</li>
+        <li>TPO-008: <code>/h2-console/**</code> en <code>web.ignoring()</code> y en <code>permitAll()</code> (<code>config/SecurityConfig.java</code>).</li>
+        <li>TPO-014: el paquete <code>com.uade.tpejemplo</code> y <code>TpEjemploApplication</code> no nombran el sistema.</li>
+        <li>TPO-012: smells del frontend, fuera de alcance por decisión.</li>
+        <li>Trazabilidad: <code>Cobranza</code> no sabe quién cobró ni quién anuló; <code>Credito</code> no sabe quién lo otorgó.</li>
+        <li><code>Cobranza.anular</code> no rechaza una cobranza ya anulada (<code>model/Cobranza.java</code>).</li>
+        <li><code>AdminServiceImpl.actualizarPermisos</code> no impide cambiar los permisos de un ADMIN; solo lo bloquea el front (<code>pages/GestorPermisos.jsx</code>).</li>
+        <li>La fecha del crédito es libre: acepta pasado y futuro (<code>dto/request/CreditoRequest.java</code>).</li>
+        <li>Interés simple: la suma de cuotas puede diferir del total en centavos (<code>docs/trabajo/tests.md</code>).</li>
+        <li>Tests sin cubrir: controllers, seguridad, queries del dashboard, anulación de cobranza de otro día (falta un <code>Clock</code> inyectable).</li>
+        <li>Backlog GRASP: <code>TasaInteres</code> como value object.</li>
+        <li>Confirmar con Regulo que ADMIN debe ver el dashboard (M10).</li>
+        <li>UC06 y UC09 sin vista en el front.</li>
+      </ul>
+    </section>
+
+  </main>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var sidebar = document.getElementById("sidebar");
+  var menuToggle = document.getElementById("menuToggle");
+  menuToggle.addEventListener("click", function () {
+    var open = sidebar.classList.toggle("open");
+    menuToggle.setAttribute("aria-expanded", open ? "true" : "false");
+  });
+  document.querySelectorAll("#toc a").forEach(function (a) {
+    a.addEventListener("click", function () { sidebar.classList.remove("open"); });
+  });
+
+  var tocLinks = Array.prototype.slice.call(document.querySelectorAll("#toc a"));
+  var filterInput = document.getElementById("tocFilter");
+  filterInput.addEventListener("input", function () {
+    var q = filterInput.value.trim().toLowerCase();
+    tocLinks.forEach(function (a) {
+      var match = !q || a.textContent.toLowerCase().indexOf(q) !== -1;
+      var li = a.closest("li");
+      if (li) li.hidden = !match;
+    });
+  });
+
+  var linkByTarget = {};
+  tocLinks.forEach(function (a) { linkByTarget[a.dataset.target] = a; });
+  var sections = Array.prototype.slice.call(document.querySelectorAll(".doc-section[id]"));
+
+  if ("IntersectionObserver" in window && sections.length) {
+    var current = null;
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          var link = linkByTarget[entry.target.id];
+          if (link && link !== current) {
+            if (current) current.classList.remove("active");
+            link.classList.add("active");
+            current = link;
+          }
+        }
+      });
+    }, { rootMargin: "-10% 0px -75% 0px" });
+    sections.forEach(function (s) { observer.observe(s); });
+  }
+
+})();
+</script>
+
+</body>
+</html>
