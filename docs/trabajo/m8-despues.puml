@@ -1,0 +1,50 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Calibri
+skinparam defaultFontSize 12
+skinparam ClassBackgroundColor #FFFFFF
+skinparam ClassBorderColor #1D2B4F
+skinparam ClassHeaderBackgroundColor #FFFFFF
+skinparam ArrowColor #2E75B6
+skinparam NoteBackgroundColor #FFF8E1
+skinparam NoteBorderColor #B38600
+skinparam SequenceLifeLineBorderColor #1D2B4F
+skinparam ParticipantBackgroundColor #FFFFFF
+skinparam ParticipantBorderColor #1D2B4F
+skinparam SequenceGroupBackgroundColor #F4F8FC
+hide empty members
+enum EstadoCredito #DDEBF7 {
+  VIGENTE
+  CANCELADO
+  ANULADO
+}
+class Credito #DDEBF7 {
+  -anulado : boolean
+  +generarPlanDeCuotas()
+  +getCuotas()
+  +estado() : EstadoCredito
+  +saldo() : BigDecimal
+  +estaCancelado()
+  +tieneCobranzas()
+  +puedeAnularse()
+  +anular()
+}
+class Cuota {
+  +estaPagada()
+  +registrarCobranza(importe)
+}
+class Cobranza {
+  -anulada : boolean
+}
+class CreditoServiceImpl {
+  +anularCredito(id, usuario)
+}
+CreditoServiceImpl --> Credito
+Credito "1" *-- "1..*" Cuota : crea y conoce
+Cuota "1" --> "0..*" Cobranza
+Credito ..> EstadoCredito
+note bottom of Credito #FFF8E1
+  cuotas y cobranzas se traen en 2 consultas
+  (JOIN FETCH), sin N+1 ni lazy fuera de tx
+end note
+@enduml

@@ -2,13 +2,10 @@ package com.uade.tpejemplo.service.impl;
 
 import com.uade.tpejemplo.dto.request.CreditoRequest;
 import com.uade.tpejemplo.dto.response.CreditoResponse;
-import com.uade.tpejemplo.dto.response.CuotaResponse;
 import com.uade.tpejemplo.exception.ResourceNotFoundException;
 import com.uade.tpejemplo.model.Cliente;
 import com.uade.tpejemplo.model.Credito;
-import com.uade.tpejemplo.model.Cuota;
 import com.uade.tpejemplo.repository.ClienteRepository;
-import com.uade.tpejemplo.repository.CobranzaRepository;
 import com.uade.tpejemplo.repository.CreditoRepository;
 import com.uade.tpejemplo.repository.CuotaRepository;
 import com.uade.tpejemplo.service.CreditoService;
@@ -28,7 +25,6 @@ public class CreditoServiceImpl implements CreditoService {
     private final CreditoRepository creditoRepository;
     private final ClienteRepository clienteRepository;
     private final CuotaRepository cuotaRepository;
-    private final CobranzaRepository cobranzaRepository;
 
     @Transactional
     @Override
@@ -43,27 +39,31 @@ public class CreditoServiceImpl implements CreditoService {
             request.getCantidadCuotas(),
             request.getTipoPlan()
         ));
-        List<Cuota> cuotas = cuotaRepository.saveAll(credito.generarPlanDeCuotas());
+        cuotaRepository.saveAll(credito.generarPlanDeCuotas());
 
-        return toResponse(credito, cuotas);
+        return CreditoResponse.desde(credito);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public CreditoResponse buscarPorId(Long id) {
-        Credito credito = buscarCredito(id);
-        return toResponse(credito, cuotaRepository.buscarPorCredito(id));
+        return CreditoResponse.desde(buscarCredito(id));
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<CreditoResponse> listarPorCliente(String dniCliente) {
         if (!clienteRepository.existsById(dniCliente)) {
             throw new ResourceNotFoundException("Cliente", "DNI", dniCliente);
         }
-        return creditoRepository.findByClienteDni(dniCliente).stream()
-            .map(c -> toResponse(c, cuotaRepository.buscarPorCredito(c.getId())))
+        List<Credito> creditos = creditoRepository.buscarPorClienteConCuotas(dniCliente);
+        cuotaRepository.buscarPorCliente(dniCliente);
+        return creditos.stream()
+            .map(CreditoResponse::desde)
             .toList();
     }
 
+    @Transactional
     @Override
     public void anularCredito(Long id, IUsuario usuario) {
         if (!usuario.getPermisos().permiteAnularCredito()) {
@@ -72,7 +72,7 @@ public class CreditoServiceImpl implements CreditoService {
 
         Credito credito = buscarCredito(id);
 
-        credito.anular(cobranzaRepository.existeCobranzaDelCredito(id));
+        credito.anular();
         creditoRepository.save(credito);
     }
 
@@ -82,15 +82,9 @@ public class CreditoServiceImpl implements CreditoService {
     }
 
     private Credito buscarCredito(Long id) {
-        return creditoRepository.findById(id)
+        Credito credito = creditoRepository.buscarConCuotas(id)
             .orElseThrow(() -> new ResourceNotFoundException("Crédito", "id", id));
-    }
-
-    private CreditoResponse toResponse(Credito credito, List<Cuota> cuotas) {
-        List<CuotaResponse> cuotasResponse = cuotas.stream()
-            .map(CuotaResponse::desde)
-            .toList();
-
-        return CreditoResponse.desde(credito, cuotasResponse);
+        cuotaRepository.buscarPorCredito(id);
+        return credito;
     }
 }

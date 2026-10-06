@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Entity
@@ -62,6 +63,11 @@ public class Credito implements ICredito {
     @Column(name = "anulado", nullable = false)
     private boolean anulado = false;
 
+    @Getter(AccessLevel.NONE)
+    @OneToMany(mappedBy = "credito", fetch = FetchType.LAZY)
+    @OrderBy("numero")
+    private List<Cuota> cuotas = new ArrayList<>();
+
     private Credito(Cliente cliente, BigDecimal deudaOriginal, LocalDate fecha,
                     BigDecimal tasaInteres, Integer cantidadCuotas, TipoPlan tipoPlan) {
         this.cliente = cliente;
@@ -97,21 +103,50 @@ public class Credito implements ICredito {
      * por eso vive en la entidad y no en el servicio.
      */
     public List<Cuota> generarPlanDeCuotas() {
-        List<Cuota> plan = new ArrayList<>();
-        for (int numeroCuota = 1; numeroCuota <= cantidadCuotas; numeroCuota++) {
-            plan.add(new Cuota(this, numeroCuota, importeCuota, fecha.plusMonths(numeroCuota)));
+        for (int numeroCuota = cuotas.size() + 1; numeroCuota <= cantidadCuotas; numeroCuota++) {
+            cuotas.add(new Cuota(this, numeroCuota, importeCuota, fecha.plusMonths(numeroCuota)));
         }
-        return plan;
+        return getCuotas();
     }
 
-    /**
-     * Un credito con cobranzas registradas no se puede anular. El credito
-     * no sabe por si mismo si tiene cobranzas -esa es informacion de la
-     * cobranza, no suya- asi que quien llama se lo cuenta; el credito es
-     * quien decide si eso alcanza para rechazar la anulacion.
-     */
-    public void anular(boolean tieneCobranzas) {
-        if (tieneCobranzas) {
+    public List<Cuota> getCuotas() {
+        return Collections.unmodifiableList(cuotas);
+    }
+
+    public EstadoCredito estado() {
+        if (anulado) {
+            return EstadoCredito.ANULADO;
+        }
+        return estaCancelado() ? EstadoCredito.CANCELADO : EstadoCredito.VIGENTE;
+    }
+
+    public BigDecimal saldo() {
+        if (anulado) {
+            return BigDecimal.ZERO;
+        }
+        return cuotas.stream()
+            .filter(cuota -> !cuota.estaPagada())
+            .map(Cuota::getImporte)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    public boolean estaCancelado() {
+        return !cuotas.isEmpty() && cuotas.stream().allMatch(Cuota::estaPagada);
+    }
+
+    public boolean tieneCobranzas() {
+        return cuotas.stream().anyMatch(Cuota::estaPagada);
+    }
+
+    public boolean puedeAnularse() {
+        return !anulado && !tieneCobranzas();
+    }
+
+    public void anular() {
+        if (anulado) {
+            throw new BusinessException("El crédito " + id + " ya está anulado.");
+        }
+        if (tieneCobranzas()) {
             throw new BusinessException(
                 "No se puede anular el crédito " + id + " porque tiene cobranzas registradas."
             );

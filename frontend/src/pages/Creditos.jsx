@@ -95,7 +95,8 @@ export default function Creditos() {
             <div key={cr.id} style={{ ...styles.creditoBox, opacity: cr.anulado ? 0.6 : 1 }}>
               <p>
                 <strong>ID #{cr.id}</strong> — Deuda: ${cr.deudaOriginal} + {cr.tasaInteres}% = ${cr.totalADevolver} — {cr.cantidadCuotas} cuotas de ${cr.importeCuota}
-                {cr.anulado && <span style={styles.badgeAnulado}> [ANULADO]</span>}
+                {' '}— Saldo: ${cr.saldo}
+                <span style={cr.estado === 'ANULADO' ? styles.badgeAnulado : undefined}> [{cr.estado}]</span>
               </p>
               
               {/* Botón de anular condicional */}

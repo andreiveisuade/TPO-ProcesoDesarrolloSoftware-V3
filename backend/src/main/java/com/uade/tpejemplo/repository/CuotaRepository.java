@@ -19,6 +19,12 @@ public interface CuotaRepository extends JpaRepository<Cuota, Long> {
     List<Cuota> buscarPorCredito(@Param("idCredito") Long idCredito);
 
     @Query("""
+        SELECT DISTINCT c FROM Cuota c LEFT JOIN FETCH c.cobranzas
+        WHERE c.credito.cliente.dni = :dni
+        """)
+    List<Cuota> buscarPorCliente(@Param("dni") String dni);
+
+    @Query("""
         SELECT c FROM Cuota c LEFT JOIN FETCH c.cobranzas
         WHERE c.credito.id = :idCredito AND c.numero = :numero
         """)

@@ -1,5 +1,6 @@
 package com.uade.tpejemplo.dto.response;
 
+import com.uade.tpejemplo.model.EstadoCredito;
 import com.uade.tpejemplo.model.interfaces.ICredito;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -26,8 +27,10 @@ public class CreditoResponse {
     private Integer cantidadCuotas;
     private List<CuotaResponse> cuotas;
     private boolean anulado;
+    private EstadoCredito estado;
+    private BigDecimal saldo;
 
-    public static CreditoResponse desde(ICredito credito, List<CuotaResponse> cuotas) {
+    public static CreditoResponse desde(ICredito credito) {
         return CreditoResponse.builder()
             .id(credito.getId())
             .dniCliente(credito.getCliente().getDni())
@@ -38,8 +41,10 @@ public class CreditoResponse {
             .totalADevolver(credito.totalADevolver())
             .importeCuota(credito.getImporteCuota())
             .cantidadCuotas(credito.getCantidadCuotas())
-            .cuotas(cuotas)
+            .cuotas(credito.getCuotas().stream().map(CuotaResponse::desde).toList())
             .anulado(credito.isAnulado())
+            .estado(credito.estado())
+            .saldo(credito.saldo())
             .build();
     }
 }
