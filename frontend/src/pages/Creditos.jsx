@@ -5,6 +5,17 @@ import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchCreditosPorCliente, addCredito, clearCreditos, anularCreditoThunk } from '../store/slices/creditosSlice';
 
+const ESTADO_CUOTA = {
+  pagada:    { color: 'var(--color-success)', texto: '✔ Pagada' },
+  vencida:   { color: 'var(--color-danger)',  texto: '✘ Vencida' },
+  pendiente: { color: 'var(--color-warning)', texto: '… Pendiente' },
+};
+const estadoCuota = (c) => ESTADO_CUOTA[c.pagada ? 'pagada' : c.vencida ? 'vencida' : 'pendiente'];
+
+const descripcionPlan = (cr) => cr.tipoPlan === 'SISTEMA_FRANCES'
+  ? `Sistema francés · ${cr.tasaInteres}% mensual`
+  : `Interés simple · ${cr.tasaInteres}% total`;
+
 // Creditos de un cliente y consulta de uno por numero: otorgamiento, plan de
 // cuotas con su estado y anulacion.
 export default function Creditos() {
@@ -88,7 +99,7 @@ export default function Creditos() {
       </div>
       <dl style={styles.datos}>
         <div><dt style={styles.dt}>Deuda original</dt><dd style={styles.dd}>{formatMoneda(cr.deudaOriginal)}</dd></div>
-        <div><dt style={styles.dt}>Plan</dt><dd style={styles.dd}>{cr.tipoPlan === 'SISTEMA_FRANCES' ? `Sistema francés · ${cr.tasaInteres}% mensual` : `Interés simple · ${cr.tasaInteres}% total`}</dd></div>
+        <div><dt style={styles.dt}>Plan</dt><dd style={styles.dd}>{descripcionPlan(cr)}</dd></div>
         <div><dt style={styles.dt}>Otorgado</dt><dd style={styles.dd}>{formatFecha(cr.fecha)}</dd></div>
         <div><dt style={styles.dt}>Total a devolver</dt><dd style={styles.dd}>{formatMoneda(cr.totalADevolver)}</dd></div>
         <div><dt style={styles.dt}>Cuota</dt><dd style={styles.dd}>{cr.cantidadCuotas} × {formatMoneda(cr.importeCuota)}</dd></div>
@@ -116,8 +127,8 @@ export default function Creditos() {
               <td style={{padding: '5px 0'}}>{c.numeroCuota}</td>
               <td>{formatFecha(c.fechaVencimiento)}</td>
               <td style={{textAlign: 'right', paddingRight: '24px'}}>{formatMoneda(c.importe)}</td>
-              <td style={{ color: c.pagada ? 'var(--color-success)' : c.vencida ? 'var(--color-danger)' : 'var(--color-warning)', fontWeight: 'bold' }}>
-                {c.pagada ? '✔ Pagada' : c.vencida ? '✘ Vencida' : '… Pendiente'}
+              <td style={{ color: estadoCuota(c).color, fontWeight: 'bold' }}>
+                {estadoCuota(c).texto}
               </td>
             </tr>
           ))}

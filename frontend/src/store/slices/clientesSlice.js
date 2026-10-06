@@ -24,9 +24,7 @@ const clientesSlice = createSlice({
     loading: false,
     error:   null,
   },
-  reducers: {
-    clearError(state) { state.error = null; },
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder
       .addCase(fetchClientes.pending,   (state) => { state.loading = true;  state.error = null; })
@@ -38,5 +36,4 @@ const clientesSlice = createSlice({
   },
 });
 
-export const { clearError } = clientesSlice.actions;
 export default clientesSlice.reducer;

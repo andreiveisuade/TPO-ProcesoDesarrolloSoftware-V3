@@ -1,11 +1,10 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { api } from '../../api/apiClient'; 
 import { updatePermisosSupervisor, getUsuariosSupervisor } from '../../api/supervisor';
-import { updateRolUsuario } from '../../api/admin';
+import { getUsuariosAdmin, updateRolUsuario } from '../../api/admin';
 
 export const fetchUsuariosAdmin = createAsyncThunk('permisos/fetchAdmin', async (_, { rejectWithValue }) => {
   try {
-    return await api.get('/admin/usuarios'); 
+    return await getUsuariosAdmin();
   } catch (err) {
     return rejectWithValue(err.message);
   }

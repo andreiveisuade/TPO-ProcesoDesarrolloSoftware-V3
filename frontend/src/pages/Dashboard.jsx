@@ -2,6 +2,7 @@ import { formatMoneda } from '../utils/formato';
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchEstadisticas } from '../store/slices/dashboardSlice'; 
+import { ROLES } from '../utils/roles';
 
 // Estadisticas generales para SUPERVISOR y ADMIN.
 const Dashboard = () => {
@@ -10,7 +11,7 @@ const Dashboard = () => {
   const { data: estadisticas, loading, error } = useSelector((state) => state.dashboard);
   const { user } = useSelector((state) => state.auth);
   
-  const puedeVerDashboard = user?.rol === 'SUPERVISOR' || user?.rol === 'ADMIN';
+  const puedeVerDashboard = user?.rol === ROLES.SUPERVISOR || user?.rol === ROLES.ADMIN;
 
   useEffect(() => {
     if (puedeVerDashboard) {
@@ -26,7 +27,7 @@ const Dashboard = () => {
     <div style={styles.container}>
       <h2 style={styles.title}>
         Panel de Estadísticas 
-        <span style={styles.supervisorBadge}>(Modo {user?.rol === 'ADMIN' ? 'Admin' : 'Supervisor'})</span>
+        <span style={styles.supervisorBadge}>(Modo {user?.rol === ROLES.ADMIN ? 'Admin' : 'Supervisor'})</span>
       </h2>
       
       <div style={styles.tarjetasMetricas}>

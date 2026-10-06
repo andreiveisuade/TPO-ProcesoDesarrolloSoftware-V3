@@ -1,28 +1,20 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchUsuariosAdmin, cambiarRol } from '../store/slices/permisosSlice'; 
+import { ROLES } from '../utils/roles';
 
 // Panel del ADMIN para cambiar el rol de los usuarios.
 const PanelAdmin = () => {
   const dispatch = useDispatch();
   const { lista: usuarios, loading, error } = useSelector((state) => state.permisos);
-  const { user } = useSelector((state) => state.auth);
-  
-  const isAdmin = user?.rol === 'ADMIN';
 
   useEffect(() => {
-    if (isAdmin) {
-      dispatch(fetchUsuariosAdmin());
-    }
-  }, [dispatch, isAdmin]);
+    dispatch(fetchUsuariosAdmin());
+  }, [dispatch]);
 
   const handleRoleChange = (usuarioId, nuevoRol) => {
     dispatch(cambiarRol({ id: usuarioId, nuevoRol }));
   };
-
-  if (!isAdmin) {
-    return <div style={styles.center}>Acceso denegado. Se requieren permisos de Administrador.</div>;
-  }
 
   return (
     <div style={styles.page}>
@@ -49,7 +41,7 @@ const PanelAdmin = () => {
                 <tr key={u.id} style={styles.tr}>
                   <td style={styles.td}>{u.username}</td>
                   <td style={styles.td}>
-                    <span style={u.rol === 'SUPERVISOR' ? styles.tagSupervisor : styles.tagUser}>
+                    <span style={u.rol === ROLES.SUPERVISOR ? styles.tagSupervisor : styles.tagUser}>
                       {u.rol}
                     </span>
                   </td>
@@ -60,8 +52,8 @@ const PanelAdmin = () => {
                       disabled={loading}
                       style={styles.select}
                     >
-                      <option value="USER">USER</option>
-                      <option value="SUPERVISOR">SUPERVISOR</option>
+                      <option value={ROLES.USER}>{ROLES.USER}</option>
+                      <option value={ROLES.SUPERVISOR}>{ROLES.SUPERVISOR}</option>
                     </select>
                   </td>
                 </tr>
@@ -77,7 +69,6 @@ const PanelAdmin = () => {
 const styles = {
   page: { padding: '20px', fontFamily: 'Arial, sans-serif', maxWidth: '800px', margin: '0 auto' },
   title: { color: 'var(--color-text)', borderBottom: '2px solid var(--color-border)', paddingBottom: '10px' },
-  center: { display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', fontSize: '1.2rem' },
   card: { background: 'var(--color-surface)', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px var(--color-shadow)' },
   table: { width: '100%', borderCollapse: 'collapse' },
   th: { padding: '12px', textAlign: 'left', borderBottom: '2px solid var(--color-border)', color: 'var(--color-text-muted)' },
