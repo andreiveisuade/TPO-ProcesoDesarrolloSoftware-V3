@@ -45,7 +45,7 @@ public class CobranzaServiceImpl implements CobranzaService {
 
     @Override
     public void anularCobranza(Long id, IUsuario usuario) {
-        if (!usuario.getPermisos().permiteAnularCobranza()) {
+        if (!usuario.getPermisos().isPuedeAnularCobranza()) {
             throw new AccessDeniedException("El usuario no tiene permiso para anular cobranzas");
         }
 

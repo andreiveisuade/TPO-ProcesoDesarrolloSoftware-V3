@@ -40,14 +40,4 @@ public class Permisos implements IPermisos {
     public static Permisos todos() {
         return new Permisos(true, true);
     }
-
-    @Override
-    public boolean permiteAnularCredito() {
-        return puedeAnularCredito;
-    }
-
-    @Override
-    public boolean permiteAnularCobranza() {
-        return puedeAnularCobranza;
-    }
 }
