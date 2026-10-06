@@ -13,15 +13,14 @@ public class InteresSimple implements CalculoDeCuota {
 
     private static final BigDecimal CIEN = new BigDecimal("100");
 
-    @Override
-    public BigDecimal totalADevolver(BigDecimal capital, BigDecimal tasaInteres, int cantidadCuotas) {
+    private BigDecimal totalADevolver(BigDecimal capital, BigDecimal tasaInteres) {
         BigDecimal coeficiente = BigDecimal.ONE.add(tasaInteres.divide(CIEN, 4, RoundingMode.HALF_UP));
         return capital.multiply(coeficiente).setScale(2, RoundingMode.HALF_UP);
     }
 
     @Override
     public BigDecimal importeCuota(BigDecimal capital, BigDecimal tasaInteres, int cantidadCuotas) {
-        return totalADevolver(capital, tasaInteres, cantidadCuotas)
+        return totalADevolver(capital, tasaInteres)
             .divide(BigDecimal.valueOf(cantidadCuotas), 2, RoundingMode.HALF_UP);
     }
 }

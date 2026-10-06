@@ -20,7 +20,6 @@ enum TipoPlan {
 }
 interface CalculoDeCuota <<Strategy>> {
   +importeCuota(capital, tasa, cuotas)
-  +totalADevolver(capital, tasa, cuotas)
 }
 class InteresSimple <<ConcreteStrategy>>
 class SistemaFrances <<ConcreteStrategy>>

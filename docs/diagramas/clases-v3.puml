@@ -225,7 +225,6 @@ package "model.interfaces" {
   }
   interface CalculoDeCuota <<Strategy>> {
     + importeCuota(BigDecimal capital, BigDecimal tasa, int cuotas) : BigDecimal
-    + totalADevolver(BigDecimal capital, BigDecimal tasa, int cuotas) : BigDecimal
   }
 }
 
@@ -309,11 +308,9 @@ package "model" {
 package "model.plan" {
   class InteresSimple <<ConcreteStrategy>> {
     + importeCuota(BigDecimal, BigDecimal, int) : BigDecimal
-    + totalADevolver(BigDecimal, BigDecimal, int) : BigDecimal
   }
   class SistemaFrances <<ConcreteStrategy>> {
     + importeCuota(BigDecimal, BigDecimal, int) : BigDecimal
-    + totalADevolver(BigDecimal, BigDecimal, int) : BigDecimal
   }
 }
 
@@ -337,8 +334,8 @@ Usuario --> "1" Rol : rol
 Usuario *-- "1" Permisos : permisos
 
 note right of TipoPlan
-  Strategy: Credito delega importeCuota y
-  totalADevolver en tipoPlan.calculo().
+  Strategy: Credito delega importeCuota en
+  tipoPlan.calculo(); el total sale de las cuotas.
   El plan se fija al otorgar el crédito.
 end note
 @enduml

@@ -24,9 +24,4 @@ public class SistemaFrances implements CalculoDeCuota {
             BigDecimal.ONE.divide(BigDecimal.ONE.add(i).pow(cantidadCuotas, PRECISION), PRECISION));
         return capital.multiply(i).divide(descuento, 2, RoundingMode.HALF_UP);
     }
-
-    @Override
-    public BigDecimal totalADevolver(BigDecimal capital, BigDecimal tasaInteres, int cantidadCuotas) {
-        return importeCuota(capital, tasaInteres, cantidadCuotas).multiply(BigDecimal.valueOf(cantidadCuotas));
-    }
 }

@@ -91,7 +91,7 @@ public class Credito implements ICredito {
     }
 
     public BigDecimal totalADevolver() {
-        return tipoPlan.calculo().totalADevolver(deudaOriginal, tasaInteres, cantidadCuotas);
+        return importeCuota.multiply(BigDecimal.valueOf(cantidadCuotas));
     }
 
     /**
