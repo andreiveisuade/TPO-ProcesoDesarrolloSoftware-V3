@@ -35,12 +35,12 @@ export default function Register() {
 }
 
 const styles = {
-  container: { display:'flex', justifyContent:'center', alignItems:'center', height:'100vh', backgroundColor:'#f0f4f8' },
-  card:      { background:'white', padding:'40px', borderRadius:'12px', boxShadow:'0 4px 20px rgba(0,0,0,0.1)', width:'360px' },
-  title:     { marginBottom:'24px', color:'#1e3a5f', textAlign:'center' },
-  label:     { display:'block', marginBottom:'4px', color:'#555', fontSize:'0.9rem' },
-  input:     { width:'100%', padding:'10px', marginBottom:'16px', border:'1px solid #ccc', borderRadius:'6px', boxSizing:'border-box' },
-  btn:       { width:'100%', padding:'12px', backgroundColor:'#1e3a5f', color:'white', border:'none', borderRadius:'6px', cursor:'pointer', fontWeight:'bold' },
-  error:     { background:'#ffebee', color:'#c62828', padding:'10px', borderRadius:'6px', marginBottom:'16px', fontSize:'0.9rem' },
+  container: { display:'flex', justifyContent:'center', alignItems:'center', height:'100vh', backgroundColor:'var(--color-bg)' },
+  card:      { background:'var(--color-surface)', padding:'40px', borderRadius:'12px', boxShadow:'0 4px 20px var(--color-shadow)', width:'360px' },
+  title:     { marginBottom:'24px', color:'var(--color-heading)', textAlign:'center' },
+  label:     { display:'block', marginBottom:'4px', color:'var(--color-text-muted)', fontSize:'0.9rem' },
+  input:     { width:'100%', padding:'10px', marginBottom:'16px', border:'1px solid var(--color-border-strong)', borderRadius:'6px', boxSizing:'border-box' },
+  btn:       { width:'100%', padding:'12px', backgroundColor:'var(--color-primary)', color:'var(--color-on-primary)', border:'none', borderRadius:'6px', cursor:'pointer', fontWeight:'bold' },
+  error:     { background:'var(--color-danger-bg)', color:'var(--color-danger)', padding:'10px', borderRadius:'6px', marginBottom:'16px', fontSize:'0.9rem' },
   footer:    { textAlign:'center', marginTop:'16px', fontSize:'0.9rem' },
 };
