@@ -29,7 +29,7 @@ public class SupervisorController {
     @ApiResponse(responseCode = "403", description = "Sin rol o permiso")
     @GetMapping("/usuarios")
     public List<UsuarioResponse> obtenerUsuarios() {
-        return adminService.listarTodos();
+        return adminService.listarUsuarios();
     }
 
     @Operation(summary = "Actualizar permisos de anulación")

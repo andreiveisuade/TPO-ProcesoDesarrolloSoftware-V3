@@ -54,41 +54,27 @@ const GestorPermisos = () => {
             </thead>
             <tbody>
               {usuarios.map(u => {
-                // Verificamos si el usuario actual es ADMIN
-                const isAdmin = u.rol === 'ADMIN';
-
                 return (
                   <tr key={u.id} style={styles.tr}>
                     <td style={styles.td}>
-                      {u.username} {isAdmin && <span style={styles.adminBadge}>(Admin)</span>}
+                      {u.username}
                     </td>
                     <td style={styles.tdCenter}>
                       <input 
                         type="checkbox" 
-                        checked={isAdmin ? false : u.puedeAnularCredito} 
+                        checked={u.puedeAnularCredito} 
                         onChange={() => handleCheckboxChange(u, 'puedeAnularCredito')}
-                        // Deshabilitamos el checkbox si es ADMIN o si está cargando
-                        disabled={loading || isAdmin} 
-                        style={{
-                          ...styles.checkbox,
-                          // Opcional: darle un estilo visual de deshabilitado si es admin
-                          opacity: isAdmin ? 0.4 : 1,
-                          cursor: isAdmin ? 'not-allowed' : 'pointer'
-                        }}
+                        disabled={loading}
+                        style={styles.checkbox}
                       />
                     </td>
                     <td style={styles.tdCenter}>
                       <input 
                         type="checkbox" 
-                        checked={isAdmin ? false : u.puedeAnularCobranza}
+                        checked={u.puedeAnularCobranza}
                         onChange={() => handleCheckboxChange(u, 'puedeAnularCobranza')}
-                        // Deshabilitamos el checkbox si es ADMIN o si está cargando
-                        disabled={loading || isAdmin}
-                        style={{
-                          ...styles.checkbox,
-                          opacity: isAdmin ? 0.4 : 1,
-                          cursor: isAdmin ? 'not-allowed' : 'pointer'
-                        }}
+                        disabled={loading}
+                        style={styles.checkbox}
                       />
                     </td>
                   </tr>

@@ -25,14 +25,6 @@ public class AdminServiceImpl implements AdminService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<UsuarioResponse> listarTodos() {
-        return usuarioRepository.findAll().stream()
-                .map(UsuarioResponse::desde)
-                .toList();
-    }
-
-    @Transactional(readOnly = true)
-    @Override
     public List<UsuarioResponse> listarUsuarios() {
         return usuarioRepository.findAll().stream()
                 .filter(usuario -> usuario.getRol() != Rol.ADMIN)
