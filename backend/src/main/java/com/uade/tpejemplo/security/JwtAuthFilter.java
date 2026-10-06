@@ -1,7 +1,6 @@
 package com.uade.tpejemplo.security;
 
 import com.uade.tpejemplo.service.TokenService;
-import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,6 +16,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -60,14 +60,19 @@ public class JwtAuthFilter extends OncePerRequestFilter {
      * alcanza es la cadena de seguridad.
      */
     private void autenticar(String token, HttpServletRequest request) {
-        UserDetails userDetails;
-        try {
-            userDetails = userDetailsService.loadUserByUsername(tokenService.extraerUsername(token));
-        } catch (JwtException | IllegalArgumentException | UsernameNotFoundException e) {
+        Optional<String> username = tokenService.extraerUsername(token);
+        if (username.isEmpty()) {
             return;
         }
 
-        if (!tokenService.esValido(token, userDetails)) {
+        UserDetails userDetails;
+        try {
+            userDetails = userDetailsService.loadUserByUsername(username.get());
+        } catch (UsernameNotFoundException e) {
+            return;
+        }
+
+        if (!tokenService.esValido(token, userDetails.getUsername())) {
             return;
         }
 

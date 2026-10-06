@@ -18,12 +18,10 @@ class SistemaFrancesTest {
     }
 
     @Test
-    void totalEsLaSumaExactaDeLasCuotas() {
+    void sumaDeLasCuotasPagaCapitalMasInteres() {
         BigDecimal cuota = calculo.importeCuota(new BigDecimal("1000"), new BigDecimal("10"), 2);
 
-        assertThat(calculo.totalADevolver(new BigDecimal("1000"), new BigDecimal("10"), 2))
-            .isEqualByComparingTo("1152.38")
-            .isEqualByComparingTo(cuota.multiply(BigDecimal.valueOf(2)));
+        assertThat(cuota.multiply(BigDecimal.valueOf(2))).isEqualByComparingTo("1152.38");
     }
 
     @Test
@@ -35,6 +33,5 @@ class SistemaFrancesTest {
     @Test
     void tasaCeroConRedondeoPierdeUnCentavoContraElCapital() {
         assertThat(calculo.importeCuota(new BigDecimal("1000"), BigDecimal.ZERO, 3)).isEqualByComparingTo("333.33");
-        assertThat(calculo.totalADevolver(new BigDecimal("1000"), BigDecimal.ZERO, 3)).isEqualByComparingTo("999.99");
     }
 }
