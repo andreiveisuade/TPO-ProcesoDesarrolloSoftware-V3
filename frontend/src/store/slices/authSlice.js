@@ -57,7 +57,8 @@ const authSlice = createSlice({
       .addCase(registerThunk.fulfilled,onFulfilled)
       .addCase(registerThunk.rejected, onRejected)
       .addCase(refrescarUsuario.fulfilled, (state, action) => {
-        state.user = { ...action.payload, token: state.user?.token };
+        if (!state.user || state.user.username !== action.payload.username) return;
+        state.user = { ...action.payload, token: state.user.token };
         localStorage.setItem('authUser', JSON.stringify(state.user));
       });
   },
