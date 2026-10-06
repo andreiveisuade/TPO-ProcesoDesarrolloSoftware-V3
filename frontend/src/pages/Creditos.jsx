@@ -132,7 +132,7 @@ export default function Creditos() {
                       <td style={{padding: '5px 0'}}>{c.numeroCuota}</td>
                       <td>{formatFecha(c.fechaVencimiento)}</td>
                       <td style={{textAlign: 'right', paddingRight: '24px'}}>{formatMoneda(c.importe)}</td>
-                      <td style={{ color: c.pagada ? '#2e7d32' : c.vencida ? '#c62828' : '#b38600', fontWeight: 'bold' }}>
+                      <td style={{ color: c.pagada ? 'var(--color-success)' : c.vencida ? 'var(--color-danger)' : 'var(--color-warning)', fontWeight: 'bold' }}>
                         {c.pagada ? '✔ Pagada' : c.vencida ? '✘ Vencida' : '… Pendiente'}
                       </td>
                     </tr>
@@ -149,27 +149,27 @@ export default function Creditos() {
 
 const styles = {
   page:         { padding:'32px', maxWidth:'900px', margin:'0 auto', fontFamily: 'Arial, sans-serif' },
-  title:        { color:'#1e3a5f', marginBottom:'24px', borderBottom: '2px solid #eee', paddingBottom: '10px' },
-  card:         { background:'white', padding:'24px', borderRadius:'12px', boxShadow:'0 2px 10px rgba(0,0,0,0.08)', marginBottom:'24px' },
+  title:        { color:'var(--color-heading)', marginBottom:'24px', borderBottom: '2px solid var(--color-border)', paddingBottom: '10px' },
+  card:         { background:'var(--color-surface)', padding:'24px', borderRadius:'12px', boxShadow:'0 2px 10px var(--color-shadow)', marginBottom:'24px' },
   row:          { display:'flex', gap:'12px' },
   grid:         { display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' },
-  input:        { padding:'10px', border:'1px solid #ccc', borderRadius:'6px', width:'100%', boxSizing:'border-box' },
-  btn:          { padding:'10px 20px', backgroundColor:'#1e3a5f', color:'white', border:'none', borderRadius:'6px', cursor:'pointer', fontWeight:'bold' },
-  btnAnular:    { background: '#d32f2f', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', marginBottom: '10px', fontSize: '0.85em' },
-  error:        { background:'#ffebee', color:'#c62828', padding:'10px', borderRadius:'6px', marginBottom:'12px', fontSize:'0.9rem' },
-  empty:        { color:'#999', fontStyle: 'italic' },
-  creditoBox:   { borderLeft:'4px solid #1e3a5f', paddingLeft:'16px', marginBottom:'20px', paddingBottom: '15px', borderBottom: '1px solid #f0f0f0' },
+  input:        { padding:'10px', border:'1px solid var(--color-border-strong)', borderRadius:'6px', width:'100%', boxSizing:'border-box' },
+  btn:          { padding:'10px 20px', backgroundColor:'var(--color-primary)', color:'var(--color-on-primary)', border:'none', borderRadius:'6px', cursor:'pointer', fontWeight:'bold' },
+  btnAnular:    { background: 'var(--color-danger-solid)', color: 'var(--color-on-primary)', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', marginBottom: '10px', fontSize: '0.85em' },
+  error:        { background:'var(--color-danger-bg)', color:'var(--color-danger)', padding:'10px', borderRadius:'6px', marginBottom:'12px', fontSize:'0.9rem' },
+  empty:        { color:'var(--color-text-muted)', fontStyle: 'italic' },
+  creditoBox:   { borderLeft:'4px solid var(--color-primary)', paddingLeft:'16px', marginBottom:'20px', paddingBottom: '15px', borderBottom: '1px solid var(--color-border)' },
   table:        { width:'100%', borderCollapse:'collapse', marginTop:'8px', fontSize: '0.9em' },
   creditoHeader: { display:'flex', alignItems:'center', gap:'12px', marginBottom:'12px' },
   badge:        { padding:'3px 10px', borderRadius:'12px', fontSize:'0.75em', fontWeight:'bold', letterSpacing:'0.5px' },
-  progreso:     { marginLeft:'auto', color:'#555', fontSize:'0.9em' },
+  progreso:     { marginLeft:'auto', color:'var(--color-text-muted)', fontSize:'0.9em' },
   datos:        { display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:'12px 24px', margin:'0 0 16px 0' },
-  dt:           { color:'#777', fontSize:'0.8em', marginBottom:'2px' },
+  dt:           { color:'var(--color-text-muted)', fontSize:'0.8em', marginBottom:'2px' },
   dd:           { margin:0 },
 };
 
 const estadoColores = {
-  VIGENTE:   { background:'#e3f2fd', color:'#1565c0' },
-  CANCELADO: { background:'#e8f5e9', color:'#2e7d32' },
-  ANULADO:   { background:'#ffebee', color:'#c62828' },
+  VIGENTE:   { background:'var(--color-info-bg)', color:'var(--color-info)' },
+  CANCELADO: { background:'var(--color-success-bg)', color:'var(--color-success)' },
+  ANULADO:   { background:'var(--color-danger-bg)', color:'var(--color-danger)' },
 };

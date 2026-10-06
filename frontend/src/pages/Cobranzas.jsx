@@ -74,7 +74,7 @@ export default function Cobranzas() {
           {cobranzasSeguras.length > 0 && (
             <table style={styles.table}>
               <thead>
-                <tr style={{ borderBottom: '2px solid #ddd' }}>
+                <tr style={{ borderBottom: '2px solid var(--color-border)' }}>
                   <th style={styles.th}>ID</th>
                   <th style={styles.th}>Crédito</th>
                   <th style={styles.th}>Cuota</th>
@@ -85,7 +85,7 @@ export default function Cobranzas() {
               </thead>
               <tbody>
                 {cobranzasSeguras.map(c => (
-                  <tr key={c.id} style={{ opacity: c.anulada ? 0.5 : 1, borderBottom: '1px solid #eee' }}>
+                  <tr key={c.id} style={{ opacity: c.anulada ? 0.5 : 1, borderBottom: '1px solid var(--color-border)' }}>
                     <td style={styles.td}>
                       #{c.id}
                       {c.anulada && <span style={styles.badgeAnulada}> [ANULADA]</span>}
@@ -114,16 +114,16 @@ export default function Cobranzas() {
 
 const styles = {
   page:  { padding:'32px', maxWidth:'800px', margin:'0 auto', fontFamily: 'Arial, sans-serif' },
-  title: { color:'#1e3a5f', marginBottom:'24px', borderBottom: '2px solid #eee', paddingBottom: '10px' },
-  card:  { background:'white', padding:'24px', borderRadius:'12px', boxShadow:'0 2px 10px rgba(0,0,0,0.08)', marginBottom:'24px' },
+  title: { color:'var(--color-heading)', marginBottom:'24px', borderBottom: '2px solid var(--color-border)', paddingBottom: '10px' },
+  card:  { background:'var(--color-surface)', padding:'24px', borderRadius:'12px', boxShadow:'0 2px 10px var(--color-shadow)', marginBottom:'24px' },
   row:   { display:'flex', gap:'12px', flexWrap:'wrap' },
-  input: { padding:'10px', border:'1px solid #ccc', borderRadius:'6px', flex:'1', minWidth:'120px' },
-  btn:   { padding:'10px 20px', backgroundColor:'#1e3a5f', color:'white', border:'none', borderRadius:'6px', cursor:'pointer', fontWeight:'bold' },
-  error: { background:'#ffebee', color:'#c62828', padding:'10px', borderRadius:'6px', marginBottom:'12px', fontSize:'0.9rem' },
-  empty: { color:'#999', fontStyle: 'italic' },
+  input: { padding:'10px', border:'1px solid var(--color-border-strong)', borderRadius:'6px', flex:'1', minWidth:'120px' },
+  btn:   { padding:'10px 20px', backgroundColor:'var(--color-primary)', color:'var(--color-on-primary)', border:'none', borderRadius:'6px', cursor:'pointer', fontWeight:'bold' },
+  error: { background:'var(--color-danger-bg)', color:'var(--color-danger)', padding:'10px', borderRadius:'6px', marginBottom:'12px', fontSize:'0.9rem' },
+  empty: { color:'var(--color-text-muted)', fontStyle: 'italic' },
   table: { width:'100%', borderCollapse:'collapse', textAlign: 'left', marginTop: '10px' },
-  th:    { padding: '12px 8px', color: '#555' },
+  th:    { padding: '12px 8px', color: 'var(--color-text-muted)' },
   td:    { padding: '12px 8px' },
-  badgeAnulada: { color: '#c62828', fontWeight: 'bold', fontSize: '0.85em', marginLeft: '8px' },
-  btnAnular:    { background: '#d32f2f', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85em' },
+  badgeAnulada: { color: 'var(--color-danger)', fontWeight: 'bold', fontSize: '0.85em', marginLeft: '8px' },
+  btnAnular:    { background: 'var(--color-danger-solid)', color: 'var(--color-on-primary)', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85em' },
 };

@@ -11,3 +11,24 @@ Solo se muestran campos que el backend ya devuelve (`CreditoResponse`, `CuotaRes
 | Tabla de clientes con padding y alineación | Quedaba centrada y apretada, distinta a la de cobranzas | `pages/Clientes.jsx` | [clientes](capturas/ui-antes/02-clientes.png) | [clientes](capturas/ui-despues/02-clientes.png) |
 
 Capturas completas (login, clientes, créditos, cobranzas, dashboard, admin, permisos): `capturas/ui-antes/` y `capturas/ui-despues/`. Datos de prueba cargados vía API sobre la H2 en memoria.
+
+## Dark theme
+
+La paleta vive en un solo lugar, `frontend/src/index.css`, como variables CSS (custom properties) con nombre semántico: dicen para qué se usan, no qué color son. Los estilos inline de `pages/*.jsx` y `components/Navbar.jsx` ya no tienen colores escritos a mano, solo `var(--...)`.
+
+| Variable | Uso |
+|---|---|
+| `--color-bg` | Fondo de la página |
+| `--color-surface`, `--color-surface-alt` | Cards, inputs; encabezado y hover de tablas, tags |
+| `--color-text`, `--color-text-muted`, `--color-heading` | Texto, rótulos y secundarios, títulos |
+| `--color-border`, `--color-border-strong` | Separadores; bordes de inputs |
+| `--color-primary`, `--color-on-primary`, `--color-link` | Botones principales y texto sobre ellos; links |
+| `--color-success`, `--color-danger`, `--color-warning`, `--color-info`, `--color-accent` (+ `-bg` / `-solid`) | Estados: badges VIGENTE/CANCELADO/ANULADO, cuotas Pagada/Vencida/Pendiente, errores, botón Anular, badges de rol |
+| `--color-nav-*` | Barra de navegación |
+| `--color-shadow` | Sombras de cards |
+
+**Por qué `prefers-color-scheme`:** el oscuro es el default y `@media (prefers-color-scheme: light)` redefine las mismas variables para quien tiene el sistema en claro. Respeta la preferencia del usuario sin botón, sin estado en React y sin librerías: cambiar de tema es solo cambiar valores de variables. Sin `!important`.
+
+**Contraste:** todo texto cumple WCAG AA (≥ 4.5:1). En oscuro: badges de estado 7.3–7.6, cuotas 7.7–9.6, texto secundario 7.1, texto blanco sobre botones y badges sólidos 5.0–5.6.
+
+Capturas en oscuro: `capturas/dark/` ([login](capturas/dark/login.png), [register](capturas/dark/register.png), [clientes](capturas/dark/clientes.png), [créditos](capturas/dark/creditos.png), [cobranzas](capturas/dark/cobranzas.png), [dashboard](capturas/dark/dashboard.png), [admin](capturas/dark/admin.png), [permisos](capturas/dark/permisos.png)).

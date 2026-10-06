@@ -47,12 +47,12 @@ export default function Navbar() {
 }
 
 const styles = {
-  nav: { display:'flex', justifyContent:'space-between', alignItems:'center', padding:'12px 24px', backgroundColor:'#1e3a5f', color:'white' },
+  nav: { display:'flex', justifyContent:'space-between', alignItems:'center', padding:'12px 24px', backgroundColor:'var(--color-nav-bg)', color:'var(--color-on-primary)' },
   brand: { fontWeight:'bold', fontSize:'1.2rem' },
   links: { display:'flex', alignItems:'center', gap:'20px' },
-  link: { color:'#90caf9', textDecoration:'none', fontWeight:'500' },
-  adminLink: { color: '#ffb74d', textDecoration:'none', fontWeight:'bold' }, 
-  supervisorLink: { color: '#4dd0e1', textDecoration:'none', fontWeight:'bold' }, 
-  user: { color:'#b0bec5', fontSize:'0.9rem' },
-  btn: { background:'#e53935', color:'white', border:'none', padding:'6px 14px', borderRadius:'6px', cursor:'pointer' },
+  link: { color:'var(--color-nav-link)', textDecoration:'none', fontWeight:'500' },
+  adminLink: { color: 'var(--color-nav-admin)', textDecoration:'none', fontWeight:'bold' }, 
+  supervisorLink: { color: 'var(--color-nav-supervisor)', textDecoration:'none', fontWeight:'bold' }, 
+  user: { color:'var(--color-nav-muted)', fontSize:'0.9rem' },
+  btn: { background:'var(--color-danger-solid)', color:'var(--color-on-primary)', border:'none', padding:'6px 14px', borderRadius:'6px', cursor:'pointer' },
 };

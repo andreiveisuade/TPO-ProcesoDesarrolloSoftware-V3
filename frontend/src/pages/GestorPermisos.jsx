@@ -90,20 +90,20 @@ const GestorPermisos = () => {
 
 const styles = {
   page: { padding: '20px', fontFamily: 'Arial, sans-serif', maxWidth: '800px', margin: '0 auto' },
-  title: { color: '#333', borderBottom: '2px solid #eee', paddingBottom: '10px' },
+  title: { color: 'var(--color-text)', borderBottom: '2px solid var(--color-border)', paddingBottom: '10px' },
   center: { display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', fontSize: '1.2rem' },
-  card: { background: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', marginTop: '20px' },
+  card: { background: 'var(--color-surface)', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px var(--color-shadow)', marginTop: '20px' },
   table: { width: '100%', borderCollapse: 'collapse' },
-  th: { padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd', color: '#555' },
-  thCenter: { padding: '12px', textAlign: 'center', borderBottom: '2px solid #ddd', color: '#555' },
-  tr: { borderBottom: '1px solid #eee' },
-  td: { padding: '12px', color: '#333' },
+  th: { padding: '12px', textAlign: 'left', borderBottom: '2px solid var(--color-border)', color: 'var(--color-text-muted)' },
+  thCenter: { padding: '12px', textAlign: 'center', borderBottom: '2px solid var(--color-border)', color: 'var(--color-text-muted)' },
+  tr: { borderBottom: '1px solid var(--color-border)' },
+  td: { padding: '12px', color: 'var(--color-text)' },
   tdCenter: { padding: '12px', textAlign: 'center' },
   checkbox: { transform: 'scale(1.5)', cursor: 'pointer' },
-  error: { color: 'white', backgroundColor: '#e53935', padding: '10px', borderRadius: '4px', marginBottom: '10px' },
-  empty: { color: '#777', fontStyle: 'italic', textAlign: 'center' },
-  loading: { color: '#0056b3', textAlign: 'center', fontWeight: 'bold' },
-  supervisorBadge: { fontSize: '0.5em', color: 'white', backgroundColor: '#17a2b8', padding: '4px 8px', borderRadius: '12px', verticalAlign: 'middle', marginLeft: '10px' }
+  error: { color: 'var(--color-on-primary)', backgroundColor: 'var(--color-danger-solid)', padding: '10px', borderRadius: '4px', marginBottom: '10px' },
+  empty: { color: 'var(--color-text-muted)', fontStyle: 'italic', textAlign: 'center' },
+  loading: { color: 'var(--color-link)', textAlign: 'center', fontWeight: 'bold' },
+  supervisorBadge: { fontSize: '0.5em', color: 'var(--color-on-primary)', backgroundColor: 'var(--color-accent-solid)', padding: '4px 8px', borderRadius: '12px', verticalAlign: 'middle', marginLeft: '10px' }
 };
 
 export default GestorPermisos;
