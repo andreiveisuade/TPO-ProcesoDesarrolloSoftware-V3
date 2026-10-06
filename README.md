@@ -22,6 +22,7 @@ Tests: `cd backend && mvn test` (26 tests).
 - [Manual](docs/manual/index.html)
 - [Reporte de la iteración 3](docs/reporte/reporte-v3.html)
 - [Swagger](http://localhost:8080/swagger-ui.html) (con el backend levantado)
+- [Consola H2](http://localhost:8080/h2-console): JDBC URL `jdbc:h2:mem:tpdb`, usuario `sa`, sin password (ver el manual, "Cómo levantarlo")
 - [Lista de mejoras](docs/entrega/lista-mejoras.md)
 - [Casos de uso](docs/casos-de-uso/README.md)
 - Demo guiada: `bash docs/demo.sh`

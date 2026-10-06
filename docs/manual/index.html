@@ -665,9 +665,23 @@ body.lightbox-locked { overflow: hidden; }
       <p>Requiere JDK 21, Maven y Node.</p>
       <pre><code>cd backend &amp;&amp; mvn spring-boot:run       # http://localhost:8080, H2 en memoria
 cd frontend &amp;&amp; npm install &amp;&amp; npm run dev   # Vite, proxy /api → localhost:8080</code></pre>
+      <h3>Ver los datos: consola H2</h3>
       <p>
-        La base es H2 en memoria: se pierde al reiniciar. Consola en <code>/h2-console</code> (JDBC
-        <code>jdbc:h2:mem:tpdb</code>, usuario <code>sa</code>, sin password).
+        H2 es una base SQL que corre adentro del backend, en memoria: no hay que instalar nada y se borra al
+        reiniciar (arranca solo con los datos de <code>config/DataInitializer.java</code>). Spring Boot trae su
+        consola web, habilitada en <code>application.properties</code> (<code>spring.h2.console.enabled=true</code>).
+      </p>
+      <ol>
+        <li>Con el backend levantado, abrir <a href="http://localhost:8080/h2-console">http://localhost:8080/h2-console</a>.</li>
+        <li>Driver Class <code>org.h2.Driver</code>, JDBC URL <code>jdbc:h2:mem:tpdb</code>, User Name <code>sa</code>, Password vacío.</li>
+        <li><em>Connect</em>. A la izquierda quedan las tablas: <code>CLIENTES</code>, <code>CREDITOS</code>, <code>CUOTAS</code>, <code>COBRANZAS</code> y <code>USUARIOS</code>.</li>
+      </ol>
+      <pre><code>SELECT * FROM CREDITOS;                         -- estado, plan, tasa, importe de cuota
+SELECT * FROM CUOTAS WHERE ID_CREDITO = 1;      -- cuotas de un crédito
+SELECT * FROM COBRANZAS WHERE ANULADA = FALSE;  -- cobranzas vigentes</code></pre>
+      <p>
+        Es solo para desarrollo: la consola no pasa por Spring Security (TPO-008, ver "Pendientes"). La URL
+        tiene que ser exactamente <code>jdbc:h2:mem:tpdb</code>; con otra, H2 crea una base vacía distinta.
       </p>
       <div class="table-wrap"><table>
         <thead><tr><th>Usuario</th><th>Password</th><th>Rol</th><th>Permisos</th></tr></thead>
