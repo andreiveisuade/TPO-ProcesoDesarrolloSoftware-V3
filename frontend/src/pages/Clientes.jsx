@@ -35,10 +35,10 @@ export default function Clientes() {
         {!loading && lista.length === 0 && <p style={styles.empty}>No hay clientes registrados.</p>}
         {lista.length > 0 && (
           <table style={styles.table}>
-            <thead><tr><th>DNI</th><th>Nombre</th></tr></thead>
+            <thead><tr style={styles.trHead}><th style={styles.th}>DNI</th><th style={styles.th}>Nombre</th></tr></thead>
             <tbody>
               {lista.map(c => (
-                <tr key={c.dni}><td>{c.dni}</td><td>{c.nombre}</td></tr>
+                <tr key={c.dni} style={styles.tr}><td style={styles.td}>{c.dni}</td><td style={styles.td}>{c.nombre}</td></tr>
               ))}
             </tbody>
           </table>
@@ -57,5 +57,9 @@ const styles = {
   btn:   { padding:'10px 20px', backgroundColor:'#1e3a5f', color:'white', border:'none', borderRadius:'6px', cursor:'pointer', fontWeight:'bold' },
   error: { background:'#ffebee', color:'#c62828', padding:'10px', borderRadius:'6px', marginBottom:'12px', fontSize:'0.9rem' },
   empty: { color:'#999' },
-  table: { width:'100%', borderCollapse:'collapse' },
+  table: { width:'100%', borderCollapse:'collapse', textAlign:'left', marginTop:'10px' },
+  trHead: { borderBottom:'2px solid #ddd' },
+  tr:    { borderBottom:'1px solid #eee' },
+  th:    { padding:'12px 8px', color:'#555' },
+  td:    { padding:'12px 8px' },
 };

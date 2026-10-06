@@ -1,3 +1,4 @@
+import { formatMoneda } from '../utils/formato';
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchEstadisticas } from '../store/slices/dashboardSlice'; 
@@ -38,11 +39,11 @@ const Dashboard = () => {
         </div>
         <div style={styles.tarjeta}>
            <h3>Monto Total Financiado</h3>
-           <p style={styles.valor}>${estadisticas?.montoTotalFinanciado || 0}</p>
+           <p style={styles.valor}>{formatMoneda(estadisticas?.montoTotalFinanciado)}</p>
         </div>
         <div style={styles.tarjeta}>
            <h3>Monto Total Cobrado</h3>
-           <p style={styles.valor}>${estadisticas?.montoTotalCobrado || 0}</p>
+           <p style={styles.valor}>{formatMoneda(estadisticas?.montoTotalCobrado)}</p>
         </div>
       </div>
     </div>

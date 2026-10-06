@@ -1,3 +1,4 @@
+import { formatMoneda, formatFecha } from '../utils/formato';
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchCreditosPorCliente, addCredito, clearCreditos, anularCreditoThunk } from '../store/slices/creditosSlice';
@@ -93,12 +94,22 @@ export default function Creditos() {
           
           {creditosSeguros.map(cr => (
             <div key={cr.id} style={{ ...styles.creditoBox, opacity: cr.anulado ? 0.6 : 1 }}>
-              <p>
-                <strong>ID #{cr.id}</strong> — Deuda: ${cr.deudaOriginal} — {cr.tipoPlan === 'SISTEMA_FRANCES' ? `Sistema francés ${cr.tasaInteres}% mensual` : `Interés simple ${cr.tasaInteres}% total`} = ${cr.totalADevolver} — {cr.cantidadCuotas} cuotas de ${cr.importeCuota}
-                {' '}— Saldo: ${cr.saldo}
-                <span style={cr.estado === 'ANULADO' ? styles.badgeAnulado : undefined}> [{cr.estado}]</span>
-              </p>
-              
+              <div style={styles.creditoHeader}>
+                <strong>Crédito #{cr.id}</strong>
+                <span style={{ ...styles.badge, ...(estadoColores[cr.estado] || {}) }}>{cr.estado}</span>
+                <span style={styles.progreso}>
+                  {(cr.cuotas || []).filter(c => c.pagada).length} de {cr.cantidadCuotas} cuotas pagadas
+                </span>
+              </div>
+              <dl style={styles.datos}>
+                <div><dt style={styles.dt}>Deuda original</dt><dd style={styles.dd}>{formatMoneda(cr.deudaOriginal)}</dd></div>
+                <div><dt style={styles.dt}>Plan</dt><dd style={styles.dd}>{cr.tipoPlan === 'SISTEMA_FRANCES' ? `Sistema francés · ${cr.tasaInteres}% mensual` : `Interés simple · ${cr.tasaInteres}% total`}</dd></div>
+                <div><dt style={styles.dt}>Otorgado</dt><dd style={styles.dd}>{formatFecha(cr.fecha)}</dd></div>
+                <div><dt style={styles.dt}>Total a devolver</dt><dd style={styles.dd}>{formatMoneda(cr.totalADevolver)}</dd></div>
+                <div><dt style={styles.dt}>Cuota</dt><dd style={styles.dd}>{cr.cantidadCuotas} × {formatMoneda(cr.importeCuota)}</dd></div>
+                <div><dt style={styles.dt}>Saldo</dt><dd style={{ ...styles.dd, fontWeight: 'bold' }}>{formatMoneda(cr.saldo)}</dd></div>
+              </dl>
+
               {/* Botón de anular condicional */}
               {cr.puedeAnularse && user?.puedeAnularCredito && (
                 <button onClick={() => handleAnular(cr.id)} style={styles.btnAnular}>
@@ -111,6 +122,7 @@ export default function Creditos() {
                   <tr>
                     <th style={{textAlign: 'left'}}>#</th>
                     <th style={{textAlign: 'left'}}>Vencimiento</th>
+                    <th style={{textAlign: 'right', paddingRight: '24px'}}>Importe</th>
                     <th style={{textAlign: 'left'}}>Estado</th>
                   </tr>
                 </thead>
@@ -118,7 +130,8 @@ export default function Creditos() {
                   {(cr.cuotas || []).map(c => (
                     <tr key={c.numeroCuota}>
                       <td style={{padding: '5px 0'}}>{c.numeroCuota}</td>
-                      <td>{c.fechaVencimiento}</td>
+                      <td>{formatFecha(c.fechaVencimiento)}</td>
+                      <td style={{textAlign: 'right', paddingRight: '24px'}}>{formatMoneda(c.importe)}</td>
                       <td style={{ color: c.pagada ? '#2e7d32' : c.vencida ? '#c62828' : '#b38600', fontWeight: 'bold' }}>
                         {c.pagada ? '✔ Pagada' : c.vencida ? '✘ Vencida' : '… Pendiente'}
                       </td>
@@ -147,5 +160,16 @@ const styles = {
   empty:        { color:'#999', fontStyle: 'italic' },
   creditoBox:   { borderLeft:'4px solid #1e3a5f', paddingLeft:'16px', marginBottom:'20px', paddingBottom: '15px', borderBottom: '1px solid #f0f0f0' },
   table:        { width:'100%', borderCollapse:'collapse', marginTop:'8px', fontSize: '0.9em' },
-  badgeAnulado: { color: '#d32f2f', fontWeight: 'bold', marginLeft: '10px' }
+  creditoHeader: { display:'flex', alignItems:'center', gap:'12px', marginBottom:'12px' },
+  badge:        { padding:'3px 10px', borderRadius:'12px', fontSize:'0.75em', fontWeight:'bold', letterSpacing:'0.5px' },
+  progreso:     { marginLeft:'auto', color:'#555', fontSize:'0.9em' },
+  datos:        { display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:'12px 24px', margin:'0 0 16px 0' },
+  dt:           { color:'#777', fontSize:'0.8em', marginBottom:'2px' },
+  dd:           { margin:0 },
+};
+
+const estadoColores = {
+  VIGENTE:   { background:'#e3f2fd', color:'#1565c0' },
+  CANCELADO: { background:'#e8f5e9', color:'#2e7d32' },
+  ANULADO:   { background:'#ffebee', color:'#c62828' },
 };

@@ -1,3 +1,4 @@
+import { formatMoneda, formatFecha } from '../utils/formato';
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchCobranzasPorCredito, addCobranza, clearCobranzas, anularCobranzaThunk } from '../store/slices/cobranzasSlice';
@@ -77,6 +78,7 @@ export default function Cobranzas() {
                   <th style={styles.th}>Crédito</th>
                   <th style={styles.th}>Cuota</th>
                   <th style={styles.th}>Importe</th>
+                  <th style={styles.th}>Fecha</th>
                   <th style={styles.th}>Acción</th>
                 </tr>
               </thead>
@@ -89,7 +91,8 @@ export default function Cobranzas() {
                     </td>
                     <td style={styles.td}>{c.idCredito}</td>
                     <td style={styles.td}>{c.numeroCuota}</td>
-                    <td style={styles.td}>${c.importe}</td>
+                    <td style={styles.td}>{formatMoneda(c.importe)}</td>
+                    <td style={styles.td}>{formatFecha(c.fechaCobranza)}</td>
                     <td style={styles.td}>
                       {!c.anulada && user?.puedeAnularCobranza && (
                         <button onClick={() => handleAnular(c.id)} style={styles.btnAnular}>
