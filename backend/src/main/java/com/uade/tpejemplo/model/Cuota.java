@@ -70,6 +70,11 @@ public class Cuota implements ICuota {
      * cuanto vale, asi que es quien puede rechazar el cobro.
      */
     public Cobranza registrarCobranza(BigDecimal importe) {
+        if (credito.isAnulado()) {
+            throw new BusinessException(
+                "El crédito " + credito.getId() + " está anulado, no admite cobranzas"
+            );
+        }
         if (estaPagada()) {
             throw new BusinessException(
                 "La cuota " + numero + " del crédito " + credito.getId() + " ya fue pagada"
