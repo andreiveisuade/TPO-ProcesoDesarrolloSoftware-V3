@@ -27,8 +27,7 @@ export default function Navbar() {
           <Link to="/creditos" style={styles.link}>Créditos</Link>
           <Link to="/cobranzas" style={styles.link}>Cobranzas</Link>
           
-          {/* El Dashboard de estadísticas ahora lo ve el Supervisor */}
-          {isSupervisor && (
+          {(isSupervisor || isAdmin) && (
             <Link to="/estadisticas" style={styles.supervisorLink}>Dashboard</Link>
           )}
 
