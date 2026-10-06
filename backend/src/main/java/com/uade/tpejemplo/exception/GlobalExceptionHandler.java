@@ -25,16 +25,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleNotFound(ResourceNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-            new ErrorResponse(404, "No encontrado", List.of(ex.getMessage()), LocalDateTime.now())
-        );
+        return error(HttpStatus.NOT_FOUND, "No encontrado", List.of(ex.getMessage()));
     }
 
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ErrorResponse> handleBusiness(BusinessException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-            new ErrorResponse(400, "Error de negocio", List.of(ex.getMessage()), LocalDateTime.now())
-        );
+        return error(HttpStatus.BAD_REQUEST, "Error de negocio", List.of(ex.getMessage()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -42,51 +38,42 @@ public class GlobalExceptionHandler {
         List<String> errores = ex.getBindingResult().getFieldErrors().stream()
             .map(fe -> fe.getDefaultMessage())
             .toList();
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-            new ErrorResponse(400, "Error de validación", errores, LocalDateTime.now())
-        );
+        return error(HttpStatus.BAD_REQUEST, "Error de validación", errores);
     }
 
     @ExceptionHandler({HttpMessageNotReadableException.class, MethodArgumentTypeMismatchException.class})
     public ResponseEntity<ErrorResponse> handleRequestInvalida(Exception ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-            new ErrorResponse(400, "Solicitud inválida", List.of("Solicitud inválida"), LocalDateTime.now())
-        );
+        return error(HttpStatus.BAD_REQUEST, "Solicitud inválida", List.of("Solicitud inválida"));
     }
 
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ErrorResponse> handleAuth(AuthenticationException ex) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-            new ErrorResponse(401, "No autenticado", List.of(ex.getMessage()), LocalDateTime.now())
-        );
+        return error(HttpStatus.UNAUTHORIZED, "No autenticado", List.of(ex.getMessage()));
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorResponse> handleDenied(AccessDeniedException ex) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
-            new ErrorResponse(403, "Acceso denegado", List.of(ex.getMessage()), LocalDateTime.now())
-        );
+        return error(HttpStatus.FORBIDDEN, "Acceso denegado", List.of(ex.getMessage()));
     }
 
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<ErrorResponse> handleNoResource(NoResourceFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-            new ErrorResponse(404, "No encontrado", List.of(ex.getMessage()), LocalDateTime.now())
-        );
+        return error(HttpStatus.NOT_FOUND, "No encontrado", List.of(ex.getMessage()));
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<ErrorResponse> handleMetodo(HttpRequestMethodNotSupportedException ex) {
-        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(
-            new ErrorResponse(405, "Método no permitido", List.of(ex.getMessage()), LocalDateTime.now())
-        );
+        return error(HttpStatus.METHOD_NOT_ALLOWED, "Método no permitido", List.of(ex.getMessage()));
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneral(Exception ex) {
         log.error("Error no controlado", ex);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-            new ErrorResponse(500, "Error interno", List.of("Error interno"), LocalDateTime.now())
-        );
+        return error(HttpStatus.INTERNAL_SERVER_ERROR, "Error interno", List.of("Error interno"));
+    }
+
+    // Unico punto que arma el ErrorResponse; el codigo sale del HttpStatus.
+    private ResponseEntity<ErrorResponse> error(HttpStatus status, String titulo, List<String> mensajes) {
+        return ResponseEntity.status(status).body(new ErrorResponse(status.value(), titulo, mensajes, LocalDateTime.now()));
     }
 }
