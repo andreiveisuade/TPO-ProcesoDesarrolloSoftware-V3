@@ -27,6 +27,7 @@ class CreditoRequest {
   -tipoPlan : TipoPlan
 }
 Credito --> TipoPlan
+Credito --> CalculoDeCuota : calculo()
 TipoPlan --> CalculoDeCuota
 CalculoDeCuota <|.. InteresSimple
 CalculoDeCuota <|.. SistemaFrances

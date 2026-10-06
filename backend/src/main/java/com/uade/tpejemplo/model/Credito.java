@@ -1,6 +1,7 @@
 package com.uade.tpejemplo.model;
 
 import com.uade.tpejemplo.exception.BusinessException;
+import com.uade.tpejemplo.model.interfaces.CalculoDeCuota;
 import com.uade.tpejemplo.model.interfaces.ICredito;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
@@ -17,7 +18,6 @@ import java.util.List;
 
 // Credito otorgado a un cliente: genera sus cuotas, calcula saldo y estado
 // y decide si se puede anular.
-// Strategy: contexto; delega el calculo de la cuota en CalculoDeCuota segun TipoPlan
 @Entity
 @Table(name = "creditos")
 @Getter
@@ -77,7 +77,7 @@ public class Credito implements ICredito {
         this.tasaInteres = tasaInteres;
         this.cantidadCuotas = cantidadCuotas;
         this.tipoPlan = tipoPlan;
-        this.importeCuota = tipoPlan.calculo().importeCuota(deudaOriginal, tasaInteres, cantidadCuotas);
+        this.importeCuota = calculo().importeCuota(deudaOriginal, tasaInteres, cantidadCuotas);
         this.anulado = false;
         // Creator: el credito nace con su plan de cuotas
         generarPlanDeCuotas();
@@ -113,6 +113,11 @@ public class Credito implements ICredito {
             return EstadoCredito.ANULADO;
         }
         return estaCancelado() ? EstadoCredito.CANCELADO : EstadoCredito.VIGENTE;
+    }
+
+    // Strategy: el contexto delega el cálculo de la cuota en la estrategia elegida al otorgar (no cambia después)
+    private CalculoDeCuota calculo() {
+        return tipoPlan.calculo();
     }
 
     public BigDecimal saldo() {
