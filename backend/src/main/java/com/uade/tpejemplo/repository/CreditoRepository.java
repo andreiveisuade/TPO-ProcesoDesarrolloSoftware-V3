@@ -30,9 +30,6 @@ public interface CreditoRepository extends JpaRepository<Credito, Long> {
         """)
     List<Credito> buscarTodosConCuotas();
 
-    @Query("SELECT COUNT(c) FROM Credito c WHERE c.anulado = false")
-    long contarVigentes();
-
     @Query("SELECT COALESCE(SUM(c.deudaOriginal), 0) FROM Credito c WHERE c.anulado = false")
     BigDecimal sumarDeudaOriginalVigente();
 }
