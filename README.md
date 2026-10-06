@@ -135,7 +135,7 @@ Password = usuario. Los crea [`DataInitializer`](backend/src/main/java/com/uade/
 | [`CobranzaConcurrenteTest`](backend/src/test/java/com/uade/tpejemplo/service/CobranzaConcurrenteTest.java) | 1 | Cobro concurrente de la misma cuota |
 | [`TpEjemploApplicationTests`](backend/src/test/java/com/uade/tpejemplo/TpEjemploApplicationTests.java) | 1 | Arranca el contexto de Spring |
 
-Además: [smoke de la API con curl](docs/trabajo/smoke.md), [verificación visual del front](docs/trabajo/visual.md), [recorrido de casos de uso](docs/trabajo/recorrido-cu.md) y [`verificar-cu.sh`](docs/casos-de-uso/verificar-cu.sh) (casos de uso contra la API).
+Además: [`verificar-cu.sh`](docs/casos-de-uso/verificar-cu.sh) (casos de uso contra la API). El resto de la evidencia está en [Evidencia de verificación](#evidencia-de-verificación-solo-en-el-repo-de-github).
 
 ## Documentación
 
@@ -146,10 +146,20 @@ Además: [smoke de la API con curl](docs/trabajo/smoke.md), [verificación visua
 | Lista de mejoras | Todas las mejoras con clase y método | [lista-mejoras.md](docs/entrega/lista-mejoras.md) |
 | Casos de uso | Fichas, diagrama y trazabilidad desde V0 | [README](docs/casos-de-uso/README.md) · [diagrama](docs/casos-de-uso/casos-de-uso-v3.svg) |
 | Diagramas | Clases, DER, Strategy, Adapter, MVC | [`docs/diagramas/`](docs/diagramas/) |
-| API | Mapa de endpoints | [api.md](docs/trabajo/api.md) |
 | Backlog | Lo que queda pendiente para las próximas iteraciones | [backlog.md](docs/backlog.md) |
+
+### Evidencia de verificación (solo en el repo de GitHub)
+
+`docs/trabajo/` no entra al zip de entrega (`export-ignore`); estos archivos se leen en GitHub.
+
+| Documento | Para qué | Link |
+|---|---|---|
+| API | Mapa de endpoints | [api.md](docs/trabajo/api.md) |
 | Guía de lectura | Por dónde empezar a leer V3 (~45 min) | [guia-de-lectura.md](docs/trabajo/guia-de-lectura.md) |
-| Notas de trabajo | Revisiones, smoke, tests y detalle de cada mejora | [`docs/trabajo/`](docs/trabajo/) |
+| Smoke de la API | Verificación con curl | [smoke.md](docs/trabajo/smoke.md) |
+| Verificación visual | Recorrido del front | [visual.md](docs/trabajo/visual.md) |
+| Recorrido de casos de uso | Casos de uso contra el sistema | [recorrido-cu.md](docs/trabajo/recorrido-cu.md) |
+| Notas de trabajo | Revisiones, tests y detalle de cada mejora | [`docs/trabajo/`](docs/trabajo/) |
 
 ## Historia V0 → V3
 
