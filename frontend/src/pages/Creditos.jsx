@@ -1,10 +1,12 @@
 import { formatMoneda, formatFecha } from '../utils/formato';
 import Aviso from '../components/Aviso';
+import { getCredito } from '../api/creditos';
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchCreditosPorCliente, addCredito, clearCreditos, anularCreditoThunk } from '../store/slices/creditosSlice';
 
-// Creditos de un cliente: otorgamiento, plan de cuotas con su estado y anulacion.
+// Creditos de un cliente y consulta de uno por numero: otorgamiento, plan de
+// cuotas con su estado y anulacion.
 export default function Creditos() {
   const dispatch = useDispatch();
   
@@ -15,6 +17,9 @@ export default function Creditos() {
   const [buscado, setBuscado] = useState(false);
   const [errorBusqueda, setErrorBusqueda] = useState(null);
   const [exito, setExito] = useState(null);
+  const [idConsulta, setIdConsulta] = useState('');
+  const [detalle, setDetalle] = useState(null);
+  const [errorDetalle, setErrorDetalle] = useState(null);
   const [form, setForm] = useState({ dniCliente:'', deudaOriginal:'', fecha:'', tasaInteres:'', cantidadCuotas:'', tipoPlan:'INTERES_SIMPLE' });
 
   const buscar = async (e) => {
@@ -51,14 +56,75 @@ export default function Creditos() {
     if (window.confirm("¿Estás seguro de anular este crédito?")) {
       try {
         await dispatch(anularCreditoThunk(id)).unwrap();
-        dispatch(fetchCreditosPorCliente(dni));
+        if (dni) dispatch(fetchCreditosPorCliente(dni));
+        if (detalle?.id === id) setDetalle(await getCredito(id));
       } catch (err) {
         alert("Error: " + err); 
       }
     }
   };
 
+  const consultar = async (e) => {
+    e.preventDefault();
+    setDetalle(null);
+    setErrorDetalle(null);
+    try {
+      setDetalle(await getCredito(idConsulta));
+    } catch (err) {
+      setErrorDetalle(err.message);
+    }
+  };
+
   const creditosSeguros = lista || [];
+
+  const fichaCredito = (cr) => (
+    <div key={cr.id} style={{ ...styles.creditoBox, opacity: cr.anulado ? 0.6 : 1 }}>
+      <div style={styles.creditoHeader}>
+        <strong>Crédito #{cr.id}</strong>
+        <span style={{ ...styles.badge, ...(estadoColores[cr.estado] || {}) }}>{cr.estado}</span>
+        <span style={styles.progreso}>
+          {(cr.cuotas || []).filter(c => c.pagada).length} de {cr.cantidadCuotas} cuotas pagadas
+        </span>
+      </div>
+      <dl style={styles.datos}>
+        <div><dt style={styles.dt}>Deuda original</dt><dd style={styles.dd}>{formatMoneda(cr.deudaOriginal)}</dd></div>
+        <div><dt style={styles.dt}>Plan</dt><dd style={styles.dd}>{cr.tipoPlan === 'SISTEMA_FRANCES' ? `Sistema francés · ${cr.tasaInteres}% mensual` : `Interés simple · ${cr.tasaInteres}% total`}</dd></div>
+        <div><dt style={styles.dt}>Otorgado</dt><dd style={styles.dd}>{formatFecha(cr.fecha)}</dd></div>
+        <div><dt style={styles.dt}>Total a devolver</dt><dd style={styles.dd}>{formatMoneda(cr.totalADevolver)}</dd></div>
+        <div><dt style={styles.dt}>Cuota</dt><dd style={styles.dd}>{cr.cantidadCuotas} × {formatMoneda(cr.importeCuota)}</dd></div>
+        <div><dt style={styles.dt}>Saldo</dt><dd style={{ ...styles.dd, fontWeight: 'bold' }}>{formatMoneda(cr.saldo)}</dd></div>
+      </dl>
+
+      {cr.puedeAnularse && user?.puedeAnularCredito && (
+        <button onClick={() => handleAnular(cr.id)} style={styles.btnAnular}>
+          Anular
+        </button>
+      )}
+
+      <table style={styles.table}>
+        <thead>
+          <tr>
+            <th style={{textAlign: 'left'}}>#</th>
+            <th style={{textAlign: 'left'}}>Vencimiento</th>
+            <th style={{textAlign: 'right', paddingRight: '24px'}}>Importe</th>
+            <th style={{textAlign: 'left'}}>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          {(cr.cuotas || []).map(c => (
+            <tr key={c.numeroCuota}>
+              <td style={{padding: '5px 0'}}>{c.numeroCuota}</td>
+              <td>{formatFecha(c.fechaVencimiento)}</td>
+              <td style={{textAlign: 'right', paddingRight: '24px'}}>{formatMoneda(c.importe)}</td>
+              <td style={{ color: c.pagada ? 'var(--color-success)' : c.vencida ? 'var(--color-danger)' : 'var(--color-warning)', fontWeight: 'bold' }}>
+                {c.pagada ? '✔ Pagada' : c.vencida ? '✘ Vencida' : '… Pendiente'}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
 
   return (
     <div style={styles.page}>
@@ -77,6 +143,16 @@ export default function Creditos() {
           <button style={styles.btn}>Buscar</button>
         </form>
         {errorBusqueda && <div style={{ marginTop: '12px' }}><Aviso>{errorBusqueda}</Aviso></div>}
+      </div>
+
+      <div style={styles.card}>
+        <h3>Consultar crédito por número</h3>
+        <form onSubmit={consultar} style={styles.row}>
+          <input style={styles.input} placeholder="Nro. de crédito" type="number" min="1" value={idConsulta} onChange={e => setIdConsulta(e.target.value)} required />
+          <button style={styles.btn}>Consultar</button>
+        </form>
+        {errorDetalle && <div style={{ marginTop: '12px' }}><Aviso>{errorDetalle}</Aviso></div>}
+        {detalle && <div style={{ marginTop: '16px' }}>{fichaCredito(detalle)}</div>}
       </div>
 
       <div style={styles.card}>
@@ -106,54 +182,7 @@ export default function Creditos() {
           {loading && <p style={styles.empty}>Cargando...</p>}
           {!loading && creditosSeguros.length === 0 && <p style={styles.empty}>Sin créditos.</p>}
           
-          {creditosSeguros.map(cr => (
-            <div key={cr.id} style={{ ...styles.creditoBox, opacity: cr.anulado ? 0.6 : 1 }}>
-              <div style={styles.creditoHeader}>
-                <strong>Crédito #{cr.id}</strong>
-                <span style={{ ...styles.badge, ...(estadoColores[cr.estado] || {}) }}>{cr.estado}</span>
-                <span style={styles.progreso}>
-                  {(cr.cuotas || []).filter(c => c.pagada).length} de {cr.cantidadCuotas} cuotas pagadas
-                </span>
-              </div>
-              <dl style={styles.datos}>
-                <div><dt style={styles.dt}>Deuda original</dt><dd style={styles.dd}>{formatMoneda(cr.deudaOriginal)}</dd></div>
-                <div><dt style={styles.dt}>Plan</dt><dd style={styles.dd}>{cr.tipoPlan === 'SISTEMA_FRANCES' ? `Sistema francés · ${cr.tasaInteres}% mensual` : `Interés simple · ${cr.tasaInteres}% total`}</dd></div>
-                <div><dt style={styles.dt}>Otorgado</dt><dd style={styles.dd}>{formatFecha(cr.fecha)}</dd></div>
-                <div><dt style={styles.dt}>Total a devolver</dt><dd style={styles.dd}>{formatMoneda(cr.totalADevolver)}</dd></div>
-                <div><dt style={styles.dt}>Cuota</dt><dd style={styles.dd}>{cr.cantidadCuotas} × {formatMoneda(cr.importeCuota)}</dd></div>
-                <div><dt style={styles.dt}>Saldo</dt><dd style={{ ...styles.dd, fontWeight: 'bold' }}>{formatMoneda(cr.saldo)}</dd></div>
-              </dl>
-
-              {cr.puedeAnularse && user?.puedeAnularCredito && (
-                <button onClick={() => handleAnular(cr.id)} style={styles.btnAnular}>
-                  Anular
-                </button>
-              )}
-
-              <table style={styles.table}>
-                <thead>
-                  <tr>
-                    <th style={{textAlign: 'left'}}>#</th>
-                    <th style={{textAlign: 'left'}}>Vencimiento</th>
-                    <th style={{textAlign: 'right', paddingRight: '24px'}}>Importe</th>
-                    <th style={{textAlign: 'left'}}>Estado</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(cr.cuotas || []).map(c => (
-                    <tr key={c.numeroCuota}>
-                      <td style={{padding: '5px 0'}}>{c.numeroCuota}</td>
-                      <td>{formatFecha(c.fechaVencimiento)}</td>
-                      <td style={{textAlign: 'right', paddingRight: '24px'}}>{formatMoneda(c.importe)}</td>
-                      <td style={{ color: c.pagada ? 'var(--color-success)' : c.vencida ? 'var(--color-danger)' : 'var(--color-warning)', fontWeight: 'bold' }}>
-                        {c.pagada ? '✔ Pagada' : c.vencida ? '✘ Vencida' : '… Pendiente'}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ))}
+          {creditosSeguros.map(fichaCredito)}
         </div>
       )}
     </div>

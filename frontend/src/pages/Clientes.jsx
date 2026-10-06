@@ -1,12 +1,28 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchClientes, addCliente } from '../store/slices/clientesSlice';
+import { getCliente } from '../api/clientes';
+import Aviso from '../components/Aviso';
 
-// Alta y listado de clientes.
+// Alta, busqueda por DNI y listado de clientes.
 export default function Clientes() {
   const dispatch = useDispatch();
   const { lista, loading, error } = useSelector((state) => state.clientes);
   const [form, setForm] = useState({ dni: '', nombre: '' });
+  const [dniBuscado, setDniBuscado] = useState('');
+  const [encontrado, setEncontrado] = useState(null);
+  const [errorBusqueda, setErrorBusqueda] = useState(null);
+
+  const buscar = async (e) => {
+    e.preventDefault();
+    setEncontrado(null);
+    setErrorBusqueda(null);
+    try {
+      setEncontrado(await getCliente(dniBuscado));
+    } catch (err) {
+      setErrorBusqueda(err.message);
+    }
+  };
 
   useEffect(() => { dispatch(fetchClientes()); }, [dispatch]);
 
@@ -19,6 +35,16 @@ export default function Clientes() {
   return (
     <div style={styles.page}>
       <h2 style={styles.title}>Clientes</h2>
+
+      <div style={styles.card}>
+        <h3>Buscar cliente por DNI</h3>
+        <form onSubmit={buscar} style={styles.form}>
+          <input style={styles.input} placeholder="DNI" value={dniBuscado} onChange={e => setDniBuscado(e.target.value)} required />
+          <button style={styles.btn}>Buscar</button>
+        </form>
+        {errorBusqueda && <div style={{ marginTop: '12px' }}><Aviso>{errorBusqueda}</Aviso></div>}
+        {encontrado && <p style={{ marginTop: '12px' }}><strong>{encontrado.nombre}</strong> · DNI {encontrado.dni}</p>}
+      </div>
 
       <div style={styles.card}>
         <h3>Nuevo cliente</h3>
