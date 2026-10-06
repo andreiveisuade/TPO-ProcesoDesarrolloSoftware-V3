@@ -2,11 +2,13 @@ package com.uade.tpejemplo.controller;
 
 import com.uade.tpejemplo.dto.request.CreditoRequest;
 import com.uade.tpejemplo.dto.response.CreditoResponse;
+import com.uade.tpejemplo.security.UsuarioDetails;
 import com.uade.tpejemplo.service.CreditoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -34,8 +36,8 @@ public class CreditoController {
     }
 
     @DeleteMapping("/anular/{id}")
-    public ResponseEntity<Void> anularCredito(@PathVariable Long id) {
-        creditoService.anularCredito(id);
+    public ResponseEntity<Void> anularCredito(@PathVariable Long id, @AuthenticationPrincipal UsuarioDetails principal) {
+        creditoService.anularCredito(id, principal.getUsuario());
         return ResponseEntity.noContent().build();
     }
 }

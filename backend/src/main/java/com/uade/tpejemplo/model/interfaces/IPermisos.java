@@ -5,4 +5,8 @@ public interface IPermisos {
     boolean isPuedeAnularCredito();
 
     boolean isPuedeAnularCobranza();
+
+    boolean permiteAnularCredito();
+
+    boolean permiteAnularCobranza();
 }

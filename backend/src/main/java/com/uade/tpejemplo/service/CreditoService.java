@@ -2,6 +2,7 @@ package com.uade.tpejemplo.service;
 
 import com.uade.tpejemplo.dto.request.CreditoRequest;
 import com.uade.tpejemplo.dto.response.CreditoResponse;
+import com.uade.tpejemplo.model.interfaces.IUsuario;
 
 import java.util.List;
 
@@ -13,5 +14,5 @@ public interface CreditoService {
 
     List<CreditoResponse> listarPorCliente(String dniCliente);
 
-    void anularCredito(Long id);
+    void anularCredito(Long id, IUsuario usuario);
 }

@@ -2,11 +2,13 @@ package com.uade.tpejemplo.controller;
 
 import com.uade.tpejemplo.dto.request.CobranzaRequest;
 import com.uade.tpejemplo.dto.response.CobranzaResponse;
+import com.uade.tpejemplo.security.UsuarioDetails;
 import com.uade.tpejemplo.service.CobranzaService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,8 +31,8 @@ public class CobranzaController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> anularCobranza(@PathVariable Long id) {
-        cobranzaService.anularCobranza(id);
+    public ResponseEntity<Void> anularCobranza(@PathVariable Long id, @AuthenticationPrincipal UsuarioDetails principal) {
+        cobranzaService.anularCobranza(id, principal.getUsuario());
         return ResponseEntity.noContent().build();
     }
 }
