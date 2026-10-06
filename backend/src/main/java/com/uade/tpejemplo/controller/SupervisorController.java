@@ -30,7 +30,7 @@ public class SupervisorController {
     @ApiResponse(responseCode = "401", description = "Sin token o token inválido")
     @ApiResponse(responseCode = "403", description = "Sin rol o permiso")
     @GetMapping("/usuarios")
-    public List<UsuarioResponse> obtenerUsuarios() {
+    public List<UsuarioResponse> listarUsuarios() {
         return adminService.listarUsuarios();
     }
 
