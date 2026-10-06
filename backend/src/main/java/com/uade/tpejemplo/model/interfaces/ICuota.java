@@ -17,5 +17,7 @@ public interface ICuota {
 
     boolean estaPagada();
 
+    boolean estaVencida();
+
     ICobranza registrarCobranza(BigDecimal importe);
 }

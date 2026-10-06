@@ -1,0 +1,32 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Calibri
+skinparam defaultFontSize 12
+skinparam ClassBackgroundColor #FFFFFF
+skinparam ClassBorderColor #1D2B4F
+skinparam ClassHeaderBackgroundColor #FFFFFF
+skinparam ArrowColor #2E75B6
+skinparam NoteBackgroundColor #FFF8E1
+skinparam NoteBorderColor #B38600
+hide empty members
+interface ICuota {
+  +estaPagada() : boolean
+  +estaVencida() : boolean
+}
+class Cuota {
+  -fechaVencimiento : LocalDate
+  +estaPagada() : boolean
+  +estaVencida() : boolean
+}
+class CuotaResponse {
+  -pagada : boolean
+  -vencida : boolean
+  +desde(ICuota) : CuotaResponse
+}
+ICuota <|.. Cuota
+CuotaResponse ..> ICuota
+note right of Cuota #E3F5E3
+  Information Expert: no pagada
+  y fechaVencimiento < hoy
+end note
+@enduml

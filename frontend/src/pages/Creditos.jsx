@@ -118,8 +118,8 @@ export default function Creditos() {
                     <tr key={c.numeroCuota}>
                       <td style={{padding: '5px 0'}}>{c.numeroCuota}</td>
                       <td>{c.fechaVencimiento}</td>
-                      <td style={{ color: c.pagada ? '#2e7d32' : '#c62828', fontWeight: 'bold' }}>
-                        {c.pagada ? '✔ Pagada' : '✘ Pendiente'}
+                      <td style={{ color: c.pagada ? '#2e7d32' : c.vencida ? '#c62828' : '#b38600', fontWeight: 'bold' }}>
+                        {c.pagada ? '✔ Pagada' : c.vencida ? '✘ Vencida' : '… Pendiente'}
                       </td>
                     </tr>
                   ))}

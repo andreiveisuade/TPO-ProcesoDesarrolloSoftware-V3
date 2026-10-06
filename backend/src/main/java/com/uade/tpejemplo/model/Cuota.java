@@ -65,6 +65,10 @@ public class Cuota implements ICuota {
         return cobranzas.stream().anyMatch(cobranza -> !cobranza.isAnulada());
     }
 
+    public boolean estaVencida() {
+        return !estaPagada() && fechaVencimiento.isBefore(LocalDate.now());
+    }
+
     /**
      * La cuota crea su propia cobranza: es quien sabe si ya esta pagada y
      * cuanto vale, asi que es quien puede rechazar el cobro.

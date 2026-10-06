@@ -16,6 +16,7 @@ public class CuotaResponse {
     private BigDecimal importe;
     private LocalDate fechaVencimiento;
     private boolean pagada;
+    private boolean vencida;
 
     public static CuotaResponse desde(ICuota cuota) {
         return new CuotaResponse(
@@ -23,7 +24,8 @@ public class CuotaResponse {
             cuota.getNumero(),
             cuota.getImporte(),
             cuota.getFechaVencimiento(),
-            cuota.estaPagada()
+            cuota.estaPagada(),
+            cuota.estaVencida()
         );
     }
 }
