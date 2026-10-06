@@ -84,80 +84,80 @@ def bloque(id_, titulo, patron, problema, antes, solucion, despues, por_que, con
 
 # ---------------- M1..M10 ----------------
 m1 = bloque("m1", "M1. Rechazar el cobro sobre un crédito anulado",
-    "Information Expert (GRASP): la cuota conoce a su crédito y el crédito conoce su estado, así que la cuota decide si se la puede cobrar.",
-    "<code>Cuota.registrarCobranza</code> (<code>model/Cuota.java</code>) validaba cuota paga e importe, nunca el estado del crédito: se cobraban cuotas de un crédito anulado (TPO-004).",
+    "<strong>Information Expert</strong>: la cuota conoce su crédito y decide si se puede cobrar.",
+    "Se <strong>cobraban cuotas de créditos anulados</strong> (TPO-004).",
     cb("v2", "model/Cuota.java", method("v2", "model/Cuota.java", r"public Cobranza registrarCobranza")),
-    "Primera validación del método: si el crédito está anulado, <code>BusinessException</code> (el handler la devuelve como 400).",
+    "Si el crédito está anulado: <code>BusinessException</code> (400).",
     cb("main", "model/Cuota.java", method("main", "model/Cuota.java", r"public Cobranza registrarCobranza")),
-    "Un crédito anulado no puede recibir pagos, y esa es una regla del dominio. <code>Cuota</code> ya valida las otras condiciones del cobro, así que se completa ahí sin tocar el servicio ni el controlador.",
-    "Gana: la regla está en un solo lugar y vale para cualquier camino que cobre. Cuesta: <code>Cuota</code> navega a <code>Credito</code> en cada cobro, una relación que ya existía.",
-    "Cierra TPO-004. Clase y método: <code>model/Cuota.java</code>, <code>registrarCobranza(BigDecimal)</code>. Test: <code>backend/src/test/java/com/uade/tpejemplo/model/CuotaTest.java</code>.")
+    "Es <strong>regla del dominio</strong>: va en <code>Cuota</code>, no en el servicio.",
+    "Gana: <strong>un solo lugar</strong>, vale para todo cobro.",
+    "Cierra TPO-004. Test: <code>backend/src/test/java/com/uade/tpejemplo/model/CuotaTest.java</code>.")
 
 m2 = f'''<article class="mejora" id="m2">
 <h3>M2. “Tiene cobranzas” ignora las anuladas <span class="badge impl">absorbida por M8</span></h3>
-<p class="ref">No tiene commit propio: la resolvió <a href="#m8">M8</a> al llevar la regla al agregado <code>Credito</code>. Se deja numerada para que la lista de mejoras conserve la trazabilidad con el análisis previo.</p>
+<p class="ref">Resuelta por <a href="#m8">M8</a>.</p>
 <dl class="estructura">
-<dt>Patrón</dt><dd>Information Expert: quien sabe si una cobranza cuenta es <code>Cuota.estaPagada()</code>, que ya ignoraba las anuladas.</dd>
-<dt>Problema (código antes)</dt><dd><p>La consulta contaba también las cobranzas anuladas. Si se cobraba una cuota y se anulaba esa cobranza, el crédito ya no se podía anular nunca.</p>
+<dt>Patrón</dt><dd><strong>Information Expert</strong>.</dd>
+<dt>Problema (código antes)</dt><dd><p>Contaba <strong>cobranzas anuladas</strong>: el crédito quedaba inanulable.</p>
 {cb("v2", "repository/CobranzaRepository.java", lines("v2", "repository/CobranzaRepository.java", "existeCobranzaDelCredito", 1, 1))}
 {cb("v2", "service/impl/CreditoServiceImpl.java", method("v2", "service/impl/CreditoServiceImpl.java", r"public void anularCredito"))}</dd>
-<dt>Solución (código después)</dt><dd><p><code>Credito.tieneCobranzas()</code> (<code>model/Credito.java</code>) recorre sus cuotas con <code>Cuota::estaPagada</code>. <code>existeCobranzaDelCredito</code> desapareció del repositorio. Código en M8.</p></dd>
-<dt>Por qué</dt><dd>Era el mismo error que TPO-005 (el boolean <code>anulada</code> sin filtrar). Al mover la decisión al crédito, la regla ya correcta de la cuota se reutiliza en vez de duplicarse en una query.</dd>
-<dt>Consecuencias</dt><dd>Las mismas que M8. Test: <code>CreditoTest</code>, caso “la única cobranza fue anulada”.</dd>
+<dt>Solución (código después)</dt><dd><p><code>model/Credito.java</code> <code>tieneCobranzas()</code> usa <code>Cuota::estaPagada</code>; se borra la query.</p></dd>
+<dt>Por qué</dt><dd><strong>Reusar la regla</strong> en vez de duplicarla en SQL.</dd>
+<dt>Consecuencias</dt><dd>Test: <code>CreditoTest</code>.</dd>
 </dl>
 {diagramas("m2", tit_a="Antes (V2): el servicio consulta y le pasa un boolean al crédito", solo_antes=True)}
 </article>'''
 
 m3 = bloque("m3", "M3. Dashboard con números verdaderos",
-    "Sin patrón GoF: corrección de consultas. La parte de “créditos activos” aplica Information Expert (la vigencia la define <code>Credito.estado()</code>).",
-    "<code>DashboardServiceImpl.obtenerEstadisticasGenerales()</code> contaba todos los créditos (también anulados), “financiado” sumaba <code>importeCuota</code> (el valor de una cuota, no lo prestado) y “cobrado” sumaba cobranzas anuladas (TPO-003).",
+    "<strong>Corrección</strong> + <strong>Information Expert</strong> (<code>Credito.estado()</code>).",
+    "El dashboard <strong>contaba anulados</strong> y “financiado” sumaba una cuota, no lo prestado (TPO-003).",
     cb("v2", "service/impl/DashboardServiceImpl.java", method("v2", "service/impl/DashboardServiceImpl.java", r"obtenerEstadisticasGenerales"))
     + cb("v2", "repository/CreditoRepository.java", lines("v2", "repository/CreditoRepository.java", "sumarImporteCuotaTotal", 1, 1))
     + cb("v2", "repository/CobranzaRepository.java", lines("v2", "repository/CobranzaRepository.java", "sumarImporteTotal", 1, 1)),
-    "Las sumas filtran lo anulado y “financiado” suma <code>deudaOriginal</code>. “Créditos activos” cuenta los que <code>Credito.estado()</code> da como <code>VIGENTE</code> (ni anulados ni cancelados), con la misma carga sin N+1 que usa M8 (ajuste O4 de la revisión).",
+    "Se filtra lo anulado; “financiado” = <code>deudaOriginal</code>; activos = <code>estado() == VIGENTE</code>.",
     cb("main", "service/impl/DashboardServiceImpl.java", method("main", "service/impl/DashboardServiceImpl.java", r"obtenerEstadisticasGenerales"))
     + cb("main", "repository/CreditoRepository.java", lines("main", "repository/CreditoRepository.java", "sumarDeudaOriginalVigente", 1, 1))
     + cb("main", "repository/CobranzaRepository.java", lines("main", "repository/CobranzaRepository.java", "sumarImporteVigente", 1, 1)),
-    "Los cuatro números del supervisor tienen que reflejar la cartera viva. La regla de vigencia vive en un solo lugar del modelo y el dashboard la consulta en vez de repetirla en SQL.",
-    "Gana: el dashboard y el listado de créditos coinciden. Cuesta: “créditos activos” carga todos los créditos en memoria; para el volumen del TPO no pesa, con miles de créditos convendría una consulta que replique la regla.",
-    "Cierra TPO-003 y la parte de anulados de B-04 (V0). Commits <code>8877f29</code> y <code>87f0631</code> (O4).")
+    "La <strong>vigencia se define una vez</strong>, en el modelo.",
+    "Gana: dashboard y listado coinciden. Cuesta: carga los créditos en memoria.",
+    "Cierra TPO-003. Commits <code>8877f29</code>, <code>87f0631</code>.")
 
 m4 = bloque("m4", "M4. Permisos de anulación aplicados en el backend",
-    "MVC (validación por capa) + Information Expert: la vista oculta el botón, el controlador identifica al usuario y el modelo (<code>Permisos</code>) decide.",
-    "<code>CreditoController.anularCredito</code> y <code>CreditoServiceImpl.anularCredito</code> no sabían quién anulaba. Los permisos que asigna el supervisor se guardaban y nadie los consultaba: solo el front ocultaba el botón y cualquier operador anulaba por API (TPO-007). Lo mismo en <code>CobranzaController</code> / <code>CobranzaServiceImpl.anularCobranza</code>.",
+    "<strong>MVC</strong> + <strong>Information Expert</strong>: la vista oculta, <strong>el modelo decide</strong>.",
+    "Solo el front ocultaba el botón: <strong>cualquiera anulaba por API</strong> (TPO-007).",
     cb("v2", "controller/CreditoController.java", method("v2", "controller/CreditoController.java", r"anularCredito"))
     + cb("v2", "service/impl/CreditoServiceImpl.java", method("v2", "service/impl/CreditoServiceImpl.java", r"public void anularCredito")),
-    "El controlador recibe el usuario autenticado con <code>@AuthenticationPrincipal</code> y el servicio le pregunta a sus <code>Permisos</code>. Si no puede, <code>AccessDeniedException</code>, que <code>GlobalExceptionHandler</code> traduce a 403.",
+    "El controlador pasa el usuario (<code>@AuthenticationPrincipal</code>); sin permiso, 403.",
     cb("main", "controller/CreditoController.java", method("main", "controller/CreditoController.java", r"public ResponseEntity<Void> anularCredito"))
     + cb("main", "service/impl/CreditoServiceImpl.java", method("main", "service/impl/CreditoServiceImpl.java", r"public void anularCredito")),
-    "El caso de uso “Asignar permisos de anulación” (CU19) era decorativo. En MVC la vista puede ocultar, pero quien valida es el modelo; la pregunta “¿puede anular?” la contesta <code>Permisos</code>, que tiene el dato.",
-    "Gana: el permiso se respeta aunque se llame a la API sin el front (smoke: 403 con <code>user</code>). Cuesta: <code>anularCredito</code> y <code>anularCobranza</code> ahora reciben el <code>IUsuario</code> autenticado.",
-    "Cierra TPO-007 (B-01 de V0). Archivos: <code>controller/CreditoController.java</code>, <code>controller/CobranzaController.java</code>, <code>service/impl/CreditoServiceImpl.java</code>, <code>service/impl/CobranzaServiceImpl.java</code>, <code>security/UsuarioDetails.java</code> (<code>getUsuario()</code>).")
+    "La <strong>vista puede ocultar, pero valida el modelo</strong>.",
+    "Gana: el permiso vale sin el front. Cuesta: los servicios reciben el <code>IUsuario</code>.",
+    "Cierra TPO-007.")
 
 m5 = bloque("m5", "M5. Handlers HTTP específicos",
-    "MVC: el controlador (<code>GlobalExceptionHandler</code>, un <code>@RestControllerAdvice</code> de Spring) convierte errores del modelo y de la infraestructura en respuestas HTTP con el código correcto.",
-    "<code>GlobalExceptionHandler</code> solo conocía tres excepciones; el resto caía en <code>handleGeneral</code> y respondía 500. Login incorrecto, ruta inexistente, acceso denegado y método no soportado daban 500 (TPO-001, TPO-002).",
+    "<strong>MVC</strong>: el controlador traduce errores a <strong>códigos HTTP</strong>.",
+    "Login malo, ruta inexistente o sin permiso: <strong>todo daba 500</strong> (TPO-001, 002).",
     cb("v2", "exception/GlobalExceptionHandler.java", method("v2", "exception/GlobalExceptionHandler.java", r"handleGeneral")),
-    "Cuatro handlers nuevos con el mismo <code>ErrorResponse</code>: 401, 403, 404 y 405. El 500 genérico ya no devuelve el mensaje interno y lo loguea (S4).",
+    "Handlers 401, 403, 404, 405; el 500 no filtra detalles (S4).",
     cb("main", "exception/GlobalExceptionHandler.java",
        method("main", "exception/GlobalExceptionHandler.java", r"handleAuth"), "",
        method("main", "exception/GlobalExceptionHandler.java", r"handleDenied"), "",
        method("main", "exception/GlobalExceptionHandler.java", r"handleNoResource"), "",
        method("main", "exception/GlobalExceptionHandler.java", r"handleMetodo"), "",
        method("main", "exception/GlobalExceptionHandler.java", r"handleGeneral")),
-    "Un error del cliente no es una falla del servidor. El front ahora distingue credenciales malas (401), falta de permiso (403), recurso inexistente (404) y método incorrecto (405) de un 500 real.",
-    "Gana: los códigos que documenta Swagger son los que la API devuelve de verdad. Cuesta: un handler por familia de excepciones; el armado de <code>ErrorResponse</code> se repetía en cada handler, hasta que BS2 lo juntó en un solo método.",
-    "Cierra TPO-001 y TPO-002. Archivo: <code>exception/GlobalExceptionHandler.java</code>.")
+    "<strong>Error del cliente ≠ falla del servidor.</strong>",
+    "Gana: Swagger documenta los códigos reales.",
+    "Cierra TPO-001 y TPO-002.")
 
 m6 = bloque("m6", "M6. Cuota.estaVencida()",
-    "Information Expert (GRASP): la cuota tiene <code>fechaVencimiento</code> y sabe si está pagada, entonces ella responde si está vencida.",
-    "<code>fechaVencimiento</code> se guardaba y nadie la usaba. No existía la mora: la vista solo distinguía Pagada / Pendiente.",
+    "<strong>Information Expert</strong>: la cuota tiene la fecha, ella sabe si venció.",
+    "<strong>No existía la mora</strong>: <code>fechaVencimiento</code> sin uso.",
     cb("v2", "model/Cuota.java", method("v2", "model/Cuota.java", r"public boolean estaPagada")),
-    "<code>Cuota.estaVencida()</code>, declarado en <code>ICuota</code>. <code>CuotaResponse</code> suma el campo <code>vencida</code> y <code>frontend/src/pages/Creditos.jsx</code> muestra Pagada / Vencida / Pendiente.",
+    "<code>Cuota.estaVencida()</code>; la vista muestra Pagada / Vencida / Pendiente.",
     cb("main", "model/Cuota.java", method("main", "model/Cuota.java", r"public boolean estaPagada"), "", method("main", "model/Cuota.java", r"public boolean estaVencida")),
-    "Saber qué cuotas están en mora es la pregunta central de un sistema de cobranzas (hueco H3, A-05 de V0). La regla vive en la entidad que tiene los datos, no en el servicio ni en la vista.",
-    "Gana: la mora es consultable desde el modelo y reutilizable (dashboard, reportes). Cuesta: depende de la fecha de hoy; por eso <code>estaVencida(LocalDate hoy)</code> la recibe por parámetro y la versión sin parámetro delega con <code>LocalDate.now()</code>, así se testea sin reloj.",
-    "Archivos: <code>model/Cuota.java</code>, <code>model/interfaces/ICuota.java</code>, <code>dto/response/CuotaResponse.java</code>, <code>frontend/src/pages/Creditos.jsx</code>.")
+    "La mora es <strong>la pregunta central</strong> de cobranzas (H3).",
+    "Gana: reutilizable (dashboard). La fecha entra por parámetro: <strong>testeable sin reloj</strong>.",
+    "Archivos: <code>model/Cuota.java</code>, <code>dto/response/CuotaResponse.java</code>.")
 
 # ---- M7 Adapter (foco) ----
 roles7 = """<table><thead><tr><th>Rol (slide 26/28, clase 10)</th><th>Adapter 1: UsuarioDetails (desde V1)</th><th>Adapter 2: JwtUtil (V3)</th></tr></thead><tbody>
@@ -217,11 +217,11 @@ m7 = bloque("m7", "M7. Adapter: UsuarioDetails y JwtUtil",
       + '<h4>Después, <code>JwtUtil</code> sobre jjwt</h4>')
 
 m8 = bloque("m8", "M8. EstadoCredito y Credito como agregado de sus cuotas",
-    "Information Expert y Creator (GRASP): el crédito crea sus cuotas y las conoce, así que es quien responde su estado, su saldo y si puede anularse. Absorbe M2.",
-    "El estado era un boolean <code>anulado</code>: no existía “cancelado” ni saldo (H1, H2). Para anular, el servicio le contaba al crédito si tenía cobranzas, con una consulta que contaba también las anuladas (M2).",
+    "<strong>Information Expert</strong> + <strong>Creator</strong>: el crédito crea y conoce sus cuotas.",
+    "Estado = boolean <code>anulado</code>: <strong>sin “cancelado” ni saldo</strong> (H1, H2).",
     cb("v2", "model/Credito.java", lines("v2", "model/Credito.java", r"private boolean anulado", 1, 1), "", method("v2", "model/Credito.java", r"public void anular"))
     + cb("v2", "service/impl/CreditoServiceImpl.java", method("v2", "service/impl/CreditoServiceImpl.java", r"public void anularCredito")),
-    "<code>EstadoCredito</code> (<code>VIGENTE</code>, <code>CANCELADO</code>, <code>ANULADO</code>) se deriva; no se persiste. <code>Credito</code> navega sus cuotas y calcula estado, saldo, cancelación y anulabilidad. El servicio trae cuotas y cobranzas con <code>JOIN FETCH</code> en dos consultas.",
+    "<code>EstadoCredito</code> <strong>derivado</strong>, no persistido. <code>Credito</code> calcula estado, saldo y si se puede anular.",
     cb("main", "model/EstadoCredito.java", body("main", "model/EstadoCredito.java"))
     + cb("main", "model/Credito.java", lines("main", "model/Credito.java", r"private List<Cuota> cuotas", 1, 3), "",
          method("main", "model/Credito.java", r"public EstadoCredito estado"), "",
@@ -231,9 +231,9 @@ m8 = bloque("m8", "M8. EstadoCredito y Credito como agregado de sus cuotas",
          method("main", "model/Credito.java", r"public boolean puedeAnularse"), "",
          method("main", "model/Credito.java", r"public void anular"))
     + cb("main", "service/impl/CreditoServiceImpl.java", method("main", "service/impl/CreditoServiceImpl.java", r"private Credito buscarCredito")),
-    "Cierra H1 (estado como boolean), H2 (el sistema no sabía cuánto debe un crédito) y M2. El servicio deja de consultar al repositorio para pasarle un boolean al crédito: la decisión vuelve al experto.",
-    "Gana: estado y saldo en un solo lugar, sin columna nueva ni migración (<code>anulado</code> sigue siendo el dato persistido); <code>listarPorCliente</code> pasa de N+1 a dos consultas fijas. Cuesta: el crédito necesita sus cuotas y cobranzas cargadas dentro de una transacción. Dos colecciones en un solo <code>JOIN FETCH</code> tiran <code>MultipleBagFetchException</code>, por eso son dos consultas. La llamada a <code>cuotaRepository.buscarPorCredito</code> sin usar el resultado es a propósito: deja las cobranzas cargadas en el contexto de persistencia de JPA.",
-    "Archivos: <code>model/EstadoCredito.java</code>, <code>model/Credito.java</code>, <code>service/impl/CreditoServiceImpl.java</code>, <code>repository/CreditoRepository.java</code>, <code>repository/CuotaRepository.java</code>, <code>dto/response/CreditoResponse.java</code>. Tests: <code>CreditoTest</code>.")
+    "<strong>La decisión vuelve al experto</strong>: el servicio ya no le pasa un boolean.",
+    "Gana: sin migración; de N+1 a 2 consultas. Cuesta: cuotas cargadas en la transacción.",
+    "Tests: <code>CreditoTest</code>.")
 
 # ---- M9 Strategy (foco) ----
 roles9 = '''<table><thead><tr><th>Rol (apunte clase 10)</th><th>Clase</th></tr></thead><tbody>
@@ -355,13 +355,13 @@ m9 = bloque("m9", "M9. Strategy del cálculo de cuota",
     extra=extra9)
 
 m10 = bloque("m10", "M10. Dashboard también para ADMIN",
-    "Control de acceso por rol en <code>SecurityConfig</code>. Sin patrón de diseño nuevo: corrección de una regla de acceso.",
-    "<code>hasRole(\"SUPERVISOR\")</code> exacto sobre <code>/api/dashboard/**</code>: el ADMIN no veía el dashboard (H10, TPO-010). El front repetía la misma condición en <code>frontend/src/pages/Dashboard.jsx</code> y <code>frontend/src/components/Navbar.jsx</code>.",
+    "<strong>Control de acceso</strong> por rol.",
+    "<strong>El ADMIN no veía el dashboard</strong> (TPO-010).",
     cb("v2", "config/SecurityConfig.java", lines("v2", "config/SecurityConfig.java", r'hasRole\("SUPERVISOR"\)', 1)),
-    "Se separa el matcher del dashboard del de <code>/api/supervisor/**</code>, para que los permisos de anulación sigan siendo solo del supervisor.",
+    "Matcher propio para <code>/api/dashboard/**</code> con los dos roles.",
     cb("main", "config/SecurityConfig.java", lines("main", "config/SecurityConfig.java", r'"/api/admin/\*\*"', 3)),
-    "El administrador tiene que poder ver las estadísticas sin cambiarse de rol. El título del dashboard muestra el rol real (<code>d35fc0e</code>).",
-    "Gana: el ADMIN accede al dashboard. Cuesta: la regla de visibilidad está en el backend y en dos componentes del front; el backend es el que manda.",
+    "El admin ve estadísticas <strong>sin cambiar de rol</strong>.",
+    "Manda el backend.",
     "Cierra TPO-010. Commit <code>f7ce757</code>.")
 
 mejoras = [m9, m7, m1, m2, m3, m4, m5, m6, m8, m10]
@@ -382,70 +382,30 @@ tabla_indice = "".join(f'<tr><td><a href="#{k}">{k.upper()}</a></td><td>{a}</td>
 
 # ---------------- revisión ----------------
 rev = [
- ("API", "f551cbc, 1ea0375, 1737bd9, 940958e", "Sin token la API respondía 403; <code>RolRequest</code> y <code>PermisosRequest</code> sin <code>@Valid</code>; no había listado general de créditos.",
-  "<code>config/SecurityConfig.java</code> responde 401 con <code>HttpStatusEntryPoint</code>; <code>@Valid</code> en <code>controller/AdminController.java</code> y <code>controller/SupervisorController.java</code>; <code>GET /api/creditos</code> (<code>service/impl/CreditoServiceImpl.java</code> <code>listarTodos</code>).",
-  "<strong>MVC</strong>: el controlador valida la forma y traduce a HTTP."),
- ("H1", "fcc9bf6", "Una cobranza ya anulada se podía <strong>anular otra vez</strong>.",
-  "<code>model/Cobranza.java</code> <code>anular</code> rechaza con 400, igual que el crédito.",
-  "<strong>Information Expert</strong>."),
- ("O1", "444031f, 64cee96", "La vista decidía si un crédito se podía anular (<code>!cr.anulado</code>, sin mirar cobranzas) y, tras anular, solo marcaba <code>anulado = true</code> en el store: el listado seguía en VIGENTE con el saldo viejo.",
-  "<code>dto/response/CreditoResponse.java</code> expone <code>puedeAnularse</code> (de <code>Credito.puedeAnularse()</code>); <code>frontend/src/pages/Creditos.jsx</code> lo usa y vuelve a pedir los créditos tras anular; <code>frontend/src/store/slices/creditosSlice.js</code> deja de recalcular.",
-  "MVC: la vista representa, el modelo decide. Information Expert."),
- ("O2", "de78c07", "<code>security/JwtAuthFilter.java</code> importaba <code>io.jsonwebtoken.JwtException</code> y <code>esValido</code> recibía un <code>UserDetails</code>: el Target exponía tipos del Adaptado.",
-  "<code>TokenService.extraerUsername</code> devuelve <code>Optional&lt;String&gt;</code>, <code>JwtUtil</code> atrapa las excepciones de jjwt y <code>esValido(String token, String username)</code>.",
-  "Adapter bien aplicado, Protected Variations, DIP (ver M7)."),
- ("O3", "1f9fc50", "<code>Credito.totalADevolver()</code> volvía a correr la estrategia en cada lectura y no cerraba con la suma de las cuotas (14.500,00 contra 14.500,02).",
-  "<code>model/Credito.java</code>: <code>totalADevolver()</code> = <code>importeCuota × cantidadCuotas</code>. <code>CalculoDeCuota</code> queda con un solo método; el total de <code>InteresSimple</code> pasa a privado.",
-  "Strategy con el alcance correcto: el Contexto no depende de la estrategia para datos históricos."),
- ("O4", "87f0631", "“Créditos activos” contaba <code>anulado = false</code> con <code>CreditoRepository.contarVigentes()</code> y sumaba los cancelados.",
-  "<code>service/impl/DashboardServiceImpl.java</code> cuenta <code>estado() == VIGENTE</code>; se borra <code>contarVigentes</code>.",
-  "Information Expert: la vigencia se define en un solo lugar."),
- ("O5", "5b7f165", "La regla “al ADMIN no se le tocan permisos ni rol” estaba en la vista y, a medias, en <code>AdminServiceImpl.actualizarRol</code>; por <code>PUT</code> un supervisor podía quitarle permisos al admin.",
-  "<code>model/Usuario.java</code>: <code>otorgarPermisos</code> y <code>asignarRol</code> rechazan con <code>BusinessException</code>; <code>service/impl/AdminServiceImpl.java</code> pierde la guarda duplicada.",
-  "MVC (validación de negocio en el modelo) + Information Expert."),
- ("S1", "67ba784", "Solo <code>CreditoServiceImpl</code> tenía transacciones; <code>CobranzaServiceImpl.anularCobranza</code> leía, mutaba y guardaba sin transacción.",
-  "<code>@Transactional</code> en las escrituras y <code>@Transactional(readOnly = true)</code> en las lecturas de <code>service/impl/AdminServiceImpl.java</code>, <code>AuthServiceImpl.java</code>, <code>ClienteServiceImpl.java</code> y <code>CobranzaServiceImpl.java</code>.",
-  "La unidad de trabajo vive en el servicio (Spring: transacciones declarativas)."),
- ("S2", "1e87795", "Open-in-view encendido por defecto: Spring mantiene la sesión de JPA abierta hasta la vista y tapa servicios sin transacción.",
-  "<code>spring.jpa.open-in-view=false</code> en <code>backend/src/main/resources/application.properties</code>.",
-  "Las transacciones de S1 son la única fuente de verdad de la carga."),
- ("S3", "45a35c9", "<code>jwt.secret</code> hardcodeado en un repo público (TPO-009).",
-  "<code>jwt.secret=${JWT_SECRET:...}</code> en <code>application.properties</code>: variable de entorno con default de desarrollo.",
-  "Configuración fuera del código."),
- ("S4", "904fa1e", "<code>GlobalExceptionHandler.handleGeneral</code> devolvía <code>ex.getMessage()</code> (SQL, nombres de clase) y no logueaba nada.",
-  "Responde “Error interno” y loguea la excepción con <code>@Slf4j</code> (Lombok) en <code>exception/GlobalExceptionHandler.java</code>.",
-  "El cliente no ve detalles internos; el servidor sí los registra."),
- ("D1", "5ac2155", "<code>UsuarioRepository.findByRol</code> sin llamadores.", "Borrado de <code>repository/UsuarioRepository.java</code>.", "Código muerto."),
- ("D2", "3bd8b61", "<code>@Builder</code> y <code>@NoArgsConstructor</code> sin uso en <code>AuthResponse</code>.", "Borrados de <code>dto/response/AuthResponse.java</code>.", "Código muerto."),
- ("BS1", "5f2c334", "<code>AdminService.listarTodos</code> y <code>listarUsuarios</code> eran el mismo stream; el supervisor recibía también al admin y el front lo deshabilitaba a mano.",
-  "<code>controller/SupervisorController.java</code> usa <code>listarUsuarios()</code> (sin admins); se borra <code>listarTodos</code> de <code>service/AdminService.java</code> y <code>service/impl/AdminServiceImpl.java</code>, y el caso especial de <code>frontend/src/pages/GestorPermisos.jsx</code>.",
-  "Bad smell: código duplicado."),
- ("DF1", "830a998", "<code>frontend/src/store/index.js</code> armaba un segundo store que nadie importaba.", "Borrado; queda <code>frontend/src/store/store.js</code>.", "Código muerto (front)."),
- ("DF3", "5d2dbc4", "<code>frontend/src/pages/Creditos.jsx</code> hacía <code>console.log</code> del usuario con su JWT en cada render.", "Línea borrada.", "Código de depuración que filtraba el token."),
- ("F1", "f0e5c59", "La verificación final encontró que un usuario autenticado sin el rol (<code>user</code> al dashboard, supervisor a <code>/api/admin/**</code>) recibía 401 en vez de 403.",
-  "<code>config/SecurityConfig.java</code> <code>filterChain</code> suma un <code>accessDeniedHandler</code> que responde 403; sin token o con token inválido sigue 401.",
-  "MVC: el controlador distingue “no sé quién sos” (401) de “sé quién sos y no podés” (403)."),
- ("F2", "06fc842", "JSON roto, <code>tipoPlan</code> inválido o <code>GET /api/creditos/abc</code> caían en el handler general y respondían 500.",
-  "<code>exception/GlobalExceptionHandler.java</code> <code>handleRequestInvalida</code> mapea <code>HttpMessageNotReadableException</code> y <code>MethodArgumentTypeMismatchException</code> a 400 con el mismo <code>ErrorResponse</code>, sin detalles internos.",
-  "Un error del cliente es 4xx; el 500 queda para fallas del servidor (M5, S4)."),
- ("BSF1", "c19e707", "Comentarios de copy-paste (<code>[cite: 4]</code>, “Asumiendo que…”) en <code>frontend/src/store/slices/permisosSlice.js</code>, <code>cobranzasSlice.js</code> y <code>frontend/src/pages/GestorPermisos.jsx</code>.", "Borrados.", "Bad smell: comentarios que no explican el código."),
- ("T34", "8eb2106", "No había diagrama de la base y nadie había revisado el modelo contra el esquema.",
-  "DER en <code>docs/diagramas/der-v3.puml</code> (más abajo). La revisión encontró I-1 (dos cobranzas vigentes en la misma cuota con requests simultáneas, reproducido), I-2 (DTO sin largo ni escala) e I-3 (diagrama de clases desactualizado). Las tres se arreglaron (I-1 en T40).",
-  "El esquema protege identidad y unicidad; las reglas con estado viven en las entidades."),
- ("T35", "013c07a, 0df40d1", "<code>config/SecurityConfig.java</code> armaba a mano un <code>DaoAuthenticationProvider</code> (y Spring avisaba al arrancar) y <code>GlobalExceptionHandler</code> repetía nueve veces el armado de <code>ErrorResponse</code> con el número escrito a mano.",
-  "S5: se borra el bean y Spring arma el provider con <code>UserDetailsService</code> y <code>PasswordEncoder</code>. BS2: método privado <code>error(HttpStatus, String, List&lt;String&gt;)</code> en <code>exception/GlobalExceptionHandler.java</code>. S6 no se hizo a propósito: reglas de URL y <code>@PreAuthorize</code> quedan las dos como defensa en profundidad.",
-  "Spring por convención; bad smell de código duplicado."),
- ("T36", "d89d62d, 6cc5e17", "El servicio tenía que acordarse de pedirle el plan al crédito y guardarlo: un crédito sin plan quedaba VIGENTE con saldo 0. El dashboard no mostraba cuánto se debe ni cuánto está en mora.",
-  "O6: el constructor de <code>model/Credito.java</code> genera las cuotas (<code>generarPlanDeCuotas</code> privado, fuera de <code>ICredito</code>) y <code>cascade = PERSIST</code> las guarda. O7: <code>service/impl/DashboardServiceImpl.java</code> suma <code>Credito.saldo()</code> y las cuotas con <code>estaVencida()</code>; dos tarjetas nuevas en <code>frontend/src/pages/Dashboard.jsx</code>.",
-  "Creator (O6) e Information Expert (O7)."),
- ("T40", "8888df6, 5246f27, 7c6dd63, f96f53a", "Dos cobros simultáneos de la misma cuota dejaban dos cobranzas vigentes (I-1): <code>service/impl/CobranzaServiceImpl.java</code> <code>registrar</code> leía la cuota, la veía impaga y recién después insertaba. Los servicios navegaban <code>usuario.getPermisos()</code> para decidir si se podía anular (BS3), el rol viajaba como <code>String</code> en las respuestas (BS4) y <code>SupervisorController</code> usaba <code>obtenerUsuarios</code> donde <code>AdminController</code> dice <code>listarUsuarios</code> (BS6).",
-  "I-1: <code>@Lock(PESSIMISTIC_WRITE)</code> en <code>repository/CuotaRepository.java</code> <code>buscarPorCreditoYNumero</code> y fuera su <code>JOIN FETCH</code> de cobranzas (con el join, H2 leía las cobranzas de antes del bloqueo). <code>backend/src/test/java/com/uade/tpejemplo/service/CobranzaConcurrenteTest.java</code> lanza 20 hilos sobre la misma cuota y espera 1 vigente; sin el arreglo da 10. BS3: <code>model/Usuario.java</code> <code>puedeAnularCredito</code> y <code>puedeAnularCobranza</code>. BS4: <code>Rol</code> en <code>dto/response/UsuarioResponse.java</code> y <code>AuthResponse.java</code> (el JSON no cambia). BS6: <code>controller/SupervisorController.java</code> <code>listarUsuarios</code>.",
-  "Concurrencia con bloqueo pesimista; Information Expert / Tell, don't ask (BS3); primitive obsession (BS4)."),
- ("T42", "dfa2c12, d9b0b8f, a085f66, f5c8d05, 0e3284e", "En el front: <code>AdminRoute</code> y <code>SupervisorRoute</code> iguales salvo el rol, <code>'ADMIN'</code>/<code>'SUPERVISOR'</code> escritos a mano en cinco lugares, dos slices llamando <code>api.get</code> directo, dos ternarios anidados para el estado de la cuota y restos del template de Vite (TPO-012).",
-  "<code>frontend/src/components/RoleRoute.jsx</code> único, <code>ROLES</code> en <code>frontend/src/utils/roles.js</code>, <code>frontend/src/api/dashboard.js</code> para que toda llamada pase por <code>src/api</code>, <code>ESTADO_CUOTA</code> y <code>estadoCuota</code> en <code>frontend/src/pages/Creditos.jsx</code>; se borran <code>App.css</code>, <code>assets/react.svg</code> y los <code>clearError</code> sin uso.",
-  "Bad smells: código duplicado, strings mágicos, condicional anidado y código muerto."),
+ ("API", "f551cbc, 1ea0375, 1737bd9, 940958e", "Sin token daba 403; requests de admin sin <code>@Valid</code>.", "401 con <code>HttpStatusEntryPoint</code> en <code>config/SecurityConfig.java</code>; <code>@Valid</code> en <code>controller/AdminController.java</code>, <code>controller/SupervisorController.java</code>; <code>GET /api/creditos</code>.", "<strong>MVC</strong>: el controlador valida forma."),
+ ("H1", "fcc9bf6", "Una cobranza anulada se <strong>anulaba otra vez</strong>.", "<code>model/Cobranza.java</code> <code>anular</code> la rechaza.", "<strong>Information Expert</strong>."),
+ ("O1", "444031f, 64cee96", "La vista <strong>decidía</strong> si se podía anular.", "<code>dto/response/CreditoResponse.java</code> expone <code>puedeAnularse</code>; <code>frontend/src/pages/Creditos.jsx</code> lo usa y recarga.", "<strong>MVC</strong>: el modelo decide."),
+ ("O2", "de78c07", "El Target <strong>exponía tipos de jjwt</strong>.", "<code>service/TokenService.java</code> <code>extraerUsername</code> devuelve <code>Optional</code>; <code>security/JwtUtil.java</code> atrapa las excepciones.", "<strong>Adapter</strong> bien aplicado."),
+ ("O3", "1f9fc50", "El total <strong>recalculaba la estrategia</strong> y no cerraba con las cuotas.", "<code>model/Credito.java</code> <code>totalADevolver</code> = cuota × cantidad.", "<strong>Strategy</strong> solo al otorgar."),
+ ("O4", "87f0631", "“Activos” <strong>sumaba cancelados</strong>.", "<code>service/impl/DashboardServiceImpl.java</code> cuenta <code>estado() == VIGENTE</code>.", "<strong>Information Expert</strong>."),
+ ("O5", "5b7f165", "Por API se le <strong>tocaban permisos al ADMIN</strong>.", "<code>model/Usuario.java</code> <code>otorgarPermisos</code>, <code>asignarRol</code> lo rechazan.", "<strong>Regla en el modelo</strong>."),
+ ("S1", "67ba784", "Escrituras <strong>sin transacción</strong>.", "<code>@Transactional</code> en <code>service/impl/*</code>; <code>readOnly</code> en lecturas.", "<strong>Unidad de trabajo</strong> en el servicio."),
+ ("S2", "1e87795", "Open-in-view <strong>tapaba</strong> servicios sin transacción.", "<code>spring.jpa.open-in-view=false</code> (<code>application.properties</code>).", "Carga explícita."),
+ ("S3", "45a35c9", "<code>jwt.secret</code> <strong>en un repo público</strong> (TPO-009).", "<code>${JWT_SECRET}</code> en <code>application.properties</code>.", "<strong>Config fuera del código</strong>."),
+ ("S4", "904fa1e", "El 500 <strong>filtraba</strong> SQL y clases.", "“Error interno” + log en <code>exception/GlobalExceptionHandler.java</code>.", "<strong>No exponer internos</strong>."),
+ ("D1, D2", "5ac2155, 3bd8b61", "<code>findByRol</code> y anotaciones de <code>AuthResponse</code> sin uso.", "Borrados (<code>repository/UsuarioRepository.java</code>, <code>dto/response/AuthResponse.java</code>).", "<strong>Código muerto</strong>."),
+ ("BS1", "5f2c334", "<code>listarTodos</code> = <code>listarUsuarios</code>.", "Se borra <code>listarTodos</code> (<code>service/AdminService.java</code>).", "<strong>Código duplicado</strong>."),
+ ("DF1, DF3", "830a998, 5d2dbc4", "Store huérfano; <code>console.log</code> <strong>imprimía el JWT</strong>.", "Borrados (<code>frontend/src/store/index.js</code>, <code>frontend/src/pages/Creditos.jsx</code>).", "<strong>Código muerto / de depuración</strong>."),
+ ("BSF1", "c19e707", "Comentarios de copy-paste en el front.", "Borrados (<code>frontend/src/store/slices/*</code>).", "<strong>Bad smell: comentarios</strong>."),
+ ("F1", "f0e5c59", "Autenticado sin rol recibía <strong>401 en vez de 403</strong>.", "<code>accessDeniedHandler</code> en <code>config/SecurityConfig.java</code>.", "<strong>401 = quién sos; 403 = no podés.</strong>"),
+ ("F2", "06fc842", "JSON roto daba <strong>500</strong>.", "<code>exception/GlobalExceptionHandler.java</code> <code>handleRequestInvalida</code>: 400.", "<strong>Error del cliente = 4xx</strong>."),
+ ("T34", "8eb2106", "<strong>Sin DER</strong> ni revisión del esquema.", "<code>docs/diagramas/der-v3.puml</code>; encontró I-1, I-2, I-3 (todas resueltas).", "Esquema: identidad; entidades: reglas."),
+ ("T35", "013c07a, 0df40d1", "Provider armado a mano; <code>ErrorResponse</code> <strong>repetido 9 veces</strong>.", "S5: Spring arma el provider (<code>config/SecurityConfig.java</code>). BS2: un método <code>error</code> en <code>exception/GlobalExceptionHandler.java</code>.", "<strong>Convención de Spring</strong>; código duplicado."),
+ ("T36", "d89d62d, 6cc5e17", "Un crédito podía quedar <strong>sin cuotas</strong>; dashboard sin saldo ni mora.", "O6: el constructor de <code>model/Credito.java</code> genera las cuotas. O7: saldo y vencido en <code>service/impl/DashboardServiceImpl.java</code>.", "<strong>Creator</strong>; <strong>Information Expert</strong>."),
+ ("T40", "8888df6, 5246f27, 7c6dd63, f96f53a", "Dos cobros simultáneos <strong>duplicaban la cobranza</strong> (I-1); el servicio preguntaba permisos (BS3); rol como <code>String</code> (BS4).", "<code>@Lock(PESSIMISTIC_WRITE)</code> en <code>repository/CuotaRepository.java</code> + test de 20 hilos; <code>model/Usuario.java</code> <code>puedeAnularCredito</code>; <code>Rol</code> en los DTO.", "<strong>Bloqueo pesimista</strong>; <strong>Tell, don't ask</strong>; primitive obsession."),
+ ("T42", "dfa2c12, d9b0b8f, a085f66, f5c8d05, 0e3284e", "Front: rutas por rol <strong>duplicadas</strong>, roles como strings sueltos.", "<code>frontend/src/components/RoleRoute.jsx</code>, <code>frontend/src/utils/roles.js</code>, todo por <code>src/api</code>.", "<strong>Código duplicado</strong>, strings mágicos."),
 ]
-rev_html = "".join(f'<div class="rev" id="{i.lower()}"><h4>{i} <span class="ref">· commit <code>{c}</code></span></h4><p><strong>Problema.</strong> {p}</p><p><strong>Cambio.</strong> {s}</p><p><strong>Concepto.</strong> {k}</p></div>' for i, c, p, s, k in rev)
+rev_html = "".join(f'<div class="rev" id="{i.lower()}"><h4>{i} <span class="ref">· <code>{c}</code></span></h4><p><strong>Problema.</strong> {p} <strong>Cambio.</strong> {s} <strong>Concepto.</strong> {k}</p></div>' for i, c, p, s, k in rev)
 
 evol = [
  ("Swagger (contrato de la API)", "f551cbc, a4b2077",
@@ -544,19 +504,18 @@ mapeo = [
 rows = "\n".join(f"<tr><td><code>{a}</code></td><td><strong>{b}</strong></td><td>{c}</td></tr>" for a, b, c in mapeo)
 
 tecnologias = '''<dl class="tec">
-<dt>Spring Boot</dt><dd>Framework Java que arma la aplicación web con configuración por convención. Es el backend: controladores REST, servicios y seguridad.</dd>
-<dt>Spring Security</dt><dd>Módulo de Spring para autenticación y autorización. Filtra cada request, decide 401/403 y aplica las reglas por rol de <code>SecurityConfig</code>.</dd>
-<dt>JWT y jjwt</dt><dd>JWT es un token firmado que el backend entrega en el login y el front manda en cada request. jjwt es la librería Java que lo genera y lo valida; es el Adaptado de M7.</dd>
-<dt>JPA / Hibernate y Spring Data</dt><dd>JPA mapea las clases del modelo a tablas; Hibernate es la implementación. Spring Data genera los repositorios. Explica los <code>JOIN FETCH</code> y el <code>LazyInitializationException</code> de M8.</dd>
-<dt>H2</dt><dd>Base de datos en memoria. La usamos para correr el TPO sin instalar un motor; se reinicia en cada arranque.</dd>
-<dt>Lombok</dt><dd>Genera getters, constructores y loggers con anotaciones (<code>@Getter</code>, <code>@RequiredArgsConstructor</code>, <code>@Slf4j</code>). Reduce código repetido en entidades y DTO.</dd>
-<dt>springdoc-openapi / Swagger UI</dt><dd>Lee los controladores y publica el contrato de la API (OpenAPI) en una página navegable. Lo usamos como documentación viva y para probar endpoints con token.</dd>
-<dt>React, Redux y Vite</dt><dd>React construye la interfaz con componentes; Redux guarda el estado del cliente (usuario, créditos); Vite levanta el servidor de desarrollo y arma el build.</dd>
-<dt>JUnit 5 + AssertJ</dt><dd>Framework de tests y librería de aserciones de Java. Con ellos están los 37 tests.</dd>
-<dt>Mockito y <code>@WebMvcTest</code></dt><dd>Mockito crea objetos simulados; <code>@WebMvcTest</code> levanta solo la capa web de Spring. Juntos prueban los códigos HTTP con la seguridad real y sin base.</dd>
-<dt>Bean Validation</dt><dd>Anotaciones (<code>@NotBlank</code>, <code>@Size</code>, <code>@Digits</code>) en los DTO de request que Spring chequea con <code>@Valid</code> antes del controller; lo inválido sale 400.</dd>
-<dt>Maven</dt><dd>Herramienta de build de Java: baja dependencias, compila y corre los tests (<code>mvn test</code>).</dd>
-<dt>PlantUML</dt><dd>Genera diagramas UML a partir de texto. Con él están hechos los diagramas antes/después y el diagrama de clases.</dd>
+<dt>Spring Boot</dt><dd>Framework Java del backend: REST, servicios, seguridad.</dd>
+<dt>Spring Security</dt><dd>Autenticación y autorización: filtra cada request, decide 401/403.</dd>
+<dt>JWT y jjwt</dt><dd>Token firmado del login; jjwt lo genera y valida. Adaptee de M7.</dd>
+<dt>JPA / Hibernate / Spring Data</dt><dd>Mapea clases a tablas; Spring Data genera los repositorios.</dd>
+<dt>H2</dt><dd>Base en memoria: corre sin instalar motor.</dd>
+<dt>Lombok</dt><dd>Genera getters, constructores y loggers por anotación.</dd>
+<dt>springdoc / Swagger UI</dt><dd>Publica el contrato de la API en una página navegable.</dd>
+<dt>React, Redux, Vite</dt><dd>Interfaz por componentes, estado del cliente, servidor de desarrollo y build.</dd>
+<dt>JUnit 5, AssertJ, Mockito</dt><dd>Tests, aserciones y objetos simulados; <code>@WebMvcTest</code> levanta solo la capa web.</dd>
+<dt>Bean Validation</dt><dd><code>@NotBlank</code>, <code>@Size</code>, <code>@Digits</code> en los DTO; lo inválido sale 400.</dd>
+<dt>Maven</dt><dd>Build: dependencias, compilación, tests.</dd>
+<dt>PlantUML y d2</dt><dd>Diagramas a partir de texto.</dd>
 </dl>'''
 
 
@@ -582,7 +541,7 @@ doc = f'''<!doctype html>
 <title>Reporte V3 — TPO Grupo 7</title><style>{CSS}</style></head>
 <body>
 <div id="barra"><strong style="color:var(--navy)">Reporte V3</strong>
-<nav><a href="#portada">Portada</a><a href="#timeline">Timeline</a><a href="#mvc">MVC</a><a href="#mejoras">Mejoras</a><a href="#m7">Adapter</a><a href="#m9">Strategy</a><a href="#convenciones">Convenciones</a><a href="#matriz">GRASP/SOLID</a><a href="#evolucion">Evolución</a><a href="#revision">Revisión</a><a href="#verificacion">Verificación</a><a href="#clases">Diagramas</a><a href="#pendientes">Pendientes</a><a href="../casos-de-uso/README.md">Casos de uso</a></nav>
+<nav><a href="#portada">Portada</a><a href="#timeline">Timeline</a><a href="#tecnologias">Tecnologías</a><a href="#mvc">MVC</a><a href="#mejoras">Mejoras</a><a href="#m9">Strategy</a><a href="#m7">Adapter</a><a href="#convenciones">Convenciones</a><a href="#matriz">GRASP/SOLID</a><a href="#evolucion">Evolución</a><a href="#revision">Revisión</a><a href="#verificacion">Verificación</a><a href="#casos">Casos de uso</a><a href="#clases">Diagramas</a><a href="#pendientes">Pendientes</a></nav>
 <button class="sec" onclick="window.print()">Exportar PDF</button></div>
 <main>
 
@@ -597,23 +556,22 @@ doc = f'''<!doctype html>
 </section>
 
 <section id="timeline"><h2>Timeline V0 → V1 → V2 → V3</h2>
-<p>Cada iteración aplica un tema de la cursada sobre la versión anterior.</p>
+
 {timeline}</section>
 
 <section id="tecnologias"><h2>Tecnologías</h2>
 {tecnologias}</section>
 
 <section id="mvc"><h2>MVC en Spring Boot</h2>
-<p>MVC separa <em>componentes</em>, no clases. El modelo y el controlador viven en el backend Spring Boot y la vista es la SPA React: es <strong>MVC distribuido, con la vista en el cliente</strong>. La vista no observa al modelo: le pide los datos al controlador por HTTP, y vista y controlador se hablan por DTO, como pide la slide de la clase 9.</p>
+<p><strong>MVC distribuido</strong>: modelo y controlador en Spring Boot, vista en React. Vista y controlador se hablan <strong>por DTO</strong> (clase 9).</p>
 <div class="clases">{archify_svg("mvc")}</div>
 <table><thead><tr><th>Clase / paquete</th><th>Componente</th><th>Justificación</th></tr></thead><tbody>{rows}</tbody></table>
 <h3>Qué cambió en V3</h3>
 <ul>
-<li><strong>El contrato está publicado.</strong> Swagger UI (<code>/swagger-ui.html</code>, <code>config/OpenApiConfig.java</code>) documenta 20 operaciones con su request, response y los códigos que realmente produce.</li>
-<li><strong>El controlador traduce todos los errores.</strong> <code>exception/GlobalExceptionHandler.java</code> mapea las excepciones del modelo y de la seguridad a 400/401/403/404/405/500 con el mismo <code>ErrorResponse</code> (M5, S4).</li>
-<li><strong>401 y 403 son distintos.</strong> Sin token, <code>config/SecurityConfig.java</code> responde 401 con <code>HttpStatusEntryPoint</code>; con token y sin rol o sin permiso, 403. Antes ambos daban 403.</li>
-<li><strong>La regla está en el modelo y la vista solo oculta.</strong> Permisos de anulación (M4), guarda del ADMIN (O5) y anulabilidad (O1) dejaron de vivir solo en JSX.</li>
-<li><strong>Validación en las tres capas</strong>: <code>required</code> en el JSX, <code>@Valid</code> en el controlador (sumado a <code>RolRequest</code> y <code>PermisosRequest</code>) y reglas en las entidades.</li>
+<li><strong>Contrato publicado</strong>: Swagger (<code>config/OpenApiConfig.java</code>).</li>
+<li><strong>Todos los errores traducidos</strong> a HTTP (<code>exception/GlobalExceptionHandler.java</code>).</li>
+<li><strong>401 ≠ 403</strong> (<code>config/SecurityConfig.java</code>).</li>
+<li><strong>La regla en el modelo, la vista solo oculta</strong> (M4, O1, O5).</li>
 </ul>
 </section>
 
@@ -648,21 +606,21 @@ doc = f'''<!doctype html>
 </section>
 
 <section id="verificacion"><h2>Verificación</h2>
-<div class="cuadro">
-<div><h4>Tests automáticos</h4><p><code>cd backend &amp;&amp; mvn test</code>: <strong>37 tests, 0 fallas</strong>. 27 de dominio puro (JUnit 5 + AssertJ, sin Spring): <code>CreditoTest</code> 8, <code>CuotaTest</code> 8, <code>InteresSimpleTest</code> 4, <code>SistemaFrancesTest</code> 4, <code>CobranzaTest</code> 3; cubren cada estrategia aislada y M1, M2, M6, M8. 8 de códigos HTTP en <code>CodigosHttpTest</code> (<code>@WebMvcTest</code>): 400, 401, 403, 404 y 405 con la seguridad JWT real. 1 de concurrencia en <code>CobranzaConcurrenteTest</code> (<code>@SpringBootTest</code>, 20 hilos cobrando la misma cuota, I-1). Más <code>contextLoads</code>.</p></div>
-<div><h4>Smoke de la API</h4><p>22 casos con curl contra el backend levantado: 401/404/405 (M5), los dos planes (M9), cobro sobre anulado (M1), 403 sin permiso (M4), vencidas (M6), dashboard por rol y con números correctos (M3, M10). Todos OK.</p></div>
-<div><h4>Verificación final</h4><p>Recorrido de API y visual sobre <code>main</code> el 06/10: tokens alterados o vencidos (O2), cálculo de los dos planes, estados y saldo, permisos, dashboard. Encontró 401 donde correspondía 403 y 500 en requests mal formadas, corregidos en F1 y F2. Los casos de uso se volvieron a recorrer por API con <code>docs/casos-de-uso/verificar-cu.sh</code>.</p></div>
-<div><h4>Comprobación visual</h4><p>Recorrido completo en el browser con capturas: login, alta, otorgamiento simple y francés, cobro, vencida, anulación, 403 forzado, dashboard ADMIN y SUPERVISOR, Swagger con token. Las dos fallas encontradas (listado sin refrescar tras anular y título “Modo Supervisor” para el ADMIN) se corrigieron en O1 y <code>d35fc0e</code>.</p></div>
-</div>
+<ul>
+<li><strong>37 tests, 0 fallas</strong> (<code>mvn test</code>): 27 de dominio, 8 HTTP (<code>@WebMvcTest</code>), 1 de concurrencia, <code>contextLoads</code>.</li>
+<li><strong>Smoke de API</strong>: 22 casos con curl, todos OK.</li>
+<li><strong>Verificación final</strong>: encontró 401/403 y 500 mal mapeados; corregidos en F1, F2.</li>
+<li><strong>Recorrido visual</strong>: 2 fallas, corregidas en O1 y <code>d35fc0e</code>.</li>
+</ul>
 </section>
 
 <section id="casos"><h2>Casos de uso</h2>
-<p>Las fichas de cada caso de uso vigente (actor, flujo, código HTTP real, regla y dónde vive) con la numeración de V0, el diagrama V3 y la matriz de trazabilidad están en <a href="../casos-de-uso/README.md"><code>docs/casos-de-uso/README.md</code></a>. Se verificaron con <code>docs/casos-de-uso/verificar-cu.sh</code> sobre una base limpia.</p>
+<p>Fichas, diagrama y trazabilidad: <a href="../casos-de-uso/README.md"><code>docs/casos-de-uso/README.md</code></a>. Verificados con <code>docs/casos-de-uso/verificar-cu.sh</code>.</p>
 <p><a href="../casos-de-uso/casos-de-uso-v3.svg"><img src="../casos-de-uso/casos-de-uso-v3.svg" alt="Diagrama de casos de uso V3" style="width:100%;background:#fff;border:1px solid var(--linea);border-radius:4px"></a></p>
 </section>
 
 <section id="clases"><h2>Diagramas de clases y DER</h2>
-<p>El diagrama de clases UML completo (tres compartimentos por clase) es el entregable: <a href="../diagramas/clases-v3-general.svg">vista general</a> y <a href="../diagramas/clases-v3-modelo.svg">detalle del modelo</a>, fuente <code>docs/diagramas/clases-v3.puml</code>. Acá van tres vistas legibles, hechas con d2 (lenguaje de diagramas a partir de texto; fuentes en <code>docs/diagramas/d2/</code>).</p>
+<p>Entregable UML: <a href="../diagramas/clases-v3-general.svg">vista general</a> y <a href="../diagramas/clases-v3-modelo.svg">modelo</a> (<code>docs/diagramas/clases-v3.puml</code>). Abajo, vistas en d2 (diagramas desde texto).</p>
 <h3>Strategy</h3>
 <div class="clases">{d2svg("strategy")}</div>
 <h3>Adapter</h3>
