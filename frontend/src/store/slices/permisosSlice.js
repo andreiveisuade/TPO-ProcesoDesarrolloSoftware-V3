@@ -1,12 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { api } from '../../api/apiClient'; 
 import { updatePermisosSupervisor, getUsuariosSupervisor } from '../../api/supervisor';
-import { updateRolUsuario } from '../../api/admin'; // Asumiendo que esta función hace el PUT del rol[cite: 4]
+import { updateRolUsuario } from '../../api/admin';
 
 // 1. Thunk para que el ADMIN obtenga todos los usuarios
 export const fetchUsuariosAdmin = createAsyncThunk('permisos/fetchAdmin', async (_, { rejectWithValue }) => {
   try {
-    // Asegúrate de tener este endpoint creado en tu AdminController en el backend
     return await api.get('/admin/usuarios'); 
   } catch (err) {
     return rejectWithValue(err.message);
@@ -34,7 +33,6 @@ export const togglePermiso = createAsyncThunk('permisos/toggle', async ({ id, pe
 // 4. Thunk para que el ADMIN cambie el rol de un usuario
 export const cambiarRol = createAsyncThunk('permisos/cambiarRol', async ({ id, nuevoRol }, { rejectWithValue }) => {
   try {
-    // Pasa los parámetros necesarios a la función de tu archivo admin.js
     return await updateRolUsuario(id, nuevoRol);
   } catch (err) {
     return rejectWithValue(err.message);

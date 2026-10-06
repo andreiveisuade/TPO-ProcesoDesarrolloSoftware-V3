@@ -17,7 +17,6 @@ export const addCobranza = createAsyncThunk('cobranzas/add', async (data, { reje
   }
 });
 
-// NUEVO THUNK PARA ANULAR
 export const anularCobranzaThunk = createAsyncThunk('cobranzas/anular', async (id, { rejectWithValue }) => {
   try {
     await anularCobranzaApi(id);
