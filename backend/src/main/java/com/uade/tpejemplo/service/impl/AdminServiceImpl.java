@@ -3,7 +3,6 @@ package com.uade.tpejemplo.service.impl;
 import com.uade.tpejemplo.dto.request.PermisosRequest;
 import com.uade.tpejemplo.dto.request.RolRequest;
 import com.uade.tpejemplo.dto.response.UsuarioResponse;
-import com.uade.tpejemplo.exception.BusinessException;
 import com.uade.tpejemplo.exception.ResourceNotFoundException;
 import com.uade.tpejemplo.model.Permisos;
 import com.uade.tpejemplo.model.Rol;
@@ -13,6 +12,7 @@ import com.uade.tpejemplo.service.AdminService;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -22,13 +22,7 @@ public class AdminServiceImpl implements AdminService {
 
     private final UsuarioRepository usuarioRepository;
 
-    @Override
-    public List<UsuarioResponse> listarTodos() {
-        return usuarioRepository.findAll().stream()
-                .map(UsuarioResponse::desde)
-                .toList();
-    }
-
+    @Transactional(readOnly = true)
     @Override
     public List<UsuarioResponse> listarUsuarios() {
         return usuarioRepository.findAll().stream()
@@ -37,6 +31,7 @@ public class AdminServiceImpl implements AdminService {
                 .toList();
     }
 
+    @Transactional
     @Override
     public UsuarioResponse actualizarPermisos(Long id, PermisosRequest request) {
         Usuario usuario = buscar(id);
@@ -51,16 +46,10 @@ public class AdminServiceImpl implements AdminService {
         return UsuarioResponse.desde(usuario);
     }
 
+    @Transactional
     @Override
     public UsuarioResponse actualizarRol(Long id, RolRequest request) {
         Usuario usuario = buscar(id);
-
-        if (usuario.getRol() == Rol.ADMIN) {
-            throw new BusinessException("No se puede cambiar el rol de un administrador");
-        }
-        if (request.getRol() == Rol.ADMIN) {
-            throw new BusinessException("No se puede otorgar el rol de administrador");
-        }
 
         usuario.asignarRol(request.getRol());
         usuarioRepository.save(usuario);

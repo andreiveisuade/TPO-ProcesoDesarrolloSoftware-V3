@@ -9,6 +9,7 @@ import com.uade.tpejemplo.repository.ClienteRepository;
 import com.uade.tpejemplo.service.ClienteService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -18,6 +19,7 @@ public class ClienteServiceImpl implements ClienteService {
 
     private final ClienteRepository clienteRepository;
 
+    @Transactional
     @Override
     public ClienteResponse crear(ClienteRequest request) {
         if (clienteRepository.existsById(request.getDni())) {
@@ -28,6 +30,7 @@ public class ClienteServiceImpl implements ClienteService {
         return ClienteResponse.desde(cliente);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public ClienteResponse buscarPorDni(String dni) {
         Cliente cliente = clienteRepository.findById(dni)
@@ -35,6 +38,7 @@ public class ClienteServiceImpl implements ClienteService {
         return ClienteResponse.desde(cliente);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<ClienteResponse> listarTodos() {
         return clienteRepository.findAll().stream()

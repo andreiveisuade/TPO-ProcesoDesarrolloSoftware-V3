@@ -8,8 +8,6 @@ import java.util.List;
 
 public interface AdminService {
 
-    List<UsuarioResponse> listarTodos();
-
     List<UsuarioResponse> listarUsuarios();
 
     UsuarioResponse actualizarPermisos(Long id, PermisosRequest request);

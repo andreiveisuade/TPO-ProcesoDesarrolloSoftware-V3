@@ -2,13 +2,9 @@ package com.uade.tpejemplo.dto.response;
 
 import com.uade.tpejemplo.model.interfaces.IUsuario;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
-@Builder
-@NoArgsConstructor
 @AllArgsConstructor
 public class AuthResponse {
 
