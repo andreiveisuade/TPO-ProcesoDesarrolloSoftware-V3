@@ -12,6 +12,7 @@ import AdminRoute from './components/AdminRoute';
 import SupervisorRoute from './components/SupervisorRoute';
 import PanelAdmin from './pages/PanelAdmin';
 
+// Rutas de la aplicacion y la barra de navegacion; cada ruta protegida pasa por su guarda de rol.
 export default function App() {
   return (
     <BrowserRouter>

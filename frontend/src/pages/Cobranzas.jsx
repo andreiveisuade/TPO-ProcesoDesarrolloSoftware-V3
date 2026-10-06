@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchCobranzasPorCredito, addCobranza, clearCobranzas, anularCobranzaThunk } from '../store/slices/cobranzasSlice';
 
+// Registro de cobranzas de un credito y anulacion de las del dia.
 export default function Cobranzas() {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);

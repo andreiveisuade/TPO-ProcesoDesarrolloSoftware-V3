@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchClientes, addCliente } from '../store/slices/clientesSlice';
 
+// Alta y listado de clientes.
 export default function Clientes() {
   const dispatch = useDispatch();
   const { lista, loading, error } = useSelector((state) => state.clientes);

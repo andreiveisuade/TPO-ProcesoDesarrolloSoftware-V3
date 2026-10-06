@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchUsuariosAdmin, cambiarRol } from '../store/slices/permisosSlice'; 
 
+// Panel del ADMIN para cambiar el rol de los usuarios.
 const PanelAdmin = () => {
   const dispatch = useDispatch();
   const { lista: usuarios, loading, error } = useSelector((state) => state.permisos);

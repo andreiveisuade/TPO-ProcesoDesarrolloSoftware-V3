@@ -20,7 +20,7 @@ export const addCobranza = createAsyncThunk('cobranzas/add', async (data, { reje
 export const anularCobranzaThunk = createAsyncThunk('cobranzas/anular', async (id, { rejectWithValue }) => {
   try {
     await anularCobranzaApi(id);
-    return id; // Retornamos el ID para identificar cuál actualizar en el estado
+    return id;
   } catch (err) {
     return rejectWithValue(err.response?.data?.mensajes?.[0] || err.message);
   }

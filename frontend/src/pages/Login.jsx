@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { loginThunk } from '../store/slices/authSlice';
 
+// Formulario de inicio de sesion.
 export default function Login() {
   const [form, setForm] = useState({ username: '', password: '' });
   const dispatch        = useDispatch();

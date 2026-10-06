@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { registerThunk } from '../store/slices/authSlice';
 
+// Formulario de registro de un usuario nuevo.
 export default function Register() {
   const [form, setForm] = useState({ username: '', password: '' });
   const dispatch        = useDispatch();

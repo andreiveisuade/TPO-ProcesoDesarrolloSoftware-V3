@@ -3,7 +3,6 @@ import { api } from '../../api/apiClient';
 import { updatePermisosSupervisor, getUsuariosSupervisor } from '../../api/supervisor';
 import { updateRolUsuario } from '../../api/admin';
 
-// 1. Thunk para que el ADMIN obtenga todos los usuarios
 export const fetchUsuariosAdmin = createAsyncThunk('permisos/fetchAdmin', async (_, { rejectWithValue }) => {
   try {
     return await api.get('/admin/usuarios'); 
@@ -12,7 +11,6 @@ export const fetchUsuariosAdmin = createAsyncThunk('permisos/fetchAdmin', async 
   }
 });
 
-// 2. Thunk para que el SUPERVISOR obtenga los usuarios
 export const fetchUsuariosSupervisor = createAsyncThunk('permisos/fetchSupervisor', async (_, { rejectWithValue }) => {
   try {
     return await getUsuariosSupervisor();
@@ -21,7 +19,6 @@ export const fetchUsuariosSupervisor = createAsyncThunk('permisos/fetchSuperviso
   }
 });
 
-// 3. Thunk para que el SUPERVISOR asigne permisos de anulación
 export const togglePermiso = createAsyncThunk('permisos/toggle', async ({ id, permisos }, { rejectWithValue }) => {
   try {
     return await updatePermisosSupervisor(id, permisos);
@@ -30,7 +27,6 @@ export const togglePermiso = createAsyncThunk('permisos/toggle', async ({ id, pe
   }
 });
 
-// 4. Thunk para que el ADMIN cambie el rol de un usuario
 export const cambiarRol = createAsyncThunk('permisos/cambiarRol', async ({ id, nuevoRol }, { rejectWithValue }) => {
   try {
     return await updateRolUsuario(id, nuevoRol);
@@ -48,23 +44,19 @@ const permisosSlice = createSlice({
   },
   reducers: {},
   extraReducers: (builder) => {
-    // Función auxiliar para manejar el estado de carga y error en los GET
     const handlePending = (state) => { state.loading = true; state.error = null; };
     const handleFulfilled = (state, action) => { state.loading = false; state.lista = action.payload; };
     const handleRejected = (state, action) => { state.loading = false; state.error = action.payload; };
 
     builder
-      // Casos de GET para ADMIN
       .addCase(fetchUsuariosAdmin.pending, handlePending)
       .addCase(fetchUsuariosAdmin.fulfilled, handleFulfilled)
       .addCase(fetchUsuariosAdmin.rejected, handleRejected)
       
-      // Casos de GET para SUPERVISOR
       .addCase(fetchUsuariosSupervisor.pending, handlePending)
       .addCase(fetchUsuariosSupervisor.fulfilled, handleFulfilled)
       .addCase(fetchUsuariosSupervisor.rejected, handleRejected)
       
-      // Caso de PUT para SUPERVISOR (Actualizar tabla de permisos)
       .addCase(togglePermiso.fulfilled, (state, action) => {
         const usuarioActualizado = action.payload;
         const index = state.lista.findIndex(u => u.id === usuarioActualizado.id);
@@ -73,7 +65,6 @@ const permisosSlice = createSlice({
         }
       })
       
-      // Caso de PUT para ADMIN (Actualizar tabla de roles)
       .addCase(cambiarRol.fulfilled, (state, action) => {
         const usuarioActualizado = action.payload;
         const index = state.lista.findIndex(u => u.id === usuarioActualizado.id);

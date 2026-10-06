@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchEstadisticas } from '../store/slices/dashboardSlice'; 
 
+// Estadisticas generales para SUPERVISOR y ADMIN.
 const Dashboard = () => {
   const dispatch = useDispatch();
   
@@ -89,7 +90,7 @@ const styles = {
   supervisorBadge: {
     fontSize: '0.5em',
     color: 'white',
-    backgroundColor: '#17a2b8', // Color cyan para diferenciarlo del admin (rojo)
+    backgroundColor: '#17a2b8',
     padding: '4px 8px',
     borderRadius: '12px',
     verticalAlign: 'middle',

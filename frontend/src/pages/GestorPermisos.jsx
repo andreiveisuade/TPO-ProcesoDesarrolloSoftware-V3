@@ -2,11 +2,11 @@ import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchUsuariosSupervisor, togglePermiso } from '../store/slices/permisosSlice';
 
+// Tabla del SUPERVISOR para otorgar o quitar permisos de anulacion.
 const GestorPermisos = () => {
   const dispatch = useDispatch();
   const { lista: usuarios, loading, error } = useSelector((state) => state.permisos);
   
-  // Extraemos el usuario para proteger la vista
   const { user } = useSelector((state) => state.auth);
   const isSupervisor = user?.rol === 'SUPERVISOR';
 

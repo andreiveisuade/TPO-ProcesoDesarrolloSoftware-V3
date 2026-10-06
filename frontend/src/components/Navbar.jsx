@@ -2,14 +2,13 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../store/slices/authSlice';
 
+// Barra superior con el usuario logueado y los links que corresponden a su rol.
 export default function Navbar() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   
-  // Extraemos el usuario desde el estado global (Redux)
   const user = useSelector((state) => state.auth.user);
 
-  // Verificamos los roles de manera independiente
   const isAdmin = user?.rol === 'ADMIN';
   const isSupervisor = user?.rol === 'SUPERVISOR';
 
@@ -31,12 +30,10 @@ export default function Navbar() {
             <Link to="/estadisticas" style={styles.supervisorLink}>Dashboard</Link>
           )}
 
-          {/* El Gestor de Permisos de anulación es exclusivo del Supervisor */}
           {isSupervisor && (
              <Link to="/supervisor/permisos-anulacion" style={styles.supervisorLink}>Gestor de Permisos</Link>
           )}
 
-          {/* Si el Admin necesita un panel de administración general o asignación de roles */}
           {isAdmin && (
              <Link to="/admin/roles" style={styles.adminLink}>Panel Admin</Link>
           )}

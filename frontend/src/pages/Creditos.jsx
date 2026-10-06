@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchCreditosPorCliente, addCredito, clearCreditos, anularCreditoThunk } from '../store/slices/creditosSlice';
 
+// Creditos de un cliente: otorgamiento, plan de cuotas con su estado y anulacion.
 export default function Creditos() {
   const dispatch = useDispatch();
   
@@ -110,7 +111,6 @@ export default function Creditos() {
                 <div><dt style={styles.dt}>Saldo</dt><dd style={{ ...styles.dd, fontWeight: 'bold' }}>{formatMoneda(cr.saldo)}</dd></div>
               </dl>
 
-              {/* Botón de anular condicional */}
               {cr.puedeAnularse && user?.puedeAnularCredito && (
                 <button onClick={() => handleAnular(cr.id)} style={styles.btnAnular}>
                   Anular
