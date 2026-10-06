@@ -9,7 +9,7 @@ import com.uade.tpejemplo.model.Permisos;
 import com.uade.tpejemplo.model.Rol;
 import com.uade.tpejemplo.model.Usuario;
 import com.uade.tpejemplo.repository.UsuarioRepository;
-import com.uade.tpejemplo.security.JwtUtil;
+import com.uade.tpejemplo.service.TokenService;
 import com.uade.tpejemplo.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -24,7 +24,7 @@ public class AuthServiceImpl implements AuthService {
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
-    private final JwtUtil jwtUtil;
+    private final TokenService tokenService;
 
     @Override
     public AuthResponse registrar(RegisterRequest request) {
@@ -41,7 +41,7 @@ public class AuthServiceImpl implements AuthService {
 
         usuarioRepository.save(usuario);
 
-        return AuthResponse.desde(jwtUtil.generarToken(usuario.getUsername()), usuario);
+        return AuthResponse.desde(tokenService.generarToken(usuario.getUsername()), usuario);
     }
 
     @Override
@@ -52,7 +52,7 @@ public class AuthServiceImpl implements AuthService {
 
         Usuario usuario = buscar(request.getUsername());
 
-        return AuthResponse.desde(jwtUtil.generarToken(usuario.getUsername()), usuario);
+        return AuthResponse.desde(tokenService.generarToken(usuario.getUsername()), usuario);
     }
 
     private Usuario buscar(String username) {

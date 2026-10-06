@@ -1,5 +1,6 @@
 package com.uade.tpejemplo.security;
 
+import com.uade.tpejemplo.service.TokenService;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -23,7 +24,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private static final String PREFIJO_BEARER = "Bearer ";
 
-    private final JwtUtil jwtUtil;
+    private final TokenService tokenService;
     private final UserDetailsService userDetailsService;
 
     @Override
@@ -61,12 +62,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private void autenticar(String token, HttpServletRequest request) {
         UserDetails userDetails;
         try {
-            userDetails = userDetailsService.loadUserByUsername(jwtUtil.extraerUsername(token));
+            userDetails = userDetailsService.loadUserByUsername(tokenService.extraerUsername(token));
         } catch (JwtException | IllegalArgumentException | UsernameNotFoundException e) {
             return;
         }
 
-        if (!jwtUtil.esValido(token, userDetails)) {
+        if (!tokenService.esValido(token, userDetails)) {
             return;
         }
 
