@@ -84,8 +84,8 @@ package "Modelo" {
     }
     interface TokenService <<Target>> {
       + generarToken(String) : String
-      + extraerUsername(String) : String
-      + esValido(String, UserDetails) : boolean
+      + extraerUsername(String) : Optional<String>
+      + esValido(String, String) : boolean
     }
     class AuthServiceImpl
     class ClienteServiceImpl
@@ -100,8 +100,8 @@ package "Modelo" {
       - secret : String
       - expirationMs : long
       + generarToken(String) : String
-      + extraerUsername(String) : String
-      + esValido(String, UserDetails) : boolean
+      + extraerUsername(String) : Optional<String>
+      + esValido(String, String) : boolean
     }
     class "io.jsonwebtoken.Jwts" as Jwts <<Adaptee>>
     class JwtAuthFilter {

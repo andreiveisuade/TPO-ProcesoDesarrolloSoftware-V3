@@ -1,15 +1,16 @@
 package com.uade.tpejemplo.security;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import com.uade.tpejemplo.service.TokenService;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
+import java.util.Optional;
 import java.util.function.Function;
 
 @Component
@@ -36,18 +37,17 @@ public class JwtUtil implements TokenService {
     }
 
     @Override
-    public String extraerUsername(String token) {
-        return extraerClaim(token, Claims::getSubject);
+    public Optional<String> extraerUsername(String token) {
+        try {
+            return Optional.ofNullable(extraerClaim(token, Claims::getSubject));
+        } catch (JwtException | IllegalArgumentException e) {
+            return Optional.empty();
+        }
     }
 
     @Override
-    public boolean esValido(String token, UserDetails userDetails) {
-        String username = extraerUsername(token);
-        return username.equals(userDetails.getUsername()) && !estaExpirado(token);
-    }
-
-    private boolean estaExpirado(String token) {
-        return extraerClaim(token, Claims::getExpiration).before(new Date());
+    public boolean esValido(String token, String username) {
+        return extraerUsername(token).filter(username::equals).isPresent();
     }
 
     private <T> T extraerClaim(String token, Function<Claims, T> resolver) {
