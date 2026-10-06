@@ -80,6 +80,7 @@ public class CreditoServiceImpl implements CreditoService {
             throw new AccessDeniedException("El usuario no tiene permiso para anular creditos");
         }
 
+        creditoRepository.bloquearPorId(id);
         Credito credito = buscarCredito(id);
 
         credito.anular();
