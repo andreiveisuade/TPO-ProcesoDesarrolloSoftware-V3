@@ -15,7 +15,7 @@ class CobranzaTest {
     void seRegistraConFechaDeHoyYSePuedeAnularElMismoDia() {
         Credito credito = Credito.nuevo(Cliente.nuevo("30111222", "Ana"), new BigDecimal("100"),
             LocalDate.now(), BigDecimal.ZERO, 1, TipoPlan.INTERES_SIMPLE);
-        Cobranza cobranza = credito.generarPlanDeCuotas().get(0).registrarCobranza(new BigDecimal("100.00"));
+        Cobranza cobranza = credito.getCuotas().get(0).registrarCobranza(new BigDecimal("100.00"));
 
         assertThat(cobranza.getFechaCobranza()).isEqualTo(LocalDate.now());
         cobranza.anular();
@@ -26,7 +26,7 @@ class CobranzaTest {
     void noSePuedeAnularDosVeces() {
         Credito credito = Credito.nuevo(Cliente.nuevo("30111222", "Ana"), new BigDecimal("100"),
             LocalDate.now(), BigDecimal.ZERO, 1, TipoPlan.INTERES_SIMPLE);
-        Cobranza cobranza = credito.generarPlanDeCuotas().get(0).registrarCobranza(new BigDecimal("100.00"));
+        Cobranza cobranza = credito.getCuotas().get(0).registrarCobranza(new BigDecimal("100.00"));
         cobranza.anular();
 
         assertThatThrownBy(cobranza::anular).isInstanceOf(BusinessException.class);

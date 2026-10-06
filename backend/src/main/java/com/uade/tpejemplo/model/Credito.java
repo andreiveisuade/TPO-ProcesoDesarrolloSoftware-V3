@@ -65,7 +65,7 @@ public class Credito implements ICredito {
     private boolean anulado = false;
 
     @Getter(AccessLevel.NONE)
-    @OneToMany(mappedBy = "credito", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "credito", fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @OrderBy("numero")
     private List<Cuota> cuotas = new ArrayList<>();
 
@@ -79,6 +79,8 @@ public class Credito implements ICredito {
         this.tipoPlan = tipoPlan;
         this.importeCuota = tipoPlan.calculo().importeCuota(deudaOriginal, tasaInteres, cantidadCuotas);
         this.anulado = false;
+        // Creator: el credito nace con su plan de cuotas
+        generarPlanDeCuotas();
     }
 
     // Unica forma de dar de alta un credito. El id lo asigna la base, las
@@ -95,12 +97,10 @@ public class Credito implements ICredito {
 
     // Es una regla del credito, no del caso de uso que lo da de alta:
     // por eso vive en la entidad y no en el servicio.
-    // Creator: el credito crea sus cuotas
-    public List<Cuota> generarPlanDeCuotas() {
-        for (int numeroCuota = cuotas.size() + 1; numeroCuota <= cantidadCuotas; numeroCuota++) {
+    private void generarPlanDeCuotas() {
+        for (int numeroCuota = 1; numeroCuota <= cantidadCuotas; numeroCuota++) {
             cuotas.add(new Cuota(this, numeroCuota, importeCuota, fecha.plusMonths(numeroCuota)));
         }
-        return getCuotas();
     }
 
     public List<Cuota> getCuotas() {

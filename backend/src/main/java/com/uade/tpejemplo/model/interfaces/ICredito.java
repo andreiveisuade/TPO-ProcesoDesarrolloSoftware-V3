@@ -29,8 +29,6 @@ public interface ICredito {
 
     BigDecimal totalADevolver();
 
-    List<? extends ICuota> generarPlanDeCuotas();
-
     List<? extends ICuota> getCuotas();
 
     EstadoCredito estado();
