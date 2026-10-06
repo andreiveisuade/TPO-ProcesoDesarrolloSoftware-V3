@@ -13,6 +13,7 @@ import com.uade.tpejemplo.service.AdminService;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -22,6 +23,7 @@ public class AdminServiceImpl implements AdminService {
 
     private final UsuarioRepository usuarioRepository;
 
+    @Transactional(readOnly = true)
     @Override
     public List<UsuarioResponse> listarTodos() {
         return usuarioRepository.findAll().stream()
@@ -29,6 +31,7 @@ public class AdminServiceImpl implements AdminService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<UsuarioResponse> listarUsuarios() {
         return usuarioRepository.findAll().stream()
@@ -37,6 +40,7 @@ public class AdminServiceImpl implements AdminService {
                 .toList();
     }
 
+    @Transactional
     @Override
     public UsuarioResponse actualizarPermisos(Long id, PermisosRequest request) {
         Usuario usuario = buscar(id);
@@ -51,6 +55,7 @@ public class AdminServiceImpl implements AdminService {
         return UsuarioResponse.desde(usuario);
     }
 
+    @Transactional
     @Override
     public UsuarioResponse actualizarRol(Long id, RolRequest request) {
         Usuario usuario = buscar(id);

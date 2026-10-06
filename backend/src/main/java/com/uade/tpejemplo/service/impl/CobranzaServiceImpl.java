@@ -36,6 +36,7 @@ public class CobranzaServiceImpl implements CobranzaService {
         return CobranzaResponse.desde(cobranza);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<CobranzaResponse> listarPorCredito(Long idCredito) {
         return cobranzaRepository.buscarPorCredito(idCredito).stream()
@@ -43,6 +44,7 @@ public class CobranzaServiceImpl implements CobranzaService {
             .toList();
     }
 
+    @Transactional
     @Override
     public void anularCobranza(Long id, IUsuario usuario) {
         if (!usuario.getPermisos().isPuedeAnularCobranza()) {
