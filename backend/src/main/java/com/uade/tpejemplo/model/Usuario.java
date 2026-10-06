@@ -1,5 +1,6 @@
 package com.uade.tpejemplo.model;
 
+import com.uade.tpejemplo.exception.BusinessException;
 import com.uade.tpejemplo.model.interfaces.IUsuario;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -45,6 +46,9 @@ public class Usuario implements IUsuario {
     }
 
     public void otorgarPermisos(Permisos permisos) {
+        if (rol == Rol.ADMIN) {
+            throw new BusinessException("No se pueden modificar los permisos de un administrador");
+        }
         this.permisos = permisos;
     }
 
@@ -53,6 +57,12 @@ public class Usuario implements IUsuario {
      * quien lo llama esta asignando un rol, no escribiendo un campo.
      */
     public void asignarRol(Rol rol) {
+        if (this.rol == Rol.ADMIN) {
+            throw new BusinessException("No se puede cambiar el rol de un administrador");
+        }
+        if (rol == Rol.ADMIN) {
+            throw new BusinessException("No se puede otorgar el rol de administrador");
+        }
         this.rol = rol;
     }
 }

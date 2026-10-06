@@ -3,7 +3,6 @@ package com.uade.tpejemplo.service.impl;
 import com.uade.tpejemplo.dto.request.PermisosRequest;
 import com.uade.tpejemplo.dto.request.RolRequest;
 import com.uade.tpejemplo.dto.response.UsuarioResponse;
-import com.uade.tpejemplo.exception.BusinessException;
 import com.uade.tpejemplo.exception.ResourceNotFoundException;
 import com.uade.tpejemplo.model.Permisos;
 import com.uade.tpejemplo.model.Rol;
@@ -51,13 +50,6 @@ public class AdminServiceImpl implements AdminService {
     @Override
     public UsuarioResponse actualizarRol(Long id, RolRequest request) {
         Usuario usuario = buscar(id);
-
-        if (usuario.getRol() == Rol.ADMIN) {
-            throw new BusinessException("No se puede cambiar el rol de un administrador");
-        }
-        if (request.getRol() == Rol.ADMIN) {
-            throw new BusinessException("No se puede otorgar el rol de administrador");
-        }
 
         usuario.asignarRol(request.getRol());
         usuarioRepository.save(usuario);
