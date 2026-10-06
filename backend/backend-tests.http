@@ -1,0 +1,92 @@
+@host = http://localhost:8080
+@contentType = application/json
+@token = 
+
+###
+# Auth - Registrar nuevo usuario
+POST {{host}}/api/auth/register
+Content-Type: {{contentType}}
+
+{
+  "username": "usuario1",
+  "password": "password123",
+  "rol": "ADMIN"
+}
+
+###
+# Auth - Login
+# Guarda automáticamente el token en la variable global {{token}}
+POST {{host}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "username": "usuario1",
+  "password": "password123"
+}
+
+> {% client.global.set("token", response.body.token); %}
+
+###
+# Clientes - Crear cliente
+POST {{host}}/api/clientes
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "dni": "12345678",
+  "nombre": "Juan Pérez"
+}
+
+###
+# Clientes - Listar todos
+GET {{host}}/api/clientes
+Authorization: Bearer {{token}}
+
+###
+# Clientes - Buscar por DNI
+GET {{host}}/api/clientes/12345678
+Authorization: Bearer {{token}}
+
+###
+# Créditos - Crear crédito para cliente
+POST {{host}}/api/creditos
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "dniCliente": "12345678",
+  "deudaOriginal": 100000,
+  "fecha": "2026-03-17",
+  "tasaInteres": 45,
+  "cantidadCuotas": 10
+}
+
+###
+# Créditos - Obtener crédito por ID
+# Reemplazar {idCredito} con el ID devuelto al crear el crédito
+GET {{host}}/api/creditos/1
+Authorization: Bearer {{token}}
+
+###
+# Créditos - Créditos de un cliente (por DNI)
+GET {{host}}/api/creditos/cliente/12345678
+Authorization: Bearer {{token}}
+
+###
+# Cobranzas - Registrar pago de una cuota
+# Ajustar idCredito y numeroCuota según los datos reales
+POST {{host}}/api/cobranzas
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "idCredito": 1,
+  "numeroCuota": 1,
+  "importe": 10000
+}
+
+###
+# Cobranzas - Listar cobranzas de un crédito
+GET {{host}}/api/cobranzas/credito/1
+Authorization: Bearer {{token}}
+
