@@ -6,7 +6,6 @@ export default function Creditos() {
   const dispatch = useDispatch();
   
   const { user } = useSelector((state) => state.auth);
-  console.log("Usuario actual en Redux:", user);
   const { lista, loading, error } = useSelector((state) => state.creditos);
   
   const [dni, setDni] = useState('');
@@ -39,6 +38,7 @@ export default function Creditos() {
     if (window.confirm("¿Estás seguro de anular este crédito?")) {
       try {
         await dispatch(anularCreditoThunk(id)).unwrap();
+        dispatch(fetchCreditosPorCliente(dni));
       } catch (err) {
         alert("Error: " + err); 
       }
@@ -100,7 +100,7 @@ export default function Creditos() {
               </p>
               
               {/* Botón de anular condicional */}
-              {!cr.anulado && user?.puedeAnularCredito && (
+              {cr.puedeAnularse && user?.puedeAnularCredito && (
                 <button onClick={() => handleAnular(cr.id)} style={styles.btnAnular}>
                   Anular
                 </button>

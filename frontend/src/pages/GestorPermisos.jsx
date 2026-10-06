@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchUsuariosSupervisor, togglePermiso } from '../store/slices/permisosSlice'; // Asumiendo que renombrarás las acciones si lo deseas
+import { fetchUsuariosSupervisor, togglePermiso } from '../store/slices/permisosSlice';
 
 const GestorPermisos = () => {
   const dispatch = useDispatch();
