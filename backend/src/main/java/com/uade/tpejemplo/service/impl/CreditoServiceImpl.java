@@ -54,6 +54,7 @@ public class CreditoServiceImpl implements CreditoService {
     @Override
     public List<CreditoResponse> listarTodos() {
         List<Credito> creditos = creditoRepository.buscarTodosConCuotas();
+        // Precarga las cobranzas en la sesion (el resultado se descarta): 2 consultas en vez de N+1.
         cuotaRepository.buscarTodasConCobranzas();
         return creditos.stream()
             .map(CreditoResponse::desde)
@@ -67,6 +68,7 @@ public class CreditoServiceImpl implements CreditoService {
             throw new ResourceNotFoundException("Cliente", "DNI", dniCliente);
         }
         List<Credito> creditos = creditoRepository.buscarPorClienteConCuotas(dniCliente);
+        // Precarga las cobranzas en la sesion (el resultado se descarta): 2 consultas en vez de N+1.
         cuotaRepository.buscarPorCliente(dniCliente);
         return creditos.stream()
             .map(CreditoResponse::desde)
@@ -95,7 +97,7 @@ public class CreditoServiceImpl implements CreditoService {
     private Credito buscarCredito(Long id) {
         Credito credito = creditoRepository.buscarConCuotas(id)
             .orElseThrow(() -> new ResourceNotFoundException("Crédito", "id", id));
-        // Precarga las cobranzas de las cuotas en la misma sesion: Cuota.estaPagada() las necesita (M8).
+        // Precarga las cobranzas en la sesion (el resultado se descarta): evita N+1 al leer Cuota.estaPagada().
         cuotaRepository.buscarPorCredito(id);
         return credito;
     }
