@@ -1,4 +1,4 @@
-import { formatMoneda } from '../utils/formato';
+import { formatMoneda, formatFecha } from '../utils/formato';
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchCreditosPorCliente, addCredito, clearCreditos, anularCreditoThunk } from '../store/slices/creditosSlice';
@@ -119,7 +119,7 @@ export default function Creditos() {
                   {(cr.cuotas || []).map(c => (
                     <tr key={c.numeroCuota}>
                       <td style={{padding: '5px 0'}}>{c.numeroCuota}</td>
-                      <td>{c.fechaVencimiento}</td>
+                      <td>{formatFecha(c.fechaVencimiento)}</td>
                       <td style={{ color: c.pagada ? '#2e7d32' : c.vencida ? '#c62828' : '#b38600', fontWeight: 'bold' }}>
                         {c.pagada ? '✔ Pagada' : c.vencida ? '✘ Vencida' : '… Pendiente'}
                       </td>
