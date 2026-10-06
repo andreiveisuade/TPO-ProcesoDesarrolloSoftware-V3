@@ -25,6 +25,7 @@ export default function Creditos() {
   const { lista, loading, error } = useSelector((state) => state.creditos);
   
   const [dni, setDni] = useState('');
+  const [dniBuscado, setDniBuscado] = useState('');
   const [buscado, setBuscado] = useState(false);
   const [errorBusqueda, setErrorBusqueda] = useState(null);
   const [exito, setExito] = useState(null);
@@ -39,6 +40,7 @@ export default function Creditos() {
     setErrorBusqueda(null);
     try {
       await dispatch(fetchCreditosPorCliente(dni)).unwrap();
+      setDniBuscado(dni);
       setBuscado(true);
     } catch (err) {
       setBuscado(false);
@@ -59,7 +61,7 @@ export default function Creditos() {
     if (result.meta.requestStatus === 'fulfilled') {
       setExito(`Crédito #${result.payload.id} creado para el DNI ${form.dniCliente}.`);
       setForm({ dniCliente:'', deudaOriginal:'', fecha:'', tasaInteres:'', cantidadCuotas:'', tipoPlan:'INTERES_SIMPLE' });
-      if (form.dniCliente === dni) dispatch(fetchCreditosPorCliente(dni));
+      if (buscado && form.dniCliente === dniBuscado) dispatch(fetchCreditosPorCliente(dniBuscado));
     }
   };
 
@@ -67,7 +69,7 @@ export default function Creditos() {
     if (window.confirm("¿Estás seguro de anular este crédito?")) {
       try {
         await dispatch(anularCreditoThunk(id)).unwrap();
-        if (dni) dispatch(fetchCreditosPorCliente(dni));
+        if (buscado) dispatch(fetchCreditosPorCliente(dniBuscado));
         if (detalle?.id === id) setDetalle(await getCredito(id));
       } catch (err) {
         alert("Error: " + err); 

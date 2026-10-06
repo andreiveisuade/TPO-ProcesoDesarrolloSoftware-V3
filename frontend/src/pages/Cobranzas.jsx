@@ -11,6 +11,7 @@ export default function Cobranzas() {
   const { lista, loading, error } = useSelector((state) => state.cobranzas);
   
   const [idCredito, setIdCredito] = useState('');
+  const [idBuscado, setIdBuscado] = useState('');
   const [buscado, setBuscado]     = useState(false);
   const [errorBusqueda, setErrorBusqueda] = useState(null);
   const [exito, setExito]         = useState(null);
@@ -22,6 +23,7 @@ export default function Cobranzas() {
     setErrorBusqueda(null);
     try {
       await dispatch(fetchCobranzasPorCredito(idCredito)).unwrap();
+      setIdBuscado(idCredito);
       setBuscado(true);
     } catch (err) {
       setBuscado(false);
@@ -37,7 +39,7 @@ export default function Cobranzas() {
     if (result.meta.requestStatus === 'fulfilled') {
       setExito(`Cobranza #${result.payload.id} registrada: cuota ${form.numeroCuota} del crédito #${form.idCredito}.`);
       setForm({ idCredito:'', numeroCuota:'', importe:'' });
-      if (String(form.idCredito) === idCredito) dispatch(fetchCobranzasPorCredito(idCredito));
+      if (buscado && String(form.idCredito) === idBuscado) dispatch(fetchCobranzasPorCredito(idBuscado));
     }
   };
 
@@ -45,6 +47,7 @@ export default function Cobranzas() {
     if (window.confirm("¿Estás seguro de anular esta cobranza?")) {
       try {
         await dispatch(anularCobranzaThunk(id)).unwrap();
+        if (buscado) dispatch(fetchCobranzasPorCredito(idBuscado));
       } catch (err) {
         alert("Error: " + err);
       }
@@ -80,7 +83,7 @@ export default function Cobranzas() {
 
       {buscado && (
         <div style={styles.card}>
-          <h3>Cobranzas del crédito #{idCredito} ({cobranzasSeguras.length})</h3>
+          <h3>Cobranzas del crédito #{idBuscado} ({cobranzasSeguras.length})</h3>
           {loading && <p style={styles.empty}>Cargando...</p>}
           {!loading && cobranzasSeguras.length === 0 && <p style={styles.empty}>Sin cobranzas registradas.</p>}
           
