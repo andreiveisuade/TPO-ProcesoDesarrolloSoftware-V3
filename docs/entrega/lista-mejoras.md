@@ -70,6 +70,6 @@ Desglose de los 26 tests:
 | Tests | `@WebMvcTest` de códigos HTTP, `@DataJpaTest` del dashboard, seguridad, `Clock` inyectable | `backend/src/test` | Siguiente iteración |
 | H8 | Trazabilidad: qué usuario cobró o anuló | `model/Cobranza.java`, `model/Credito.java` | Modelo nuevo y cambio de API |
 | H4 | El front ve permisos y rol nuevos recién al volver a loguearse | `frontend/src/store/slices/authSlice.js` | Necesita `GET /usuarios/me` (A-1 del backlog) |
-| M9 | Tasa con unidad declarada por plan; cuota con capital/interés separados | `model/TipoPlan.java`, `model/Cuota.java` | Límites del Strategy actual (ver reporte) |
+| P-M9 | Tasa con unidad declarada por plan; cuota con capital/interés separados | `model/TipoPlan.java`, `model/Cuota.java` | Límites del Strategy actual (ver reporte) |
 
 Descartados con motivo: `EstadoCredito` como State (O9: es un valor derivado) y Strategy/Adapter "para mostrar" (O10: no tapan huecos).
