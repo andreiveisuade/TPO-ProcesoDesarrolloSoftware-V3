@@ -24,7 +24,7 @@ const Dashboard = () => {
     <div style={styles.container}>
       <h2>
         Panel de Estadísticas 
-        <span style={styles.supervisorBadge}>(Modo Supervisor)</span>
+        <span style={styles.supervisorBadge}>(Modo {user?.rol === 'ADMIN' ? 'Admin' : 'Supervisor'})</span>
       </h2>
       
       <div style={styles.tarjetasMetricas}>
