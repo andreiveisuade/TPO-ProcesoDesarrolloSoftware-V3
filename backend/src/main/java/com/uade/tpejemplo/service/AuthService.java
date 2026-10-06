@@ -9,4 +9,6 @@ public interface AuthService {
     AuthResponse registrar(RegisterRequest request);
 
     AuthResponse login(LoginRequest request);
+
+    AuthResponse actual(String username);
 }

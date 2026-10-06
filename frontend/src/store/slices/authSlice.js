@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { login as loginApi, register as registerApi } from '../../api/auth';
+import { login as loginApi, register as registerApi, me as meApi } from '../../api/auth';
 
 export const loginThunk = createAsyncThunk('auth/login', async (credentials, { rejectWithValue }) => {
   try {
@@ -12,6 +12,14 @@ export const loginThunk = createAsyncThunk('auth/login', async (credentials, { r
 export const registerThunk = createAsyncThunk('auth/register', async (data, { rejectWithValue }) => {
   try {
     return await registerApi(data);
+  } catch (err) {
+    return rejectWithValue(err.message);
+  }
+});
+
+export const refrescarUsuario = createAsyncThunk('auth/me', async (_, { rejectWithValue }) => {
+  try {
+    return await meApi();
   } catch (err) {
     return rejectWithValue(err.message);
   }
@@ -50,7 +58,11 @@ const authSlice = createSlice({
       .addCase(loginThunk.rejected,    onRejected)
       .addCase(registerThunk.pending,  onPending)
       .addCase(registerThunk.fulfilled,onFulfilled)
-      .addCase(registerThunk.rejected, onRejected);
+      .addCase(registerThunk.rejected, onRejected)
+      .addCase(refrescarUsuario.fulfilled, (state, action) => {
+        state.user = { ...action.payload, token: state.user?.token };
+        localStorage.setItem('authUser', JSON.stringify(state.user));
+      });
   },
 });
 

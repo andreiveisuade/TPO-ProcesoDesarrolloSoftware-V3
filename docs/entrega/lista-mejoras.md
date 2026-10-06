@@ -56,6 +56,37 @@ Desglose de los 26 tests:
 - `model/CobranzaTest`: 2
 - `TpEjemploApplicationTests` (`contextLoads`): 1
 
+## Recorrido de casos de uso por la UI (T33)
+
+Salen del recorrido de `docs/trabajo/recorrido-cu.md` (O1-O4 y H4). Capturas antes/después en `docs/trabajo/capturas/ui2/`.
+
+| ID | Qué | Clase y método | Patrón / concepto |
+|---|---|---|---|
+| R1 | Aviso de éxito al crear crédito o cobranza; el error de búsqueda queda en el bloque de búsqueda | `frontend/src/components/Aviso.jsx`; `frontend/src/pages/Creditos.jsx` `buscar`, `handleSubmit`; `Cobranzas.jsx` `buscar`, `handleSubmit`; `creditosSlice.js`, `cobranzasSlice.js` (`fetch...rejected`) | Vista (MVC) |
+| R2 | Validación sin prefijo de campo; título del dashboard como el resto | `exception/GlobalExceptionHandler.java` `handleValidation`; `frontend/src/pages/Dashboard.jsx` | Vista (MVC) |
+| R3 | `GET /api/auth/me` y refresco de permisos al entrar a cada pantalla (H4) | `controller/AuthController.java` `me`; `service/impl/AuthServiceImpl.java` `actual`; `config/SecurityConfig.java`; `frontend/src/components/PrivateRoute.jsx`; `authSlice.js` `refrescarUsuario` | MVC + Information Expert |
+| R4 | Pantallas de UC06 y UC09 | `frontend/src/pages/Clientes.jsx` `buscar`; `frontend/src/pages/Creditos.jsx` `consultar`, `fichaCredito` | Vista (MVC) |
+
+**R1. Avisos bien ubicados.**
+- Problema (UC07, UC10, UC13): al buscar un DNI inexistente, el "Cliente no encontrado" aparecía dentro de "Nuevo crédito" y además se listaba "Créditos del cliente (0)", como si el cliente existiera. Y al crear un crédito o una cobranza el formulario se vaciaba sin decir nada: el usuario no sabía si se había guardado ni con qué número.
+- Qué se hizo: la búsqueda guarda su propio error y lo muestra en su bloque; si falla no se dibuja el listado. El `error` del slice queda solo para el alta. Al crear se muestra "Crédito #N creado..." o "Cobranza #N registrada...". El cuadrito de aviso es un componente `Aviso` porque se repite en tres pantallas.
+- Por qué es lo mínimo: no hay toasts ni librería, ni estado global nuevo; es un `useState` por pantalla y un componente de 8 líneas.
+
+**R2. Mensajes limpios.**
+- Problema (UC01, UC16): el registro mostraba "password: La contraseña debe tener al menos 6 caracteres", con el nombre técnico del campo, y el dashboard tenía el título centrado y pegado a las tarjetas, distinto al resto.
+- Qué se hizo: el handler de validación devuelve solo el mensaje (que ya está escrito en castellano en cada `@NotBlank`/`@Size`). El dashboard usa el mismo contenedor y título que las otras pantallas.
+- Por qué es lo mínimo: se arregla en el único lugar donde se arma el texto (el back), en vez de recortar strings en cada pantalla del front.
+
+**R3. Permisos sin reloguear (H4).**
+- Problema (UC19, UC11, UC15): el front leía rol y permisos de `localStorage` al loguearse. Si el supervisor le daba "anular crédito" a alguien, esa persona no veía el botón Anular hasta cerrar sesión y volver a entrar.
+- Qué se hizo: `GET /api/auth/me` devuelve el usuario autenticado con rol y permisos, reusando `AuthResponse` (con `token` en null, porque no se emite uno nuevo). `PrivateRoute`, la guarda por la que pasa toda pantalla con sesión, lo pide al cargar la app y en cada cambio de pantalla, y actualiza el store conservando el token. Verificado: con `user` en Créditos, el supervisor le da y le saca el permiso por API, `user` navega Cobranzas → Créditos sin recargar y el botón aparece y desaparece.
+- Por qué es lo mínimo: una consulta por navegación, sin polling ni websockets. Se pone en `PrivateRoute` y no en cada pantalla porque es el único punto por el que pasan todas. El back sigue siendo la autoridad (M4): esto solo evita que la vista quede desactualizada.
+
+**R4. UC06 y UC09 con pantalla.**
+- Problema (UC06, UC09): los dos casos de uso existían en el back y en `api/clientes.js` / `api/creditos.js`, pero ninguna pantalla los usaba.
+- Qué se hizo: en Clientes, "Buscar cliente por DNI" muestra nombre y DNI o el 404. En Créditos, "Consultar crédito por número" muestra la misma ficha del listado (estado, plan, saldo, cuotas, Anular), extraída a `fichaCredito` para no duplicarla.
+- Por qué es lo mínimo: usa los endpoints y funciones de API que ya estaban, sin slice nuevo (el resultado no lo comparte ninguna otra pantalla), y reutiliza la ficha del crédito en vez de escribir otra.
+
 ## Pendientes
 
 | ID | Qué | Dónde | Por qué queda |
@@ -69,7 +100,6 @@ Desglose de los 26 tests:
 | Front | DF2, BSF2, BSF4, BSF5, BSF6 (TPO-012) | `frontend/src/**` | Menores |
 | Tests | `@WebMvcTest` de códigos HTTP, `@DataJpaTest` del dashboard, seguridad, `Clock` inyectable | `backend/src/test` | Siguiente iteración |
 | H8 | Trazabilidad: qué usuario cobró o anuló | `model/Cobranza.java`, `model/Credito.java` | Modelo nuevo y cambio de API |
-| H4 | El front ve permisos y rol nuevos recién al volver a loguearse | `frontend/src/store/slices/authSlice.js` | Necesita `GET /usuarios/me` (A-1 del backlog) |
 | P-M9 | Tasa con unidad declarada por plan; cuota con capital/interés separados | `model/TipoPlan.java`, `model/Cuota.java` | Límites del Strategy actual (ver reporte) |
 
 Descartados con motivo: `EstadoCredito` como State (O9: es un valor derivado) y Strategy/Adapter "para mostrar" (O10: no tapan huecos).

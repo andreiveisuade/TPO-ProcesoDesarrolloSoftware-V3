@@ -39,9 +39,9 @@ const cobranzasSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchCobranzasPorCredito.pending,   (state) => { state.loading = true;  state.error = null; })
+      .addCase(fetchCobranzasPorCredito.pending,   (state) => { state.loading = true; })
       .addCase(fetchCobranzasPorCredito.fulfilled, (state, action) => { state.loading = false; state.lista = action.payload; })
-      .addCase(fetchCobranzasPorCredito.rejected,  (state, action) => { state.loading = false; state.error = action.payload; })
+      .addCase(fetchCobranzasPorCredito.rejected,  (state) => { state.loading = false; })
       
       .addCase(addCobranza.pending,                (state) => { state.loading = true;  state.error = null; })
       .addCase(addCobranza.fulfilled,              (state, action) => { state.loading = false; state.lista.push(action.payload); })

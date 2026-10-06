@@ -85,8 +85,8 @@ Fuente: `casos-de-uso-v3.puml` (renderizado con `plantuml -tsvg` y `-tpng`). Sup
 - **Errores**: DNI inexistente → **404** "Cliente no encontrado con DNI: 'x'".
 - **Reglas**: `service/impl/ClienteServiceImpl.java:36` `buscarPorDni`.
 - **Endpoint**: `GET /api/clientes/{dni}` → `controller/ClienteController.java:41` `buscarPorDni`.
-- **Pantalla**: **ninguna**. `api/clientes.js` `getCliente` existe pero ninguna pantalla lo usa.
-- **Verificación**: API (UC06 x2). Sin test unitario.
+- **Pantalla**: `pages/Clientes.jsx` (bloque "Buscar cliente por DNI"): muestra nombre y DNI, o el 404 del back en el mismo bloque. Usa `api/clientes.js` `getCliente`.
+- **Verificación**: API (UC06 x2); captura `docs/trabajo/capturas/ui2/despues-UC06-buscar-cliente.png`. Sin test unitario.
 
 ### UC07 Otorgar crédito
 
@@ -116,8 +116,8 @@ Fuente: `casos-de-uso-v3.puml` (renderizado con `plantuml -tsvg` y `-tpng`). Sup
 - **Errores**: id inexistente → **404**. Id no numérico → **400**.
 - **Reglas**: `service/impl/CreditoServiceImpl.java:50` `buscarPorId`; estado, saldo y anulabilidad los calcula el crédito: `model/Credito.java:111` `estado`, `:118` `saldo`, `:137` `puedeAnularse` (M8); mora en `model/Cuota.java:66` `estaVencida` (M6).
 - **Endpoint**: `GET /api/creditos/{id}` → `controller/CreditoController.java:52` `buscarPorId`.
-- **Pantalla**: **ninguna**. `api/creditos.js` `getCredito` existe sin uso. La misma información se ve dentro del listado de UC10.
-- **Verificación**: Smoke "Respuesta del crédito recién creado", "Saldo tras pagar 1 de 3 cuotas"; API (UC09 x4).
+- **Pantalla**: `pages/Creditos.jsx` (bloque "Consultar crédito por número"): muestra la misma ficha que el listado de UC10 (estado, plan, saldo, cuotas y Anular si corresponde). Usa `api/creditos.js` `getCredito`.
+- **Verificación**: Smoke "Respuesta del crédito recién creado", "Saldo tras pagar 1 de 3 cuotas"; API (UC09 x4); captura `docs/trabajo/capturas/ui2/despues-UC09-consultar-credito.png`.
 
 ### UC10 Listar créditos del cliente
 
@@ -242,13 +242,13 @@ Fuente: `casos-de-uso-v3.puml` (renderizado con `plantuml -tsvg` y `-tpng`). Sup
 | CU | Endpoint | Pantalla | Test unitario | Smoke / Final / API |
 |---|---|---|---|---|
 | UC01 | `POST /api/auth/register` | `pages/Register.jsx` | **—** | API |
-| UC02 | `POST /api/auth/login` | `pages/Login.jsx` | **—** | Smoke, Final (capturas 01-03), API |
+| UC02 | `POST /api/auth/login` (+ `GET /api/auth/me` para refrescar rol y permisos) | `pages/Login.jsx` | **—** | Smoke, Final (capturas 01-03), API |
 | UC04 | `POST /api/clientes` | `pages/Clientes.jsx` | **—** | Smoke, Final, API |
 | UC05 | `GET /api/clientes` | `pages/Clientes.jsx` | **—** | API |
-| UC06 | `GET /api/clientes/{dni}` | **—** | **—** | API |
+| UC06 | `GET /api/clientes/{dni}` | `pages/Clientes.jsx` | **—** | API |
 | UC07 | `POST /api/creditos` | `pages/Creditos.jsx` | `InteresSimpleTest`, `SistemaFrancesTest`, `CreditoTest` | Smoke, Final (captura 04), API |
 | UC08 | (dentro de UC07) | (dentro de UC07) | `CreditoTest` | Smoke |
-| UC09 | `GET /api/creditos/{id}` | **—** | `CreditoTest` (estado, saldo) | Smoke, API |
+| UC09 | `GET /api/creditos/{id}` | `pages/Creditos.jsx` | `CreditoTest` (estado, saldo) | Smoke, API |
 | UC10 | `GET /api/creditos/cliente/{dni}` | `pages/Creditos.jsx` | `CuotaTest` (vencida) | Smoke, Final (captura 05), API |
 | UC11 | `DELETE /api/creditos/anular/{id}` | `pages/Creditos.jsx` | `CreditoTest` | Smoke, Final (capturas 06, 09), API |
 | UC13 | `POST /api/cobranzas` | `pages/Cobranzas.jsx` | `CuotaTest`, `CreditoTest` | Smoke, Final, API |
@@ -263,7 +263,7 @@ Los tests unitarios están en `model/` y `model/plan/` del árbol de tests.
 
 ### Huecos
 
-- **CU sin pantalla**: UC06 y UC09. Las funciones `api/clientes.js` `getCliente` y `api/creditos.js` `getCredito` existen y nadie las llama. UC09 se compensa porque el listado de UC10 trae el mismo crédito completo.
+- **CU sin pantalla**: ninguno desde T33 (UC06 y UC09 tienen bloque propio en Clientes y Créditos).
 - **Endpoint sin CU**: `GET /api/creditos` (`controller/CreditoController.java:43` `listarTodos`). Devuelve la cartera completa, con cuotas y cobranzas ya cargadas, y ninguna pantalla ni CU lo usa. Es la base de P1.
 - **Endpoint sin pantalla**: `PUT /api/admin/usuarios/{id}/permisos` (`controller/AdminController.java:45`). Duplica a UC19 para el ADMIN; en V2 el reparto de permisos pasó al supervisor y este quedó huérfano. Para la defensa: o se asume que el ADMIN también puede repartir permisos y se le da pantalla, o se borra.
 - **CU sin test unitario**: UC01, UC02, UC04, UC05, UC06, UC14, UC16, UC18, UC19 y UC20. Los tests son solo de dominio (`model/`), así que todo lo que vive en servicios, repositorios o seguridad se verifica solo por API. Las guardas de `model/Usuario.java` (`otorgarPermisos`, `asignarRol`) son dominio y tampoco tienen test.
