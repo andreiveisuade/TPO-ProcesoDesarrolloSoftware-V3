@@ -13,10 +13,19 @@ Tests unitarios de dominio puro, JUnit 5 + AssertJ (vienen en `spring-boot-start
 | `model/plan/InteresSimpleTest` | total independiente de la cantidad de cuotas, redondeo de cuota, tasa 0, tasa con decimales (coeficiente a 4 decimales) |
 | `model/plan/SistemaFrancesTest` | fórmula francesa con números a mano (1000 al 10% en 2 cuotas = 576,19), total = suma exacta de cuotas, tasa 0 |
 | `model/CreditoTest` | plan de cuotas, VIGENTE → CANCELADO al pagar todo, ANULADO, `saldo()`, `puedeAnularse()`, doble anulación, anulación con cobranza vigente (M2) y con la única cobranza anulada (M8) |
-| `model/CuotaTest` | `estaVencida()`, `estaPagada()`, cobranza anulada deja la cuota impaga, doble cobro, cobro sobre crédito anulado (M1), importe validado |
-| `model/CobranzaTest` | fecha de hoy y anulación el mismo día |
+| `model/CuotaTest` | `estaVencida()` (y con fecha fija: el día del vencimiento no está vencida, el siguiente sí), `estaPagada()`, cobranza anulada deja la cuota impaga, doble cobro, cobro sobre crédito anulado (M1), importe validado |
+| `model/CobranzaTest` | fecha de hoy, anulación el mismo día, rechazo de anular una cobranza de otro día |
+| `controller/CodigosHttpTest` | `@WebMvcTest` de `ClienteController` y `SupervisorController` con `SecurityConfig` y `JwtAuthFilter` reales y los servicios mockeados: 400 (validación de `@Size`, JSON roto, path variable de tipo incorrecto), 401 (sin token, token inválido), 403 (ADMIN contra `/api/supervisor`), 404 y 405 |
 
-Resultado: 24 tests nuevos + `contextLoads`, todos pasan. Sin bugs encontrados.
+Resultado: 36 tests, todos pasan (`mvn -q test`, exit 0). Sin bugs encontrados.
+
+### Validación de DTOs (I-2)
+
+`@Size(max = 15)` en `dni` / `dniCliente`, `@Size(max = 255)` en `nombre` / `username`, `@Digits(8,2)` en `deudaOriginal`, `@Digits(3,2)` en `tasaInteres`, `@Digits(10,2)` en `importe`. Un valor fuera de rango ahora da 400 por `handleValidation` en vez de 500 o redondeo silencioso; lo cubre `dniDeMasDe15CaracteresDa400`.
+
+### Fecha de hoy por parámetro
+
+`Cobranza.anular(LocalDate hoy)` y `Cuota.estaVencida(LocalDate hoy)`; las versiones sin argumento delegan con `LocalDate.now()`, así que servicios y DTOs no cambian y no entra Spring en las entidades. Se eligió el parámetro y no un `Clock` porque alcanza para testear y no obliga a cambiar firmas de servicios ni el mapeo a DTO.
 
 ### Diferencias de centavos documentadas
 
@@ -25,16 +34,12 @@ Resultado: 24 tests nuevos + `contextLoads`, todos pasan. Sin bugs encontrados.
 
 ## Qué queda sin cubrir
 
-- Rechazo de `Cobranza.anular()` para una cobranza de otro día: la fecha la pone el constructor con `LocalDate.now()` y no hay setter ni `Clock` inyectable. No se agregó setter (regla del brief).
 - `Permisos` / `IPermisos`: los está tocando la rama `fixes-auditoria`.
 - Services, repositories y queries del dashboard.
-- Controllers y códigos HTTP, seguridad (JWT, roles).
+- Controllers fuera de clientes y supervisor (los códigos los resuelve el mismo handler).
 - Front.
 
 ## Próximos tests, en orden de prioridad
 
-1. `@WebMvcTest` de los controllers con los códigos HTTP de M5 (`BusinessException` → 4xx, no encontrado → 404), con los services mockeados.
-2. `@DataJpaTest` de las queries del dashboard (M3) sobre H2 con un set chico de créditos, cuotas vencidas y cobranzas anuladas.
-3. Tests de `Permisos` una vez mergeada `fixes-auditoria`.
-4. Seguridad: endpoint sin token → 401, rol sin permiso → 403 (`@WebMvcTest` + `spring-security-test`, que habría que agregar).
-5. Inyectar un `Clock` en `Cobranza` para poder testear el rechazo de anulación de otro día (cambio de código, decidirlo antes).
+1. `@DataJpaTest` de las queries del dashboard (M3) sobre H2 con un set chico de créditos, cuotas vencidas y cobranzas anuladas.
+2. Tests de `Permisos`.

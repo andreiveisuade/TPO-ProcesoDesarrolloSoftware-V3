@@ -8,6 +8,7 @@ import lombok.Data;
 public class RegisterRequest {
 
     @NotBlank(message = "El username es obligatorio")
+    @Size(max = 255, message = "El username admite hasta 255 caracteres")
     private String username;
 
     @NotBlank(message = "La contraseña es obligatoria")

@@ -57,10 +57,15 @@ public class Cobranza implements ICobranza {
     // puede deshacer.
     // Information Expert: la cobranza decide si todavia se puede anular
     public void anular() {
+        anular(LocalDate.now());
+    }
+
+    // La fecha de hoy entra por parametro para poder testear el rechazo de otro dia.
+    public void anular(LocalDate hoy) {
         if (anulada) {
             throw new BusinessException("La cobranza ya está anulada.");
         }
-        if (!fechaCobranza.isEqual(LocalDate.now())) {
+        if (!fechaCobranza.isEqual(hoy)) {
             throw new BusinessException("Solo se pueden anular cobranzas del día de hoy.");
         }
         this.anulada = true;

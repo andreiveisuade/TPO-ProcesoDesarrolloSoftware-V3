@@ -26,6 +26,15 @@ class CuotaTest {
     }
 
     @Test
+    void venceElDiaSiguienteAlVencimiento() {
+        Cuota cuota = creditoOtorgado(LocalDate.of(2026, 1, 10)).getCuotas().get(0);
+        LocalDate vencimiento = cuota.getFechaVencimiento();
+
+        assertThat(cuota.estaVencida(vencimiento)).isFalse();
+        assertThat(cuota.estaVencida(vencimiento.plusDays(1))).isTrue();
+    }
+
+    @Test
     void cuotaPagadaNoEstaVencida() {
         Cuota cuota = creditoOtorgado(LocalDate.now().minusMonths(2)).getCuotas().get(0);
         cuota.registrarCobranza(new BigDecimal("100.00"));
