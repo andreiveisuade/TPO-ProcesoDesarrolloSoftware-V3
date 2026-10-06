@@ -1,0 +1,91 @@
+@startuml der-v3
+title Dashboard de préstamos V3 — DER (esquema que genera Hibernate sobre H2)
+hide circle
+hide empty members
+skinparam shadowing false
+skinparam linetype ortho
+skinparam nodesep 60
+skinparam ranksep 70
+
+entity "clientes" as clientes {
+  * dni : varchar(15) <<PK>>
+  --
+  * nombre : varchar(255)
+}
+
+entity "creditos" as creditos {
+  * id : bigint <<PK>> <<identity>>
+  --
+  * dni_cliente : varchar(15) <<FK>>
+  * deuda_original : numeric(12,2)
+  * fecha : date
+  * tasa_interes : numeric(5,2)
+  * importe_cuota : numeric(12,2) <<derivado, se guarda>>
+  * cantidad_cuotas : integer (check >= 1)
+  * tipo_plan : varchar(20) <<default 'INTERES_SIMPLE'>>
+  * anulado : boolean
+}
+
+entity "cuotas" as cuotas {
+  * id : bigint <<PK>> <<identity>>
+  --
+  * id_credito : bigint <<FK>>
+  * numero : integer (check >= 1)
+  * importe : numeric(12,2)
+  * fecha_vencimiento : date
+  ..
+  unique (id_credito, numero)
+}
+
+entity "cobranzas" as cobranzas {
+  * id : bigint <<PK>> <<identity>>
+  --
+  * id_cuota : bigint <<FK>>
+  * importe : numeric(12,2)
+  * fecha_cobranza : date
+  * anulada : boolean
+}
+
+entity "usuarios" as usuarios {
+  * id : bigint <<PK>> <<identity>>
+  --
+  * username : varchar(255) <<unique>>
+  * password : varchar(255) <<hash BCrypt>>
+  * rol : enum('ADMIN','SUPERVISOR','USER')
+  * puede_anular_credito : boolean
+  * puede_anular_cobranza : boolean
+}
+
+clientes -[hidden]right- usuarios
+clientes ||--o{ creditos : "dni_cliente\n0..N por cliente"
+creditos ||--o{ cuotas : "id_credito\n1..N en el dominio"
+cuotas ||--o{ cobranzas : "id_cuota\n0..N, a lo sumo 1 vigente"
+
+note right of creditos
+  No hay columna de estado: VIGENTE / CANCELADO / ANULADO
+  lo calcula Credito.estado() a partir de anulado y de las
+  cobranzas vigentes de sus cuotas. saldo tampoco se guarda.
+  importe_cuota es la foto del importe con que se otorgó.
+end note
+
+note right of cobranzas
+  Regla que el esquema NO protege: a lo sumo una cobranza
+  no anulada por cuota. La valida Cuota.registrarCobranza();
+  con requests concurrentes se duplica.
+  Tampoco protege: importes > 0, tasa >= 0, ni que no
+  se cobre una cuota de un crédito anulado.
+end note
+
+note right of usuarios
+  Sin FK al resto: ninguna tabla guarda quién otorgó,
+  cobró o anuló (H8 del backlog).
+  Los permisos son un @Embeddable (Permisos) en la
+  misma tabla.
+end note
+
+note as general
+  Todas las columnas son NOT NULL. Las FK no tienen ON DELETE:
+  no se borra nada, la anulación es lógica (anulado / anulada).
+  H2 crea un índice por cada FK y uno único para (id_credito, numero).
+end note
+@enduml
