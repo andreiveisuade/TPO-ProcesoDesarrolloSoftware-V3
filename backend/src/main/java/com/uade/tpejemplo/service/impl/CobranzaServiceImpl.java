@@ -8,8 +8,10 @@ import com.uade.tpejemplo.model.Cuota;
 import com.uade.tpejemplo.repository.CobranzaRepository;
 import com.uade.tpejemplo.repository.CuotaRepository;
 import com.uade.tpejemplo.service.CobranzaService;
+import com.uade.tpejemplo.model.interfaces.IUsuario;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,7 +44,11 @@ public class CobranzaServiceImpl implements CobranzaService {
     }
 
     @Override
-    public void anularCobranza(Long id) {
+    public void anularCobranza(Long id, IUsuario usuario) {
+        if (!usuario.getPermisos().permiteAnularCobranza()) {
+            throw new AccessDeniedException("El usuario no tiene permiso para anular cobranzas");
+        }
+
         Cobranza cobranza = cobranzaRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Cobranza", "id", id));
 

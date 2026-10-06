@@ -1,6 +1,7 @@
 package com.uade.tpejemplo.security;
 
 import com.uade.tpejemplo.model.interfaces.IUsuario;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -17,6 +18,7 @@ import java.util.List;
  * solo los tres que el dominio sabe contestar: los otros cuatro quedan
  * con el default de la interfaz, que ya devuelve true.
  */
+@Getter
 @RequiredArgsConstructor
 public class UsuarioDetails implements UserDetails {
 

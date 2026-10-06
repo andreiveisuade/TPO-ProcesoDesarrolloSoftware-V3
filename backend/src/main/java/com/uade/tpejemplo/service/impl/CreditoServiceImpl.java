@@ -12,8 +12,10 @@ import com.uade.tpejemplo.repository.CobranzaRepository;
 import com.uade.tpejemplo.repository.CreditoRepository;
 import com.uade.tpejemplo.repository.CuotaRepository;
 import com.uade.tpejemplo.service.CreditoService;
+import com.uade.tpejemplo.model.interfaces.IUsuario;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -63,7 +65,11 @@ public class CreditoServiceImpl implements CreditoService {
     }
 
     @Override
-    public void anularCredito(Long id) {
+    public void anularCredito(Long id, IUsuario usuario) {
+        if (!usuario.getPermisos().permiteAnularCredito()) {
+            throw new AccessDeniedException("El usuario no tiene permiso para anular creditos");
+        }
+
         Credito credito = buscarCredito(id);
 
         credito.anular(cobranzaRepository.existeCobranzaDelCredito(id));
