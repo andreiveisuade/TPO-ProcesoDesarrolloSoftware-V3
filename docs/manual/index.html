@@ -421,6 +421,7 @@ body.lightbox-locked { overflow: hidden; }
         <li><a href="#dominio" data-target="dominio">Modelo de dominio</a></li>
         <li><a href="#api" data-target="api">API</a></li>
         <li><a href="#seguridad" data-target="seguridad">Seguridad</a></li>
+        <li><a href="#interfaz" data-target="interfaz">Interfaz y tema</a></li>
       </ol>
 
       <p class="toc-group-label">Trabajar en el proyecto</p>
@@ -531,7 +532,7 @@ body.lightbox-locked { overflow: hidden; }
 
     <section class="doc-section" id="casos-de-uso">
       <h2>Casos de uso</h2>
-      <p>Numeración de los docs V0 (<code>03-casos-de-uso.puml</code>), estado en V3.</p>
+      <p>Numeración de los docs V0 (<code>03-casos-de-uso.puml</code>), estado en V3. Fichas completas (flujo, códigos HTTP, reglas y dónde viven), diagrama y trazabilidad: <a href="../casos-de-uso/README.md"><code>docs/casos-de-uso/README.md</code></a>.</p>
       <div class="table-wrap"><table>
         <thead><tr><th>CU</th><th>Estado</th><th>Nota</th></tr></thead>
         <tbody>
@@ -646,7 +647,16 @@ body.lightbox-locked { overflow: hidden; }
         <li><strong>JWT</strong>: login y registro devuelven un token (<code>security/JwtUtil.java</code>, expira en 24 h según <code>jwt.expiration-ms</code>). <code>security/JwtAuthFilter.java</code> lo valida en cada request. Sesión stateless.</li>
         <li><strong>Roles</strong> (<code>config/SecurityConfig.java</code> <code>filterChain</code>): <code>/api/auth/**</code> y Swagger públicos; <code>/api/admin/**</code> solo ADMIN; <code>/api/supervisor/**</code> solo SUPERVISOR; <code>/api/dashboard/**</code> SUPERVISOR o ADMIN; el resto, cualquier autenticado.</li>
         <li><strong>Permisos de anulación</strong> (<code>model/Permisos.java</code>): <code>puedeAnularCredito</code> y <code>puedeAnularCobranza</code>, por usuario. Los aplica el servicio (R15); el front solo oculta botones.</li>
-        <li>Sin token → 401 (<code>HttpStatusEntryPoint</code>); con token y sin permiso → 403.</li>
+        <li>Sin token → 401 (<code>HttpStatusEntryPoint</code>); con token y sin el rol → 403 (<code>accessDeniedHandler</code>, ambos en <code>config/SecurityConfig.java</code> <code>filterChain</code>); sin permiso de anulación → 403 desde <code>exception/GlobalExceptionHandler.java</code> <code>handleDenied</code>.</li>
+        <li>Body mal formado o parámetro de tipo incorrecto → 400 (<code>exception/GlobalExceptionHandler.java</code> <code>handleRequestInvalida</code>).</li>
+      </ul>
+    </section>
+
+    <section class="doc-section" id="interfaz">
+      <h2>Interfaz y tema</h2>
+      <ul>
+        <li><strong>Formato</strong>: moneda y fechas es-AR (<code>$ 120.000,00</code>, <code>dd/mm/aaaa</code>) desde una sola util, <code>utils/formato.js</code>. El crédito muestra badge de estado, datos rotulados, cuotas pagadas e importe por cuota (<code>pages/Creditos.jsx</code>); <code>api/apiClient.js</code> muestra todos los mensajes de validación. Capturas antes/después en <a href="../trabajo/ui.md"><code>docs/trabajo/ui.md</code></a>.</li>
+        <li><strong>Dark theme</strong>: la paleta son variables CSS (valores con nombre que el resto del CSS lee con <code>var(--...)</code>) en <code>index.css</code>, con nombre semántico (<code>--color-surface</code>, <code>--color-danger</code>). Oscuro por defecto; <code>@media (prefers-color-scheme: light)</code>, la consulta del navegador por el tema del sistema operativo, redefine las mismas variables. Sin botón ni librerías; contraste WCAG AA. Variables y capturas en <a href="../trabajo/ui.md#dark-theme"><code>docs/trabajo/ui.md</code></a>.</li>
       </ul>
     </section>
 
@@ -673,8 +683,11 @@ cd frontend &amp;&amp; npm install &amp;&amp; npm run dev   # Vite, proxy /api �
     <section class="doc-section" id="verificar">
       <h2>Cómo se verifica</h2>
       <ul>
-        <li><strong>Tests</strong>: <code>cd backend &amp;&amp; mvn test</code>. 24 tests unitarios de dominio (JUnit 5 + AssertJ, sin Spring) en <code>backend/src/test/java/com/uade/tpejemplo/model/</code>: <code>CreditoTest</code>, <code>CuotaTest</code>, <code>CobranzaTest</code>, <code>plan/InteresSimpleTest</code>, <code>plan/SistemaFrancesTest</code>, más <code>contextLoads</code>. Detalle y lo que falta cubrir: <a href="../trabajo/tests.md"><code>docs/trabajo/tests.md</code></a>.</li>
+        <li><strong>Tests</strong>: <code>cd backend &amp;&amp; mvn test</code>: 25 tests, 0 fallas. 24 tests unitarios de dominio (JUnit 5 + AssertJ, sin Spring) en <code>backend/src/test/java/com/uade/tpejemplo/model/</code>: <code>CreditoTest</code>, <code>CuotaTest</code>, <code>CobranzaTest</code>, <code>plan/InteresSimpleTest</code>, <code>plan/SistemaFrancesTest</code>, más <code>contextLoads</code>. Detalle y lo que falta cubrir: <a href="../trabajo/tests.md"><code>docs/trabajo/tests.md</code></a>.</li>
         <li><strong>Smoke</strong>: backend levantado y probado con curl, caso por caso contra M1..M10 (códigos, cálculo de cuotas, anulaciones, permisos, dashboard): <a href="../trabajo/smoke.md"><code>docs/trabajo/smoke.md</code></a>. El build del front no se probó ahí.</li>
+        <li><strong>Verificación final</strong>: API y browser sobre <code>main</code> el 06/10, incluidos tokens alterados y vencidos; las dos fallas (401 en vez de 403, 500 en vez de 400) se corrigieron después: <a href="../trabajo/verificacion-final.md"><code>docs/trabajo/verificacion-final.md</code></a>.</li>
+        <li><strong>Comprobación visual</strong>: recorrido completo con capturas, <a href="../trabajo/visual.md"><code>docs/trabajo/visual.md</code></a>; capturas de la UI final y del dark theme en <a href="../trabajo/ui.md"><code>docs/trabajo/ui.md</code></a>.</li>
+        <li><strong>Casos de uso por API</strong>: <code>docs/casos-de-uso/verificar-cu.sh</code> sobre una base limpia; resultados en la sección 6 de <a href="../casos-de-uso/README.md"><code>docs/casos-de-uso/README.md</code></a>.</li>
       </ul>
     </section>
 
@@ -703,20 +716,19 @@ cd frontend &amp;&amp; npm install &amp;&amp; npm run dev   # Vite, proxy /api �
         <li><strong>V0</strong> (<code>main@2a90af8</code>): proyecto inicial con docs PlantUML, requerimientos y CU.</li>
         <li><strong>V1</strong> (<code>andrei-iteracion1@86c75cc</code>, 08/09): bad smells; <code>Permisos</code>, <code>Cuota</code> con importe y su cobranza, tasa de interés, panel de supervisor.</li>
         <li><strong>V2</strong> (<code>main@45e228c</code>, tag <code>v2</code>, 15/09): GRASP + interfaces de modelo y de servicio.</li>
-        <li><strong>V3</strong> (este repo, entrega 13/10): MVC + Strategy + Adapter; bugs TPO-001..004, 007, 010 cerrados; tests de dominio; Swagger.</li>
+        <li><strong>V3</strong> (este repo, entrega 13/10): MVC + Strategy + Adapter; bugs TPO-001..004, 007, 009, 010 cerrados; tests de dominio; Swagger; UI con formato es-AR y dark theme; casos de uso documentados.</li>
       </ul>
     </section>
 
     <section class="doc-section" id="pendientes">
       <h2>Pendientes y bugs abiertos</h2>
       <ul>
-        <li>TPO-009: <code>jwt.secret</code> en <code>backend/src/main/resources/application.properties</code>, en un repo público.</li>
         <li>TPO-008: <code>/h2-console/**</code> en <code>web.ignoring()</code> y en <code>permitAll()</code> (<code>config/SecurityConfig.java</code>).</li>
         <li>TPO-014: el paquete <code>com.uade.tpejemplo</code> y <code>TpEjemploApplication</code> no nombran el sistema.</li>
         <li>TPO-012: smells del frontend, fuera de alcance por decisión.</li>
         <li>Trazabilidad: <code>Cobranza</code> no sabe quién cobró ni quién anuló; <code>Credito</code> no sabe quién lo otorgó.</li>
-        <li><code>Cobranza.anular</code> no rechaza una cobranza ya anulada (<code>model/Cobranza.java</code>).</li>
-        <li><code>AdminServiceImpl.actualizarPermisos</code> no impide cambiar los permisos de un ADMIN; solo lo bloquea el front (<code>pages/GestorPermisos.jsx</code>).</li>
+        <li><code>Cobranza.anular</code> no rechaza una cobranza ya anulada: responde 204 (<code>model/Cobranza.java</code>, H1).</li>
+        <li>El front ve los permisos y el rol nuevos recién al volver a loguearse; el backend los aplica desde la request siguiente (<code>store/slices/authSlice.js</code>, H4).</li>
         <li>La fecha del crédito es libre: acepta pasado y futuro (<code>dto/request/CreditoRequest.java</code>).</li>
         <li>Interés simple: la suma de cuotas puede diferir del total en centavos (<code>docs/trabajo/tests.md</code>).</li>
         <li>Tests sin cubrir: controllers, seguridad, queries del dashboard, anulación de cobranza de otro día (falta un <code>Clock</code> inyectable).</li>

@@ -1,6 +1,6 @@
 # Backlog consolidado de mejoras pendientes
 
-Junta lo que quedó abierto en las revisiones de la iteración 3 (oportunidades, prácticas de Spring, bad smells, auditoría, propuesta de API), en `docs/trabajo/tests.md`, en la sección 6 de `dominio.md` y en el tablero. Se cruzó con `git log v2..main` y con el código de `main`: no se lista lo que ya está hecho (O1-O5, S1-S4, D1, D2, BS1, DF1, DF3, BSF1, título ADMIN, `@Valid` de permisos y rol, 401 sin token, `GET /api/creditos`, `tipoPlan` en `CreditoResponse`, `esValido(String, String)` en `TokenService`).
+Junta lo que quedó abierto en las revisiones de la iteración 3 (oportunidades, prácticas de Spring, bad smells, auditoría, propuesta de API), en `docs/trabajo/tests.md`, en la sección 6 de `dominio.md` y en el tablero. Se cruzó con `git log v2..main` y con el código de `main`: no se lista lo que ya está hecho (O1-O5, S1-S4, D1, D2, BS1, DF1, DF3, BSF1, título ADMIN, `@Valid` de permisos y rol, 401 sin token, `GET /api/creditos`, `tipoPlan` en `CreditoResponse`, `esValido(String, String)` en `TokenService`, 403 con token y sin rol, 400 en requests mal formadas, mejoras de UI, dark theme, comentarios y limpieza del repo).
 
 `…/` = `backend/src/main/java/com/uade/tpejemplo/`. Rutas de front relativas a `frontend/src/`. Tamaño: S (pocas líneas), M (varios archivos), L (cambia el modelo). Tamaño con `*` = estimación, la fuente no lo da. Fechas: 27/10 y 03/11 son iteraciones, 17/11 es la entrega final.
 
@@ -44,13 +44,14 @@ Junta lo que quedó abierto en las revisiones de la iteración 3 (oportunidades,
 | T-2 | `@DataJpaTest` de las queries del dashboard (M3) sobre H2 con créditos, cuotas vencidas y cobranzas anuladas | `backend/src/test/java/com/uade/tpejemplo/repository/` | M* | 27/10 | Repositories y queries sin cobertura |
 | T-3 | Tests de `Permisos` y `IPermisos` | `backend/src/test/java/com/uade/tpejemplo/model/` | S* | 27/10 | Estaban bloqueados por `fixes-auditoria`, que ya se mergeó |
 | T-4 | Seguridad: sin token → 401, rol sin permiso → 403 (`@WebMvcTest` + `spring-security-test`, dependencia nueva) | `backend/pom.xml`, `backend/src/test/java/com/uade/tpejemplo/security/` | M* | 03/11 | JWT y roles sin cobertura |
-| T-5 | Inyectar un `Clock` en `Cobranza` para testear el rechazo de anular una cobranza de otro día | `…/model/Cobranza.java`, `CobranzaTest` | S* | 17/11 | Hoy la fecha sale de `LocalDate.now()` y no se puede testear. Es un cambio de código: decidirlo antes |
+| T-5 | Inyectar un `Clock` en `Cobranza` para testear el rechazo de anular una cobranza de otro día | `…/model/Cobranza.java`, `CobranzaTest` | S* | 17/11 | La regla del mismo día de `Cobranza.anular` no tiene test ni caso de smoke posible: la fecha la fija `LocalDate.now()` en el constructor (hallazgo de los casos de uso, UC15). Es un cambio de código: decidirlo antes |
 
 ## API
 
 | ID | Qué | Ruta | Tam. | Prioridad | Motivo |
 |---|---|---|---|---|---|
-| A-1 | `GET /usuarios/me`, o rol y permisos en `AuthResponse`; verificar antes cómo lo resuelve el front | `…/controller/AuthController.java` | S* | 03/11 | RECOMENDADA si el front guarda los permisos del login: quedan viejos hasta volver a loguearse |
+| H4 | El front ve los permisos y el rol nuevos recién al volver a loguearse: el backend los aplica desde la request siguiente (`…/security/JwtAuthFilter.java`), el front los lee del usuario guardado al loguear | `store/slices/authSlice.js` | S* | 03/11 | Hallazgo de los casos de uso (`docs/casos-de-uso/README.md`, UC19 y UC20). Es usabilidad, no seguridad: manda el backend. Se resuelve con A-1 |
+| A-1 | `GET /usuarios/me` y que el front lo consulte al navegar o tras cambiar permisos | `…/controller/AuthController.java`, `store/slices/authSlice.js` | S* | 03/11 | Confirmado por H4: el front guarda los permisos del login y quedan viejos hasta volver a loguearse |
 | A-2 | Quitar `PUT /api/admin/usuarios/{id}/permisos` o justificarlo | `…/controller/AdminController.java` | S | 03/11 | Duplicado del de supervisor y sin uso en el front |
 | A-3 | `GET /api/cobranzas/credito/{id}` con crédito inexistente responde 404 en vez de `[]` | `…/controller/CobranzaController.java`, `…/service/impl/CobranzaServiceImpl.java` | S* | 03/11 | Observación del mapa de API |
 
@@ -62,7 +63,7 @@ TPO-012 (smells del front) es el paraguas: se cierra con las filas de abajo; BSF
 |---|---|---|---|---|---|
 | DF2 | Borrar `App.css`, `assets/react.svg`, `getCliente`, `getCredito` y los cuatro `clearError` sin uso | `App.css`, `assets/react.svg`, `api/clientes.js`, `api/creditos.js`, `store/slices/*.js` | S | 03/11 | Restos del template de Vite y exports sin llamadores |
 | BSF2 + BSF4 | Un `RoleRoute({ roles, children })` y una constante `ROLES` en vez de strings sueltos | `components/AdminRoute.jsx`, `components/SupervisorRoute.jsx`, `components/Navbar.jsx`, `pages/Dashboard.jsx`, `pages/GestorPermisos.jsx`, `pages/PanelAdmin.jsx` | S | 03/11 | Código duplicado y primitive obsession; van juntos |
-| BSF5 | `api/dashboard.js` y `getUsuariosAdmin` en `api/admin.js`; `rejectWithValue(err.message)` en `cobranzasSlice.js` | `store/slices/dashboardSlice.js`, `store/slices/permisosSlice.js`, `store/slices/cobranzasSlice.js`, `api/admin.js`, `api/supervisor.js` | S | 03/11 | Acceso inconsistente a la API; `cobranzasSlice.js:26` lee una forma de error que `apiClient.js` nunca produce |
+| BSF5 | `api/dashboard.js` y `getUsuariosAdmin` en `api/admin.js`; `rejectWithValue(err.message)` en `cobranzasSlice.js` | `store/slices/dashboardSlice.js`, `store/slices/permisosSlice.js`, `store/slices/cobranzasSlice.js`, `api/admin.js`, `api/supervisor.js` | S | 03/11 | Acceso inconsistente a la API; `cobranzasSlice.js` `anularCobranzaThunk` lee una forma de error que `apiClient.js` nunca produce |
 | BSF6 | Objeto `ESTADO_CUOTA` en vez de dos ternarios anidados en el render | `pages/Creditos.jsx` | S | 03/11 | Método largo y condicional anidado repetido |
 
 ## Docs

@@ -405,9 +405,35 @@ rev = [
   "Bad smell: código duplicado."),
  ("DF1", "830a998", "<code>frontend/src/store/index.js</code> armaba un segundo store que nadie importaba.", "Borrado; queda <code>frontend/src/store/store.js</code>.", "Código muerto (front)."),
  ("DF3", "5d2dbc4", "<code>frontend/src/pages/Creditos.jsx</code> hacía <code>console.log</code> del usuario con su JWT en cada render.", "Línea borrada.", "Código de depuración que filtraba el token."),
+ ("F1", "f0e5c59", "La verificación final encontró que un usuario autenticado sin el rol (<code>user</code> al dashboard, supervisor a <code>/api/admin/**</code>) recibía 401 en vez de 403.",
+  "<code>config/SecurityConfig.java</code> <code>filterChain</code> suma un <code>accessDeniedHandler</code> que responde 403; sin token o con token inválido sigue 401.",
+  "MVC: el controlador distingue “no sé quién sos” (401) de “sé quién sos y no podés” (403)."),
+ ("F2", "06fc842", "JSON roto, <code>tipoPlan</code> inválido o <code>GET /api/creditos/abc</code> caían en el handler general y respondían 500.",
+  "<code>exception/GlobalExceptionHandler.java</code> <code>handleRequestInvalida</code> mapea <code>HttpMessageNotReadableException</code> y <code>MethodArgumentTypeMismatchException</code> a 400 con el mismo <code>ErrorResponse</code>, sin detalles internos.",
+  "Un error del cliente es 4xx; el 500 queda para fallas del servidor (M5, S4)."),
+ ("UI", "01fabb9, 08c8fda, 1ec4ccb, f0d2372, 058496a", "Importes como <code>$55081.29</code>, fechas ISO, el crédito en una sola línea con guiones, la fecha de cobro sin mostrar, solo el primer mensaje de validación y la tabla de clientes apretada.",
+  "Formato es-AR de moneda y fecha en una sola util (<code>frontend/src/utils/formato.js</code>); <code>frontend/src/pages/Creditos.jsx</code> con badge de estado, datos rotulados, “x de n cuotas pagadas” e importe por cuota; columna Fecha en <code>frontend/src/pages/Cobranzas.jsx</code>; <code>frontend/src/api/apiClient.js</code> une todos los <code>mensajes</code> del <code>ErrorResponse</code>. Solo se muestran campos que el backend ya devolvía.",
+  "MVC: la vista solo presenta; ningún cambio de API ni de modelo."),
+ ("DT", "979ab37", "Colores escritos a mano en los estilos inline de cada página: cambiar la paleta era tocar todos los <code>.jsx</code>.",
+  "La paleta vive en <code>frontend/src/index.css</code> como variables CSS (custom properties: valores con nombre que el resto del CSS lee con <code>var(--...)</code>) con nombre semántico (<code>--color-surface</code>, <code>--color-danger</code>). Oscuro por defecto y <code>@media (prefers-color-scheme: light)</code> (consulta del navegador por el tema del sistema operativo) redefine las mismas variables. Contraste WCAG AA (≥ 4,5:1) en todo texto.",
+  "Protected Variations aplicado al estilo: la paleta cambia en un solo lugar. Sin botón, sin estado en React y sin librerías."),
+ ("COM", "ddbdebb, 3478af6", "Javadoc largo, comentarios que repetían el código y ninguna marca de dónde estaba cada patrón.",
+  "Una a tres líneas por clase, una línea por patrón aplicado (<code>// Adapter: adapta jjwt a TokenService</code> en <code>security/JwtUtil.java</code>, <code>// Strategy: ...</code> en <code>model/TipoPlan.java</code>) y una línea por componente del front.",
+  "Bad smell: comentarios. Los que quedan explican el porqué y sirven de índice de patrones para la defensa."),
+ ("LIM", "c36658f, 6a1c363, 4713828, e7162eb, 045ffd0", "<code>backend/.factorypath</code> trackeado, documentos de proceso y capturas viejas en el repo, links rotos y un <code>docs/README.md</code> duplicado.",
+  "Se deja de trackear <code>.factorypath</code>, <code>docs/trabajo</code> sale del <code>git archive</code> (<code>.gitattributes</code>, <code>export-ignore</code>), se borran los documentos de proceso, se arreglan los links y el <code>README.md</code> queda corto, con links.",
+  "El zip de entrega lleva solo código y documentación vigente."),
  ("BSF1", "c19e707", "Comentarios de copy-paste (<code>[cite: 4]</code>, “Asumiendo que…”) en <code>frontend/src/store/slices/permisosSlice.js</code>, <code>cobranzasSlice.js</code> y <code>frontend/src/pages/GestorPermisos.jsx</code>.", "Borrados.", "Bad smell: comentarios que no explican el código."),
 ]
 rev_html = "".join(f'<div class="rev" id="{i.lower()}"><h4>{i} <span class="ref">· commit <code>{c}</code></span></h4><p><strong>Problema.</strong> {p}</p><p><strong>Cambio.</strong> {s}</p><p><strong>Concepto.</strong> {k}</p></div>' for i, c, p, s, k in rev)
+
+def cap(sub, nom, alt):
+    return f'<figure><figcaption>{alt}</figcaption><a href="../trabajo/capturas/{sub}/{nom}.png"><img src="../trabajo/capturas/{sub}/{nom}.png" alt="{alt}" style="width:100%;border:1px solid var(--linea);border-radius:4px"></a></figure>'
+
+capturas_ui = ('<h3>Capturas de la UI</h3><p>Antes y después de las mejoras de presentación, y el tema oscuro; detalle de cada mejora y de las variables del tema en <a href="../trabajo/ui.md"><code>docs/trabajo/ui.md</code></a>.</p>'
+    + '<div class="par">' + cap("ui-antes", "03-creditos", "Créditos, antes") + cap("ui-despues", "03-creditos", "Créditos, después") + '</div>'
+    + '<div class="par">' + cap("ui-antes", "04-cobranzas", "Cobranzas, antes") + cap("ui-despues", "04-cobranzas", "Cobranzas, después") + '</div>'
+    + '<div class="par">' + cap("dark", "creditos", "Créditos, dark theme") + cap("dark", "dashboard", "Dashboard, dark theme") + '</div>')
 
 # ---------------- timeline ----------------
 n_v3 = len(subprocess.run(["git", "-C", REPO, "log", "--oneline", "--no-merges", "v2..main"], capture_output=True, text=True).stdout.strip().split("\n"))
@@ -466,6 +492,7 @@ pendientes = '''<ul>
 <li><strong>Smells</strong>: BS2 (armado de <code>ErrorResponse</code> repetido), BS3, BS4, BS6; front DF2, BSF2, BSF4, BSF5, BSF6 (TPO-012).</li>
 <li><strong>Tests</strong>: <code>@WebMvcTest</code> de los códigos HTTP, <code>@DataJpaTest</code> del dashboard, seguridad 401/403, <code>Clock</code> inyectable para <code>Cobranza.anular()</code> y <code>Cuota.estaVencida()</code>.</li>
 <li><strong>Trazabilidad</strong>: qué usuario cobró o anuló (H8).</li>
+<li><strong>Hallazgos de los casos de uso</strong>: el front ve los permisos y el rol nuevos recién al volver a loguearse (H4); anular una cobranza ya anulada responde 204 en vez de rechazarse (H1).</li>
 <li>Descartados con motivo: <code>EstadoCredito</code> como State (O9) y Strategy/Adapter “para mostrar” (O10).</li>
 </ul>'''
 
@@ -474,7 +501,7 @@ doc = f'''<!doctype html>
 <title>Reporte V3 — TPO Grupo 7</title><style>{CSS}</style></head>
 <body>
 <div id="barra"><strong style="color:var(--navy)">Reporte V3</strong>
-<nav><a href="#portada">Portada</a><a href="#timeline">Timeline</a><a href="#mvc">MVC</a><a href="#mejoras">Mejoras</a><a href="#m7">Adapter</a><a href="#m9">Strategy</a><a href="#revision">Revisión</a><a href="#verificacion">Verificación</a><a href="#clases">Clases</a><a href="#pendientes">Pendientes</a></nav>
+<nav><a href="#portada">Portada</a><a href="#timeline">Timeline</a><a href="#mvc">MVC</a><a href="#mejoras">Mejoras</a><a href="#m7">Adapter</a><a href="#m9">Strategy</a><a href="#revision">Revisión</a><a href="#verificacion">Verificación</a><a href="#clases">Clases</a><a href="#pendientes">Pendientes</a><a href="../casos-de-uso/README.md">Casos de uso</a></nav>
 <button class="sec" onclick="window.print()">Exportar PDF</button></div>
 <main>
 
@@ -516,16 +543,23 @@ doc = f'''<!doctype html>
 </section>
 
 <section id="revision"><h2>Mejoras de la revisión</h2>
-<p>Después de las diez mejoras, una revisión de solo lectura (oportunidades, prácticas de Spring, bad smells; lo que quedó abierto está en el <a href="../backlog.md">backlog</a>) encontró usos flojos de los conceptos y código muerto. Entraron las que tapaban un hueco visible y eran chicas.</p>
+<p>Después de las diez mejoras, una revisión de solo lectura (oportunidades, prácticas de Spring, bad smells; lo que quedó abierto está en el <a href="../backlog.md">backlog</a>) encontró usos flojos de los conceptos y código muerto. Entraron las que tapaban un hueco visible y eran chicas. Después de la versión del 06/10 (<code>c8ddb94</code>) entraron los arreglos de la verificación final (F1, F2), la presentación del front (UI, DT) y la limpieza de comentarios y del repo (COM, LIM).</p>
 {rev_html}
+{capturas_ui}
 </section>
 
 <section id="verificacion"><h2>Verificación</h2>
 <div class="cuadro">
 <div><h4>Tests automáticos</h4><p><code>cd backend &amp;&amp; mvn test</code>: <strong>25 tests, 0 fallas</strong>. Son 24 de dominio puro (JUnit 5 + AssertJ, sin contexto de Spring) más <code>contextLoads</code>. <code>InteresSimpleTest</code> y <code>SistemaFrancesTest</code> cubren cada estrategia aislada; <code>CreditoTest</code>, <code>CuotaTest</code> y <code>CobranzaTest</code> cubren M1, M2, M6 y M8. Detalle: <a href="../trabajo/tests.md"><code>docs/trabajo/tests.md</code></a>.</p></div>
 <div><h4>Smoke de la API</h4><p>22 casos con curl contra el backend levantado: 401/404/405 (M5), los dos planes (M9), cobro sobre anulado (M1), 403 sin permiso (M4), vencidas (M6), dashboard por rol y con números correctos (M3, M10). Todos OK. Detalle: <a href="../trabajo/smoke.md"><code>docs/trabajo/smoke.md</code></a>.</p></div>
+<div><h4>Verificación final</h4><p>Recorrido de API y visual sobre <code>main</code> el 06/10: tokens alterados o vencidos (O2), cálculo de los dos planes, estados y saldo, permisos, dashboard. Encontró 401 donde correspondía 403 y 500 en requests mal formadas, corregidos en F1 y F2. Detalle: <a href="../trabajo/verificacion-final.md"><code>docs/trabajo/verificacion-final.md</code></a>. Los casos de uso se volvieron a recorrer por API con <code>docs/casos-de-uso/verificar-cu.sh</code>.</p></div>
 <div><h4>Comprobación visual</h4><p>Recorrido completo en el browser con capturas: login, alta, otorgamiento simple y francés, cobro, vencida, anulación, 403 forzado, dashboard ADMIN y SUPERVISOR, Swagger con token. Las dos fallas encontradas (listado sin refrescar tras anular y título “Modo Supervisor” para el ADMIN) se corrigieron en O1 y <code>d35fc0e</code>. Detalle: <a href="../trabajo/visual.md"><code>docs/trabajo/visual.md</code></a>, capturas en <a href="../trabajo/capturas/final/"><code>docs/trabajo/capturas/final/</code></a>.</p></div>
 </div>
+</section>
+
+<section id="casos"><h2>Casos de uso</h2>
+<p>Las fichas de cada caso de uso vigente (actor, flujo, código HTTP real, regla y dónde vive) con la numeración de V0, el diagrama V3 y la matriz de trazabilidad están en <a href="../casos-de-uso/README.md"><code>docs/casos-de-uso/README.md</code></a>. Se verificaron con <code>docs/casos-de-uso/verificar-cu.sh</code> sobre una base limpia.</p>
+<p><a href="../casos-de-uso/casos-de-uso-v3.svg"><img src="../casos-de-uso/casos-de-uso-v3.svg" alt="Diagrama de casos de uso V3" style="width:100%;background:#fff;border:1px solid var(--linea);border-radius:4px"></a></p>
 </section>
 
 <section id="clases"><h2>Diagrama de clases V3</h2>

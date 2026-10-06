@@ -1,6 +1,6 @@
 # Lista de mejoras — Iteración 3 (TPO Grupo 7, Dashboard de préstamos)
 
-Rutas Java relativas a `backend/src/main/java/com/uade/tpejemplo/`. Reporte completo: `docs/reporte/reporte-v3.html`.
+Rutas Java relativas a `backend/src/main/java/com/uade/tpejemplo/`. Reporte completo: `docs/reporte/reporte-v3.html`. Casos de uso: `docs/casos-de-uso/README.md`.
 
 ## Hechos
 
@@ -32,6 +32,13 @@ Rutas Java relativas a `backend/src/main/java/com/uade/tpejemplo/`. Reporte comp
 | DF1 | Borrar store huérfano | `frontend/src/store/index.js` | Código muerto (front) |
 | DF3 | Sacar `console.log` que imprimía el JWT | `frontend/src/pages/Creditos.jsx` | Código de depuración |
 | BSF1 | Borrar comentarios de copy-paste | `frontend/src/store/slices/permisosSlice.js`, `cobranzasSlice.js`; `frontend/src/pages/GestorPermisos.jsx` | Comentarios |
+| F1 | Usuario autenticado sin el rol recibe 403, no 401 | `config/SecurityConfig.java` `filterChain` (`accessDeniedHandler`) | MVC (controlador) |
+| F2 | Body mal formado o parámetro de tipo incorrecto responde 400, no 500 | `exception/GlobalExceptionHandler.java` `handleRequestInvalida` | MVC (controlador) |
+| UI | Moneda y fechas es-AR, crédito con badge de estado y datos rotulados, fecha de cobranza, todos los mensajes de error, tabla de clientes | `frontend/src/utils/formato.js`; `frontend/src/pages/Creditos.jsx`, `Cobranzas.jsx`, `Clientes.jsx`, `Dashboard.jsx`; `frontend/src/api/apiClient.js` | Vista (MVC); detalle en `docs/trabajo/ui.md` |
+| DT | Dark theme con variables CSS semánticas y `prefers-color-scheme` | `frontend/src/index.css`; `frontend/src/pages/*.jsx`, `frontend/src/components/Navbar.jsx` | Protected Variations (estilo) |
+| COM | Comentarios: 1-3 líneas por clase, una línea por patrón, una por componente del front | `backend/src/main/java/**`, `frontend/src/**` | Bad smell: comentarios |
+| LIM | Limpieza del repo: `.factorypath` sin trackear, `docs/trabajo` fuera del `git archive`, docs de proceso borrados, README corto | `.gitattributes`, `README.md`, `docs/` | Entrega |
+| CU | Casos de uso V3: fichas, diagrama, trazabilidad y verificación por API | `docs/casos-de-uso/README.md`, `docs/casos-de-uso/verificar-cu.sh` | Documentación |
 | Tests | 25 tests (24 de dominio + contexto), 0 fallas | `backend/src/test/java/com/uade/tpejemplo/model/**` | JUnit 5 + AssertJ |
 
 ## Pendientes
@@ -47,6 +54,8 @@ Rutas Java relativas a `backend/src/main/java/com/uade/tpejemplo/`. Reporte comp
 | Front | DF2, BSF2, BSF4, BSF5, BSF6 (TPO-012) | `frontend/src/**` | Menores |
 | Tests | `@WebMvcTest` de códigos HTTP, `@DataJpaTest` del dashboard, seguridad, `Clock` inyectable | `backend/src/test` | Siguiente iteración |
 | H8 | Trazabilidad: qué usuario cobró o anuló | `model/Cobranza.java`, `model/Credito.java` | Modelo nuevo y cambio de API |
+| H4 | El front ve permisos y rol nuevos recién al volver a loguearse | `frontend/src/store/slices/authSlice.js` | Necesita `GET /usuarios/me` (A-1 del backlog) |
+| H1 | Anular una cobranza ya anulada responde 204 en vez de rechazarse | `model/Cobranza.java` `anular` | Hallazgo de los casos de uso |
 | M9 | Tasa con unidad declarada por plan; cuota con capital/interés separados | `model/TipoPlan.java`, `model/Cuota.java` | Límites del Strategy actual (ver reporte) |
 
 Descartados con motivo: `EstadoCredito` como State (O9: es un valor derivado) y Strategy/Adapter "para mostrar" (O10: no tapan huecos).
