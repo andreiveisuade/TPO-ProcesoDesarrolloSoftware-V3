@@ -1,0 +1,56 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Calibri
+skinparam defaultFontSize 12
+skinparam ClassBackgroundColor #FFFFFF
+skinparam ClassBorderColor #1D2B4F
+skinparam ClassHeaderBackgroundColor #FFFFFF
+skinparam ArrowColor #2E75B6
+skinparam NoteBackgroundColor #FFF8E1
+skinparam NoteBorderColor #B38600
+skinparam SequenceLifeLineBorderColor #1D2B4F
+skinparam ParticipantBackgroundColor #FFFFFF
+skinparam ParticipantBorderColor #1D2B4F
+skinparam SequenceGroupBackgroundColor #F4F8FC
+hide empty members
+interface TokenService <<Target>> #DDEBF7 {
+  +generarToken(username)
+  +extraerUsername(token)
+  +esValido(token, userDetails)
+}
+class JwtUtil <<Adapter>> #DDEBF7 {
+  -secret
+  -expirationMs
+  +generarToken(username)
+  +extraerUsername(token)
+  +esValido(token, userDetails)
+}
+class "Jwts (jjwt)" as Jwts <<Adaptee>> {
+  +builder()
+  +parser()
+}
+class AuthServiceImpl <<Client>>
+class JwtAuthFilter <<Client>>
+TokenService <|.. JwtUtil
+JwtUtil ..> Jwts
+AuthServiceImpl --> TokenService
+JwtAuthFilter --> TokenService
+
+interface UserDetails <<Target>> {
+  +getAuthorities()
+  +getPassword()
+  +getUsername()
+}
+class UsuarioDetails <<Adapter>> {
+  -usuario : IUsuario
+}
+interface IUsuario <<Adaptee>> {
+  +getUsername()
+  +getPassword()
+  +getRol()
+}
+class DaoAuthenticationProvider <<Client>>
+UserDetails <|.. UsuarioDetails
+UsuarioDetails o--> IUsuario
+DaoAuthenticationProvider ..> UserDetails
+@enduml

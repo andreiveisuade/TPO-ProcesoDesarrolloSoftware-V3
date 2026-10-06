@@ -3,6 +3,7 @@ package com.uade.tpejemplo.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import com.uade.tpejemplo.service.TokenService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -12,7 +13,7 @@ import java.util.Date;
 import java.util.function.Function;
 
 @Component
-public class JwtUtil {
+public class JwtUtil implements TokenService {
 
     @Value("${jwt.secret}")
     private String secret;
@@ -24,6 +25,7 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(secret.getBytes());
     }
 
+    @Override
     public String generarToken(String username) {
         return Jwts.builder()
             .subject(username)
@@ -33,10 +35,12 @@ public class JwtUtil {
             .compact();
     }
 
+    @Override
     public String extraerUsername(String token) {
         return extraerClaim(token, Claims::getSubject);
     }
 
+    @Override
     public boolean esValido(String token, UserDetails userDetails) {
         String username = extraerUsername(token);
         return username.equals(userDetails.getUsername()) && !estaExpirado(token);
