@@ -1,0 +1,41 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Calibri
+skinparam defaultFontSize 12
+skinparam ClassBackgroundColor #FFFFFF
+skinparam ClassBorderColor #1D2B4F
+skinparam ClassHeaderBackgroundColor #FFFFFF
+skinparam ArrowColor #2E75B6
+skinparam NoteBackgroundColor #FFF8E1
+skinparam NoteBorderColor #B38600
+skinparam SequenceLifeLineBorderColor #1D2B4F
+skinparam ParticipantBackgroundColor #FFFFFF
+skinparam ParticipantBorderColor #1D2B4F
+skinparam SequenceGroupBackgroundColor #F4F8FC
+hide empty members
+interface UserDetails <<Spring Security>> {
+  +getAuthorities()
+  +getPassword()
+  +getUsername()
+  +isAccountNonExpired()
+  +isAccountNonLocked()
+  +isCredentialsNonExpired()
+  +isEnabled()
+}
+class Usuario <<entidad JPA>> {
+  -username
+  -password
+  -rol
+  +isAccountNonExpired() : true
+  +isAccountNonLocked() : true
+  +isCredentialsNonExpired() : true
+  +isEnabled() : true
+}
+class DaoAuthenticationProvider
+UserDetails <|.. Usuario
+DaoAuthenticationProvider ..> UserDetails
+note bottom of Usuario #FFE0E0
+  V0: la entidad de dominio conoce
+  y cumple el contrato del framework
+end note
+@enduml

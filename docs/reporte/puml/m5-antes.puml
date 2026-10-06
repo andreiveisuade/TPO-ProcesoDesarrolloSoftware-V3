@@ -1,0 +1,26 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Calibri
+skinparam defaultFontSize 12
+skinparam ClassBackgroundColor #FFFFFF
+skinparam ClassBorderColor #1D2B4F
+skinparam ClassHeaderBackgroundColor #FFFFFF
+skinparam ArrowColor #2E75B6
+skinparam NoteBackgroundColor #FFF8E1
+skinparam NoteBorderColor #B38600
+skinparam SequenceLifeLineBorderColor #1D2B4F
+skinparam ParticipantBackgroundColor #FFFFFF
+skinparam ParticipantBorderColor #1D2B4F
+skinparam SequenceGroupBackgroundColor #F4F8FC
+hide empty members
+class GlobalExceptionHandler {
+  +handleNotFound(ResourceNotFoundException) : 404
+  +handleBusiness(BusinessException) : 400
+  +handleValidation(MethodArgumentNotValidException) : 400
+  +handleGeneral(Exception) : 500
+}
+note right of GlobalExceptionHandler #FFE0E0
+  login incorrecto, ruta inexistente
+  y acceso denegado caen en el 500
+end note
+@enduml

@@ -1,0 +1,34 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Calibri
+skinparam defaultFontSize 12
+skinparam ClassBackgroundColor #FFFFFF
+skinparam ClassBorderColor #1D2B4F
+skinparam ClassHeaderBackgroundColor #FFFFFF
+skinparam ArrowColor #2E75B6
+skinparam NoteBackgroundColor #FFF8E1
+skinparam NoteBorderColor #B38600
+skinparam SequenceLifeLineBorderColor #1D2B4F
+skinparam ParticipantBackgroundColor #FFFFFF
+skinparam ParticipantBorderColor #1D2B4F
+skinparam SequenceGroupBackgroundColor #F4F8FC
+hide empty members
+class AuthServiceImpl
+class JwtAuthFilter
+class JwtUtil {
+  +generarToken(username)
+  +extraerUsername(token)
+  +esValido(token, userDetails)
+}
+class "Jwts (jjwt)" as Jwts {
+  +builder()
+  +parser()
+}
+JwtUtil ..> Jwts
+AuthServiceImpl --> JwtUtil
+JwtAuthFilter --> JwtUtil
+note bottom of JwtUtil #FFE0E0
+  los clientes dependen de la clase
+  concreta (y de jjwt detrás)
+end note
+@enduml

@@ -1,0 +1,35 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Calibri
+skinparam defaultFontSize 12
+skinparam ClassBackgroundColor #FFFFFF
+skinparam ClassBorderColor #1D2B4F
+skinparam ClassHeaderBackgroundColor #FFFFFF
+skinparam ArrowColor #2E75B6
+skinparam NoteBackgroundColor #FFF8E1
+skinparam NoteBorderColor #B38600
+skinparam SequenceLifeLineBorderColor #1D2B4F
+skinparam ParticipantBackgroundColor #FFFFFF
+skinparam ParticipantBorderColor #1D2B4F
+skinparam SequenceGroupBackgroundColor #F4F8FC
+hide empty members
+class DashboardServiceImpl {
+  +obtenerEstadisticasGenerales()
+}
+interface CreditoRepository {
+  +count()
+  +sumarImporteCuotaTotal()
+}
+interface CobranzaRepository {
+  +sumarImporteTotal()
+}
+DashboardServiceImpl --> CreditoRepository
+DashboardServiceImpl --> CobranzaRepository
+note bottom of CreditoRepository #FFE0E0
+  SUM(importeCuota): suma cuotas,
+  no lo financiado. count() incluye anulados
+end note
+note bottom of CobranzaRepository #FFE0E0
+  suma también cobranzas anuladas
+end note
+@enduml
