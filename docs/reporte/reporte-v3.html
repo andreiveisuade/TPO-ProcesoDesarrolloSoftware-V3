@@ -111,10 +111,16 @@ details summary{cursor:pointer;color:var(--azul);font-size:14px;margin-top:6px}
 <ul><li>13 smells corregidos (god class, data class, primitive obsession, encapsulamiento)</li><li><code>MetaCobranza</code> eliminada; <code>Cuota.estaPagada()</code> y <code>registrarCobranza</code></li><li><code>UsuarioDetails</code> como Adapter</li><li>Resueltos TPO-005, 006, 013, 015</li></ul></div>
 <div class="hito"><div class="punto"></div><h4>V2</h4><p class="tema">Iteración 2: GRASP + interfaces</p><p class="meta">Mergeada 15/09 · <code>main@45e228c</code> (tag <code>v2</code>) · 5 commits</p>
 <ul><li>Information Expert: <code>Cobranza.anular()</code>, <code>Credito.anular()</code></li><li>Creator: <code>Usuario.nuevo</code></li><li>Interfaz por cada clase del modelo y de servicio</li><li>Revierte §3.7 del informe 1 (Lazy class): interfaces de servicio restituidas</li></ul></div>
-<div class="hito actual"><div class="punto"></div><h4>V3</h4><p class="tema">Iteración 3: MVC + Strategy + Adapter</p><p class="meta">Entrega 13/10/2026 · repo V3, <code>main</code> · 87 commits sin merges</p>
+<div class="hito actual"><div class="punto"></div><h4>V3</h4><p class="tema">Iteración 3: MVC + Strategy + Adapter</p><p class="meta">Entrega 13/10/2026 · repo V3, <code>main</code> · 93 commits sin merges</p>
 <ul><li><strong>Strategy</strong>: cálculo de cuota, interés simple y sistema francés (M9)</li><li><strong>Adapter</strong>: <code>TokenService</code> sobre jjwt (M7)</li><li><code>EstadoCredito</code>, saldo, mora (M6, M8)</li><li>Permisos y errores HTTP en el backend (M4, M5), Swagger</li><li>Dashboard corregido (M3, M10); 25 tests</li><li>Revierte V2: sistema francés descartado el 15/09</li></ul></div>
 </div>
-<details><summary>Commits V2 → V3 (git log v2..main)</summary><pre><code>9d182dc Strategy y Adapter primero en el reporte y la lista de mejoras
+<details><summary>Commits V2 → V3 (git log v2..main)</summary><pre><code>dadebec README: casos de uso, demo y tests
+055d30b Backlog sin notas internas de proceso
+36dbaf2 Renombrar el pendiente M9 a P-M9
+99dd47d M7: roles del Adapter en la lista de mejoras
+d20da6e Desglose de tests por clase en la lista y el manual
+fcc9bf6 Rechazar la doble anulación de una cobranza
+9d182dc Strategy y Adapter primero en el reporte y la lista de mejoras
 267db75 Reporte y manual sin dependencias de docs/trabajo
 93fb967 Revisión global de V3 y guía de lectura
 aaed9b5 Sincronizar documentación con el estado final
