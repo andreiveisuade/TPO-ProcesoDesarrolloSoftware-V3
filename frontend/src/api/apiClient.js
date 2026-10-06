@@ -9,7 +9,7 @@ async function request(path, options = {}) {
 
   if (!res.ok) {
     const error = await res.json().catch(() => ({ mensajes: [res.statusText] }));
-    throw new Error(error.mensajes?.[0] ?? 'Error desconocido');
+    throw new Error(error.mensajes?.length ? error.mensajes.join(' · ') : 'Error desconocido');
   }
 
   return res.status === 204 ? null : res.json();
