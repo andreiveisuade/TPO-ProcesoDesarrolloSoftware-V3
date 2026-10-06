@@ -53,9 +53,9 @@ Rutas Java relativas a `backend/src/main/java/com/uade/tpejemplo/`. Reporte comp
 | T-1 | Tests de los códigos HTTP 400/401/403/404/405 con la seguridad JWT real y los servicios simulados | `backend/src/test/java/com/uade/tpejemplo/controller/CodigosHttpTest.java` (`@WebMvcTest`) | Tests |
 | T-5 | La fecha de hoy entra por parámetro: se testea anular una cobranza de otro día y el vencimiento sin depender del reloj | `model/Cobranza.java` `anular(LocalDate)`; `model/Cuota.java` `estaVencida(LocalDate)` | Tests |
 | DER | Diagrama entidad-relación de la base, con claves y restricciones | `docs/diagramas/der-v3.puml`, `.svg`, `.png` | Documentación |
-| Tests | 36 tests, 0 fallas | `backend/src/test/java/com/uade/tpejemplo/` | JUnit 5 + AssertJ, `@WebMvcTest` |
+| Tests | 37 tests, 0 fallas | `backend/src/test/java/com/uade/tpejemplo/` | JUnit 5 + AssertJ, `@WebMvcTest` |
 
-Desglose de los 36 tests:
+Desglose de los 37 tests:
 
 - `model/CreditoTest`: 8
 - `model/CuotaTest`: 8
@@ -63,9 +63,30 @@ Desglose de los 36 tests:
 - `model/plan/SistemaFrancesTest`: 4
 - `model/CobranzaTest`: 3
 - `controller/CodigosHttpTest`: 8
+- `service/CobranzaConcurrenteTest`: 1 (I-1)
 - `TpEjemploApplicationTests` (`contextLoads`): 1
 
 Decisión S6: el control de roles queda doble a propósito, reglas de URL en `config/SecurityConfig.java` `filterChain` y `@PreAuthorize` en `controller/AdminController.java` y `controller/SupervisorController.java`. Es defensa en profundidad: si una ruta cambia y la regla de URL deja de cubrirla, el método sigue protegido.
+
+## Revisión final (T40, T41, T42)
+
+| ID | Qué | Clase y método | Patrón / concepto |
+|---|---|---|---|
+| I-1 | Dos cobros simultáneos de la misma cuota ya no dejan dos cobranzas vigentes | `repository/CuotaRepository.java` `buscarPorCreditoYNumero` (`@Lock(PESSIMISTIC_WRITE)`, sin `JOIN FETCH`); test `backend/src/test/java/com/uade/tpejemplo/service/CobranzaConcurrenteTest.java` | Concurrencia (bloqueo pesimista) |
+| BS3 | El usuario responde si puede anular | `model/interfaces/IUsuario.java`, `model/Usuario.java` `puedeAnularCredito`, `puedeAnularCobranza`; usados en `service/impl/CreditoServiceImpl.java` `anularCredito` y `service/impl/CobranzaServiceImpl.java` `anularCobranza` | Information Expert / Tell, don't ask |
+| BS4 | `rol` tipado como `Rol` en las respuestas | `dto/response/UsuarioResponse.java`, `dto/response/AuthResponse.java` | Primitive obsession |
+| BS6 | Mismo verbo para el mismo caso | `controller/SupervisorController.java` `listarUsuarios` | Nombres consistentes |
+| Front | `RoleRoute` y `ROLES`, toda la API por `src/api`, `ESTADO_CUOTA`, sin restos de Vite (TPO-012) | `frontend/src/components/RoleRoute.jsx`, `frontend/src/utils/roles.js`, `frontend/src/api/dashboard.js`, `frontend/src/pages/Creditos.jsx` `estadoCuota` | Duplicated code, strings mágicos |
+
+**I-1. Cobros simultáneos.**
+- Problema: `service/impl/CobranzaServiceImpl.java` `registrar` leía la cuota, `model/Cuota.java` `registrarCobranza` la veía impaga y recién después insertaba. Dos requests a la vez veían la cuota impaga y cobraban las dos.
+- Qué se hizo: `@Lock(PESSIMISTIC_WRITE)` en `buscarPorCreditoYNumero` y fuera su `LEFT JOIN FETCH c.cobranzas`: con el join, H2 leía las cobranzas de antes del bloqueo y seguía duplicando. `CobranzaConcurrenteTest` lanza 20 hilos sobre la misma cuota y espera 1 vigente; sin el arreglo falla (10 vigentes).
+- Por qué: el esquema no admite un `unique` porque las anuladas también cuentan; el bloqueo serializa solo los cobros de la misma cuota.
+
+**S7-S9. Perfiles.**
+- Problema: `application.properties` mezclaba lo de desarrollo con lo único, `.cors(Customizer.withDefaults())` no tenía `CorsConfigurationSource` y `/h2-console/**` estaba en `permitAll` (acceso a la base sin login).
+- Qué se hizo: `dev` por defecto (consola H2, SQL en logs, `create-drop`, CORS para `http://localhost:5173`); `prod` sin consola, sin SQL, `update` y CORS solo para `CORS_ORIGIN`, obligatoria. La consola salió del `permitAll`.
+- Por qué: lo cómodo para la demo no llega a prod. S6 no se tocó: el doble control de roles queda a propósito.
 
 ## Recorrido de casos de uso por la UI (T33)
 
@@ -103,11 +124,7 @@ Salen de recorrer cada caso de uso por la UI (incluido H4).
 | ID | Qué | Dónde | Por qué queda |
 |---|---|---|---|
 | O8 | Pagos parciales | `model/Cuota.java` `estaPagada` y todo lo que depende | Tamaño L, fuera de alcance de V3 |
-| S7-S9 | Consola H2 (TPO-008), CORS, `ddl-auto`/`show-sql` | `config/SecurityConfig.java`, `application.properties` | No rompen nada; prolijidad |
 | S10 | Renombrar paquete `com.uade.tpejemplo` (TPO-014) | todo el backend | Diff ruidoso; evaluar para el 17/11 |
-| BS3-BS6 | Chequeo de permiso en services, rol como String, nombres | services, DTO | Menores |
-| Front | DF2, BSF2, BSF4, BSF5, BSF6 (TPO-012) | `frontend/src/**` | Menores |
-| I-1 | Dos requests simultáneas pueden dejar dos cobranzas vigentes en la misma cuota. Arreglo probado: `@Lock(PESSIMISTIC_WRITE)` en `buscarPorCreditoYNumero` sin el `JOIN FETCH` de cobranzas | `repository/CuotaRepository.java` | 27/10, con su `@DataJpaTest` |
 | Tests | `@DataJpaTest` del dashboard, `Permisos` | `backend/src/test` | Siguiente iteración |
 | H8 | Trazabilidad: qué usuario cobró o anuló | `model/Cobranza.java`, `model/Credito.java` | Modelo nuevo y cambio de API |
 | P-M9 | Tasa con unidad declarada por plan; cuota con capital/interés separados | `model/TipoPlan.java`, `model/Cuota.java` | Límites del Strategy actual (ver reporte) |
