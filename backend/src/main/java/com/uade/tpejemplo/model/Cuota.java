@@ -64,7 +64,11 @@ public class Cuota implements ICuota {
     }
 
     public boolean estaVencida() {
-        return !estaPagada() && fechaVencimiento.isBefore(LocalDate.now());
+        return estaVencida(LocalDate.now());
+    }
+
+    public boolean estaVencida(LocalDate hoy) {
+        return !estaPagada() && fechaVencimiento.isBefore(hoy);
     }
 
     // La cuota crea su propia cobranza: es quien sabe si ya esta pagada y

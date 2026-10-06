@@ -32,6 +32,15 @@ class CobranzaTest {
         assertThatThrownBy(cobranza::anular).isInstanceOf(BusinessException.class);
     }
 
-    // Sin cubrir: el rechazo de anular una cobranza de otro dia. La fecha la fija
-    // el constructor con LocalDate.now() y no hay setter ni Clock inyectable.
+    @Test
+    void noSePuedeAnularUnaCobranzaDeOtroDia() {
+        Credito credito = Credito.nuevo(Cliente.nuevo("30111222", "Ana"), new BigDecimal("100"),
+            LocalDate.now(), BigDecimal.ZERO, 1, TipoPlan.INTERES_SIMPLE);
+        Cobranza cobranza = credito.getCuotas().get(0).registrarCobranza(new BigDecimal("100.00"));
+
+        assertThatThrownBy(() -> cobranza.anular(LocalDate.now().plusDays(1)))
+            .isInstanceOf(BusinessException.class)
+            .hasMessageContaining("día de hoy");
+        assertThat(cobranza.isAnulada()).isFalse();
+    }
 }
