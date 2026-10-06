@@ -5,7 +5,7 @@ Casos de uso del dashboard de préstamos tal como funcionan en V3 (main), con la
 Convenciones:
 
 - Rutas del backend relativas a `backend/src/main/java/com/uade/tpejemplo/`; tests relativos a `backend/src/test/java/com/uade/tpejemplo/`; front relativo a `frontend/src/`. `archivo:línea` apunta al método.
-- **Verificación**: *Test* = test unitario (`mvn test`, 25 tests, todos pasan al 2026-10-06). *Smoke* = `docs/trabajo/smoke.md`. *Final* = `docs/trabajo/verificacion-final.md` y sus capturas en `docs/trabajo/capturas/final/`. *API* = `verificar-cu.sh` de esta carpeta, corrido sobre una base limpia (resultados en la sección 6). `docs/trabajo/` no va en el zip de entrega (`export-ignore` en `.gitattributes`), por eso la sección 6 deja los resultados acá.
+- **Verificación**: *Test* = test unitario (`mvn test`, 26 tests, todos pasan al 2026-10-06). *Smoke* = `docs/trabajo/smoke.md`. *Final* = `docs/trabajo/verificacion-final.md` y sus capturas en `docs/trabajo/capturas/final/`. *API* = `verificar-cu.sh` de esta carpeta, corrido sobre una base limpia (resultados en la sección 6). `docs/trabajo/` no va en el zip de entrega (`export-ignore` en `.gitattributes`), por eso la sección 6 deja los resultados acá.
 - Errores: todos salen por `exception/GlobalExceptionHandler.java` con cuerpo `{status, error, mensajes[]}`: 400 regla de negocio (`handleBusiness`:34), 400 validación del DTO (`handleValidation`:41), 400 body o parámetro mal formado (`handleRequestInvalida`:51), 401 credenciales (`handleAuth`:58), 403 sin permiso (`handleDenied`:65), 404 no encontrado (`handleNotFound`:27). Sin token, o con token inválido, la cadena de seguridad responde 401 sin cuerpo; con token y sin el rol, 403 sin cuerpo (`config/SecurityConfig.java:59-60`).
 
 ## 1. Actores
@@ -297,7 +297,7 @@ Los tests unitarios están en `model/` y `model/plan/` del árbol de tests.
 | UC20 `op1` a SUPERVISOR / dar ADMIN / cambiar al admin / rol `JEFE` / `op1` ve el dashboard con el token de antes | 200 / 400 / 400 / 400 / **200** | H4 |
 | Cobrar las 2 cuotas del crédito de 2025 → CANCELADO; dashboard | 201 x2; 200 | **Activos 2 → 1, financiado 1700 → 1700** (H3) |
 
-Además: `mvn test` → 25 tests, 0 fallas.
+Además: `mvn test` → 26 tests, 0 fallas.
 
 ### Hallazgos
 
