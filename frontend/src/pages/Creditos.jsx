@@ -1,3 +1,4 @@
+import { formatMoneda } from '../utils/formato';
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchCreditosPorCliente, addCredito, clearCreditos, anularCreditoThunk } from '../store/slices/creditosSlice';
@@ -94,8 +95,8 @@ export default function Creditos() {
           {creditosSeguros.map(cr => (
             <div key={cr.id} style={{ ...styles.creditoBox, opacity: cr.anulado ? 0.6 : 1 }}>
               <p>
-                <strong>ID #{cr.id}</strong> — Deuda: ${cr.deudaOriginal} — {cr.tipoPlan === 'SISTEMA_FRANCES' ? `Sistema francés ${cr.tasaInteres}% mensual` : `Interés simple ${cr.tasaInteres}% total`} = ${cr.totalADevolver} — {cr.cantidadCuotas} cuotas de ${cr.importeCuota}
-                {' '}— Saldo: ${cr.saldo}
+                <strong>ID #{cr.id}</strong> — Deuda: {formatMoneda(cr.deudaOriginal)} — {cr.tipoPlan === 'SISTEMA_FRANCES' ? `Sistema francés ${cr.tasaInteres}% mensual` : `Interés simple ${cr.tasaInteres}% total`} = {formatMoneda(cr.totalADevolver)} — {cr.cantidadCuotas} cuotas de {formatMoneda(cr.importeCuota)}
+                {' '}— Saldo: {formatMoneda(cr.saldo)}
                 <span style={cr.estado === 'ANULADO' ? styles.badgeAnulado : undefined}> [{cr.estado}]</span>
               </p>
               
