@@ -27,10 +27,10 @@ public class DashboardServiceImpl implements DashboardService {
     @Override
     public DashboardStatsResponse obtenerEstadisticasGenerales() {
         long clientes = clienteRepository.count();
-        long creditos = creditoRepository.count();
+        long creditos = creditoRepository.contarVigentes();
 
-        BigDecimal totalFinanciado = creditoRepository.sumarImporteCuotaTotal();
-        BigDecimal totalCobrado = cobranzaRepository.sumarImporteTotal();
+        BigDecimal totalFinanciado = creditoRepository.sumarDeudaOriginalVigente();
+        BigDecimal totalCobrado = cobranzaRepository.sumarImporteVigente();
 
         return new DashboardStatsResponse(clientes, creditos, totalFinanciado, totalCobrado);
     }
