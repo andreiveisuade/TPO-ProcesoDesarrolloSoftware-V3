@@ -6,10 +6,10 @@ tok: "Token (M7)" {
   cli: "AuthServiceImpl\nJwtAuthFilter\n«Client»" {class: cl}
   T: "TokenService\n«Target»" {class: rol}
   A: "JwtUtil\n«Adapter»" {class: rol}
-  E: "jjwt (io.jsonwebtoken)\n«Adaptee»" {class: ext}
+  E: "JwtParser, SecretKey (jjwt)\n«Adaptee»" {class: ext}
   cli -> T: "usa"
   A -> T: "implementa" {style.stroke-dash: 4; target-arrowhead.shape: triangle; target-arrowhead.style.filled: false}
-  A -> E: "delega"
+  A -> E: "compone (final)"
 }
 usr: "Usuario (desde V1)" {
   class: capa

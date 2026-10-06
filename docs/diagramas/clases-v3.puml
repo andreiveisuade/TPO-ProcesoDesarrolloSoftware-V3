@@ -100,13 +100,15 @@ package "Modelo" {
 
   package "security" {
     class JwtUtil <<Adapter>> {
-      - secret : String
+      - key : SecretKey
+      - parser : JwtParser
       - expirationMs : long
       + generarToken(String) : String
       + extraerUsername(String) : Optional<String>
       + esValido(String, String) : boolean
     }
-    class "io.jsonwebtoken.Jwts" as Jwts <<Adaptee>>
+    class "JwtParser (jjwt)" as JwtParser <<Adaptee>>
+    class "SecretKey (jjwt)" as SecretKey <<Adaptee>>
     class JwtAuthFilter {
       # doFilterInternal(HttpServletRequest, HttpServletResponse, FilterChain) : void
     }
@@ -164,7 +166,8 @@ AdminServiceImpl ..> Usuario : permisos / rol
 DashboardServiceImpl ..> Credito : saldo() y cuotas vencidas
 
 TokenService <|.. JwtUtil
-JwtUtil ..> Jwts : delega
+JwtUtil *-- "1" JwtParser : parser
+JwtUtil *-- "1" SecretKey : key
 JwtAuthFilter --> "1" TokenService
 JwtAuthFilter --> "1" UserDetailsServiceImpl
 UserDetailsServiceImpl ..> UsuarioDetails : crea
@@ -175,7 +178,8 @@ IUsuario <|.. Usuario
 note top of JwtUtil
   Adapter (objeto): TokenService es lo que
   esperan AuthServiceImpl y JwtAuthFilter;
-  JwtUtil traduce a la API de jjwt.
+  JwtUtil compone JwtParser y SecretKey (final)
+  y traduce a la API de jjwt.
 end note
 note bottom of UsuarioDetails
   Adapter: Spring Security pide UserDetails;
@@ -248,6 +252,7 @@ package "model" {
     - anulado : boolean
     + {static} nuevo(Cliente, BigDecimal, LocalDate, BigDecimal, Integer, TipoPlan) : Credito
     + totalADevolver() : BigDecimal
+    - calculo() : CalculoDeCuota
     - generarPlanDeCuotas() : void
     + estado() : EstadoCredito
     + saldo() : BigDecimal
@@ -332,6 +337,7 @@ Credito "1" *-- "1..*" Cuota : cuotas\n(Creator, cascade PERSIST)
 Cuota "1" *-- "0..*" Cobranza : cobranzas
 Credito --> "1" TipoPlan : tipoPlan
 TipoPlan --> "1" CalculoDeCuota : calculo
+Credito ..> CalculoDeCuota : calculo()
 Credito ..> EstadoCredito : estado()
 Usuario --> "1" Rol : rol
 Usuario *-- "1" Permisos : permisos

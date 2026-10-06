@@ -17,7 +17,7 @@ Rutas Java relativas a `backend/src/main/java/com/uade/tpejemplo/`. Reporte comp
 | `model/TipoPlan.java` | sin `ITipoPlan` | Enum registro de estrategias |
 | `model/interfaces/CalculoDeCuota.java` | sin prefijo `I` | Interfaz Strategy: nombre de rol |
 | `service/TokenService.java` → `security/JwtUtil.java` | no es `TokenServiceImpl` | Es el Adapter; infraestructura, no caso de uso |
-| `model/interfaces/IRol.java` | sin consumidor | Existe por la convención (ISP parcial) |
+| `model/interfaces/IRol.java` | sin consumidor | Existe por la convención; una interfaz sin clientes no viola ISP |
 
 ## Evolución del sistema (Problema → Solución → Buena práctica)
 
@@ -28,7 +28,7 @@ Rutas Java relativas a `backend/src/main/java/com/uade/tpejemplo/`. Reporte comp
 | UI | Importes, fechas y errores crudos; sin avisos | `frontend/src/utils/formato.js`, `frontend/src/components/Aviso.jsx`, `frontend/src/pages/Creditos.jsx` | MVC: la vista solo presenta |
 | Dark theme | Colores a mano en cada `.jsx` | Variables CSS en `frontend/src/index.css` | Protected Variations (estilo) |
 | Casos de uso | UC06/UC09 sin pantalla; permisos viejos hasta reloguear | `frontend/src/pages/Clientes.jsx`, `Creditos.jsx`; `GET /api/auth/me` | MVC: el modelo es la autoridad |
-| Tests | Cero tests en V2 | 37 tests (dominio, HTTP, concurrencia) | Testeabilidad |
+| Tests | Cero tests en V2 | 40 tests (dominio, HTTP, concurrencia) | Testeabilidad |
 | Limpieza | Javadoc ruidoso, basura en el zip | Comentarios por patrón, `.gitattributes` | Bad smell: comentarios |
 
 ## Hechos
@@ -37,7 +37,7 @@ Rutas Java relativas a `backend/src/main/java/com/uade/tpejemplo/`. Reporte comp
 |---|---|---|---|
 | M1 | Rechazar el cobro sobre un crédito anulado (TPO-004) | `model/Cuota.java` `registrarCobranza` | Information Expert |
 | M2 | "Tiene cobranzas" ignora las anuladas (absorbida por M8) | `model/Credito.java` `tieneCobranzas`; se borra `repository/CobranzaRepository.java` `existeCobranzaDelCredito` | Information Expert |
-| M3 | Dashboard solo con lo vigente; financiado = deuda original (TPO-003) | `service/impl/DashboardServiceImpl.java` `obtenerEstadisticasGenerales`; `repository/CreditoRepository.java` `sumarDeudaOriginalVigente`; `repository/CobranzaRepository.java` `sumarImporteVigente` | Corrección + Expert |
+| M3 | Dashboard: activos = `estado()` VIGENTE (modelo); financiado y cobrado = lo no anulado (query; el financiado incluye cancelados) (TPO-003) | `service/impl/DashboardServiceImpl.java` `obtenerEstadisticasGenerales`; `repository/CreditoRepository.java` `sumarDeudaOriginalVigente`; `repository/CobranzaRepository.java` `sumarImporteVigente` | Corrección + Expert |
 | M4 | Permisos de anulación validados en el backend (TPO-007) | `controller/CreditoController.java` `anularCredito`, `service/impl/CreditoServiceImpl.java` `anularCredito`, `service/impl/CobranzaServiceImpl.java` `anularCobranza` | MVC + Information Expert |
 | M5 | Handlers 401/403/404/405 (TPO-001, TPO-002) | `exception/GlobalExceptionHandler.java` `handleAuth`, `handleDenied`, `handleNoResource`, `handleMetodo` | MVC |
 | M6 | Cuota vencida (mora) | `model/Cuota.java` `estaVencida`; `dto/response/CuotaResponse.java` | Information Expert |
@@ -51,7 +51,7 @@ Rutas Java relativas a `backend/src/main/java/com/uade/tpejemplo/`. Reporte comp
 | O5 | La guarda del ADMIN vive en el modelo | `model/Usuario.java` `otorgarPermisos`, `asignarRol`; `service/impl/AdminServiceImpl.java` | MVC + Expert |
 | S1 | Transacciones en los services | `service/impl/AdminServiceImpl.java`, `AuthServiceImpl.java`, `ClienteServiceImpl.java`, `CobranzaServiceImpl.java` | Spring: `@Transactional` |
 | S2 | open-in-view apagado | `backend/src/main/resources/application.properties` | Spring JPA |
-| S3 | `jwt.secret` desde `JWT_SECRET` (TPO-009) | `backend/src/main/resources/application.properties` | Configuración fuera del código |
+| S3 | `jwt.secret` desde `JWT_SECRET` (TPO-009); prod la exige sin default | `backend/src/main/resources/application.properties`, `application-prod.properties` | Configuración fuera del código |
 | S4 | El 500 no filtra el mensaje interno y se loguea | `exception/GlobalExceptionHandler.java` `handleGeneral` | Seguridad / MVC |
 | D1 | Borrar `findByRol` sin uso | `repository/UsuarioRepository.java` | Código muerto |
 | D2 | Borrar `@Builder`/`@NoArgsConstructor` sin uso | `dto/response/AuthResponse.java` | Código muerto |
@@ -75,22 +75,23 @@ Rutas Java relativas a `backend/src/main/java/com/uade/tpejemplo/`. Reporte comp
 | T-1 | Tests de los códigos HTTP 400/401/403/404/405 con la seguridad JWT real y los servicios simulados | `backend/src/test/java/com/uade/tpejemplo/controller/CodigosHttpTest.java` (`@WebMvcTest`) | Tests |
 | T-5 | La fecha de hoy entra por parámetro: se testea anular una cobranza de otro día y el vencimiento sin depender del reloj | `model/Cobranza.java` `anular(LocalDate)`; `model/Cuota.java` `estaVencida(LocalDate)` | Tests |
 | DER | Diagrama entidad-relación de la base, con claves y restricciones | `docs/diagramas/der-v3.puml`, `.svg`, `.png` | Documentación |
-| Tests | 37 tests, 0 fallas | `backend/src/test/java/com/uade/tpejemplo/` | JUnit 5 + AssertJ, `@WebMvcTest` |
+| Tests | 40 tests, 0 fallas | `backend/src/test/java/com/uade/tpejemplo/` | JUnit 5 + AssertJ, `@WebMvcTest` |
 
-Desglose de los 37 tests:
+Desglose de los 40 tests:
 
 - `model/CreditoTest`: 8
 - `model/CuotaTest`: 8
 - `model/plan/InteresSimpleTest`: 4
 - `model/plan/SistemaFrancesTest`: 4
 - `model/CobranzaTest`: 3
-- `controller/CodigosHttpTest`: 8
+- `controller/CodigosHttpTest`: 10
 - `service/CobranzaConcurrenteTest`: 1 (I-1)
+- `service/AnulacionConcurrenteTest`: 1 (I1)
 - `TpEjemploApplicationTests` (`contextLoads`): 1
 
 Decisión S6: el control de roles queda doble a propósito, reglas de URL en `config/SecurityConfig.java` `filterChain` y `@PreAuthorize` en `controller/AdminController.java` y `controller/SupervisorController.java`. Es defensa en profundidad: si una ruta cambia y la regla de URL deja de cubrirla, el método sigue protegido.
 
-## Revisión final (T40, T41, T42)
+## Mejoras de la revisión
 
 | ID | Qué | Clase y método | Patrón / concepto |
 |---|---|---|---|
@@ -98,6 +99,10 @@ Decisión S6: el control de roles queda doble a propósito, reglas de URL en `co
 | BS3 | El usuario responde si puede anular | `model/interfaces/IUsuario.java`, `model/Usuario.java` `puedeAnularCredito`, `puedeAnularCobranza`; usados en `service/impl/CreditoServiceImpl.java` `anularCredito` y `service/impl/CobranzaServiceImpl.java` `anularCobranza` | Information Expert / Tell, don't ask |
 | BS4 | `rol` tipado como `Rol` en las respuestas | `dto/response/UsuarioResponse.java`, `dto/response/AuthResponse.java` | Primitive obsession |
 | BS6 | Mismo verbo para el mismo caso | `controller/SupervisorController.java` `listarUsuarios` | Nombres consistentes |
+| I1 | Anular y cobrar en paralelo ya no deja un crédito ANULADO con cobranza vigente: los dos caminos bloquean el crédito y después la cuota | `repository/CreditoRepository.java` (`@Lock(PESSIMISTIC_WRITE)`), `service/impl/CreditoServiceImpl.java` `anularCredito`, `service/impl/CobranzaServiceImpl.java` `registrar`; test `service/AnulacionConcurrenteTest.java` | Concurrencia (bloqueo pesimista) |
+| I2 | Prod exige `JWT_SECRET` sin default; usuarios semilla solo en dev | `application-prod.properties`; `config/DataInitializer.java` `@Profile("dev")` | Config fuera del código |
+| I3 | `Content-Type` no JSON → 415; `Accept` no JSON → 406, con `ErrorResponse` (antes 500) | `exception/GlobalExceptionHandler.java`; `controller/CodigosHttpTest.java` | Error del cliente = 4xx |
+| I4 | Un alta ya no aparece en la lista de otro cliente o crédito buscado | `frontend/src/store/slices/creditosSlice.js`, `frontend/src/store/slices/cobranzasSlice.js` | MVC: la vista muestra lo que dice el modelo |
 | Front | `RoleRoute` y `ROLES`, toda la API por `src/api`, `ESTADO_CUOTA`, sin restos de Vite (TPO-012) | `frontend/src/components/RoleRoute.jsx`, `frontend/src/utils/roles.js`, `frontend/src/api/dashboard.js`, `frontend/src/pages/Creditos.jsx` `estadoCuota` | Duplicated code, strings mágicos |
 
 **I-1. Cobros simultáneos.**
@@ -149,6 +154,7 @@ Salen de recorrer cada caso de uso por la UI (incluido H4).
 | S10 | Renombrar paquete `com.uade.tpejemplo` (TPO-014) | todo el backend | Diff ruidoso; evaluar para el 17/11 |
 | Tests | `@DataJpaTest` del dashboard, `Permisos` | `backend/src/test` | Siguiente iteración |
 | H8 | Trazabilidad: qué usuario cobró o anuló | `model/Cobranza.java`, `model/Credito.java` | Modelo nuevo y cambio de API |
+| Base prod | Prod sigue con H2 en memoria: sin persistencia ni alta de admin | `application-prod.properties` | Falta base real (PostgreSQL) y migraciones |
 | P-M9 | Tasa con unidad declarada por plan; cuota con capital/interés separados | `model/TipoPlan.java`, `model/Cuota.java` | Límites del Strategy actual (ver reporte) |
 
 Descartados con motivo: `EstadoCredito` como State (O9: es un valor derivado) y Strategy/Adapter "para mostrar" (O10: no tapan huecos).

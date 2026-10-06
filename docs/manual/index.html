@@ -488,7 +488,7 @@ body.lightbox-locked { overflow: hidden; }
           <tr><td>Visitante</td><td>—</td><td>Registrarse y loguearse (<code>/api/auth/**</code>, <code>config/SecurityConfig.java</code> <code>filterChain</code>)</td></tr>
           <tr><td>Operador (<code>USER</code>)</td><td>Registro público: siempre <code>USER</code> con <code>Permisos.ninguno()</code> (<code>service/impl/AuthServiceImpl.java</code> <code>registrar</code>)</td><td>Clientes, créditos, cobranzas. Anular solo si tiene el permiso correspondiente</td></tr>
           <tr><td>Supervisor (<code>SUPERVISOR</code>)</td><td><code>config/DataInitializer.java</code> o un ADMIN le cambia el rol</td><td>Lo del operador + dashboard + otorgar permisos de anulación (<code>controller/SupervisorController.java</code>)</td></tr>
-          <tr><td>Administrador (<code>ADMIN</code>)</td><td>Solo <code>config/DataInitializer.java</code></td><td>Cambiar rol USER↔SUPERVISOR, permisos, dashboard (<code>controller/AdminController.java</code>)</td></tr>
+          <tr><td>Administrador (<code>ADMIN</code>)</td><td>Solo <code>config/DataInitializer.java</code> (perfil dev)</td><td>Cambiar rol USER↔SUPERVISOR, permisos, dashboard (<code>controller/AdminController.java</code>)</td></tr>
         </tbody>
       </table></div>
     </section>
@@ -529,7 +529,7 @@ body.lightbox-locked { overflow: hidden; }
           <tr><td>R15</td><td>Anular un crédito requiere <code>puedeAnularCredito</code>; anular una cobranza, <code>puedeAnularCobranza</code></td><td><code>service/impl/CreditoServiceImpl.java</code> <code>anularCredito</code>; <code>service/impl/CobranzaServiceImpl.java</code> <code>anularCobranza</code></td></tr>
           <tr><td>R16</td><td>Nadie otorga ni quita el rol ADMIN</td><td><code>service/impl/AdminServiceImpl.java</code> <code>actualizarRol</code></td></tr>
           <tr><td>R17</td><td>El registro crea siempre un USER sin permisos; username único</td><td><code>service/impl/AuthServiceImpl.java</code> <code>registrar</code></td></tr>
-          <tr><td>R18</td><td>El dashboard cuenta solo créditos no anulados, financiado = suma de deuda original vigente, cobrado = cobranzas no anuladas, saldo pendiente = suma de <code>Credito.saldo</code>, vencido = cuotas vencidas de créditos no anulados</td><td><code>service/impl/DashboardServiceImpl.java</code> <code>obtenerEstadisticasGenerales</code>; <code>repository/CreditoRepository.java</code> <code>contarVigentes</code>, <code>sumarDeudaOriginalVigente</code>; <code>repository/CobranzaRepository.java</code> <code>sumarImporteVigente</code></td></tr>
+          <tr><td>R18</td><td>Activos = créditos con <code>estado()</code> VIGENTE (modelo); financiado = deuda original de lo no anulado (incluye cancelados), cobrado = cobranzas no anuladas, saldo pendiente = suma de <code>Credito.saldo</code>, vencido = cuotas vencidas de créditos no anulados</td><td><code>service/impl/DashboardServiceImpl.java</code> <code>obtenerEstadisticasGenerales</code>; <code>repository/CreditoRepository.java</code> <code>sumarDeudaOriginalVigente</code>; <code>repository/CobranzaRepository.java</code> <code>sumarImporteVigente</code></td></tr>
         </tbody>
       </table></div>
     </section>
@@ -1350,8 +1350,10 @@ svg .s-security{color: var(--security-stroke);}
         <li>Sin token → 401 (<code>HttpStatusEntryPoint</code>); con token y sin el rol → 403 (<code>accessDeniedHandler</code>, ambos en <code>config/SecurityConfig.java</code> <code>filterChain</code>); sin permiso de anulación → 403 desde <code>exception/GlobalExceptionHandler.java</code> <code>handleDenied</code>.</li>
         <li><strong>Doble control de roles</strong>: las zonas de admin y supervisor se chequean en las reglas de URL de <code>config/SecurityConfig.java</code> y otra vez con <code>@PreAuthorize</code> en <code>controller/AdminController.java</code> y <code>controller/SupervisorController.java</code>. Es a propósito (ver "Decisiones de diseño").</li>
         <li><strong>CORS</strong>: <code>config/SecurityConfig.java</code> <code>corsConfigurationSource</code> admite un solo origen, <code>app.cors.origin</code>: <code>http://localhost:5173</code> en dev y la variable <code>CORS_ORIGIN</code> en prod.</li>
+        <li><strong>Secret JWT</strong>: prod exige <code>JWT_SECRET</code> sin default (<code>application-prod.properties</code>); sin ella no arranca. Los usuarios semilla (<code>config/DataInitializer.java</code>, <code>@Profile("dev")</code>) solo existen en dev.</li>
+        <li><strong>Concurrencia</strong>: cobrar y anular bloquean el crédito (<code>@Lock(PESSIMISTIC_WRITE)</code> en <code>repository/CreditoRepository.java</code>), después la cuota: no queda un crédito anulado con una cobranza vigente.</li>
         <li><strong>Consola H2</strong>: solo en el perfil dev (<code>application-dev.properties</code>); en prod está deshabilitada y responde 404 (TPO-008).</li>
-        <li>Body mal formado o parámetro de tipo incorrecto → 400 (<code>exception/GlobalExceptionHandler.java</code> <code>handleRequestInvalida</code>).</li>
+        <li>Body mal formado o parámetro de tipo incorrecto → 400 (<code>exception/GlobalExceptionHandler.java</code> <code>handleRequestInvalida</code>). <code>Content-Type</code> no JSON → 415; <code>Accept</code> no JSON → 406, ambos con <code>ErrorResponse</code>.</li>
       </ul>
     </section>
 
@@ -1377,13 +1379,13 @@ cd frontend &amp;&amp; npm install &amp;&amp; npm run dev   # Vite, proxy /api �
         <thead><tr><th>Perfil</th><th>Archivo</th><th>Qué cambia</th></tr></thead>
         <tbody>
           <tr><td>dev (default)</td><td><code>backend/src/main/resources/application-dev.properties</code></td><td>Consola H2, SQL en los logs, <code>create-drop</code>, CORS para <code>http://localhost:5173</code></td></tr>
-          <tr><td>prod</td><td><code>backend/src/main/resources/application-prod.properties</code></td><td>Sin consola H2, sin SQL en los logs, <code>update</code>, CORS solo para <code>CORS_ORIGIN</code></td></tr>
+          <tr><td>prod</td><td><code>backend/src/main/resources/application-prod.properties</code></td><td>Sin consola H2, sin SQL en los logs, sin usuarios semilla, CORS solo para <code>CORS_ORIGIN</code>, <code>JWT_SECRET</code> obligatoria</td></tr>
         </tbody>
       </table></div>
-      <pre><code>cd backend &amp;&amp; SPRING_PROFILES_ACTIVE=prod CORS_ORIGIN=https://mi-front.example mvn spring-boot:run</code></pre>
+      <pre><code>cd backend &amp;&amp; SPRING_PROFILES_ACTIVE=prod CORS_ORIGIN=https://mi-front.example JWT_SECRET=&lt;32+ caracteres&gt; mvn spring-boot:run</code></pre>
       <p>
-        Sin <code>CORS_ORIGIN</code> prod no arranca. Con H2 en memoria, <code>update</code> igual no guarda nada entre
-        reinicios: cuando haya una base real alcanza con cambiar el datasource del perfil.
+        Sin <code>CORS_ORIGIN</code> o <code>JWT_SECRET</code> prod no arranca. <strong>Limitación</strong>: prod sigue con H2 en memoria,
+        así que no guarda nada entre reinicios y no tiene usuarios (no hay alta de admin). Falta una base persistente (ver Pendientes).
       </p>
       <h3>Ver los datos: consola H2</h3>
       <p>
@@ -1417,15 +1419,15 @@ SELECT * FROM COBRANZAS WHERE ANULADA = FALSE;  -- cobranzas vigentes</code></pr
     <section class="doc-section" id="verificar">
       <h2>Cómo se verifica</h2>
       <ul>
-        <li><strong>Tests</strong>: <code>cd backend &amp;&amp; mvn test</code>: 37 tests, 0 fallas. JUnit 5 (el framework de tests de Java) con AssertJ (aserciones encadenadas legibles):
+        <li><strong>Tests</strong>: <code>cd backend &amp;&amp; mvn test</code>: 40 tests, 0 fallas. JUnit 5 (el framework de tests de Java) con AssertJ (aserciones encadenadas legibles):
           <ul>
             <li>27 unitarios de dominio, sin Spring, en <code>backend/src/test/java/com/uade/tpejemplo/model/</code>: <code>CreditoTest</code> 8, <code>CuotaTest</code> 8, <code>plan/InteresSimpleTest</code> 4, <code>plan/SistemaFrancesTest</code> 4, <code>CobranzaTest</code> 3. La fecha de hoy entra por parámetro (<code>model/Cobranza.java</code> <code>anular(LocalDate)</code>, <code>model/Cuota.java</code> <code>estaVencida(LocalDate)</code>), así se prueba el rechazo de anular una cobranza de otro día y el vencimiento sin depender del reloj.</li>
-            <li>8 de códigos HTTP en <code>backend/src/test/java/com/uade/tpejemplo/controller/CodigosHttpTest.java</code>: <code>@WebMvcTest</code> levanta solo la capa web (controllers, <code>SecurityConfig</code>, el filtro JWT y el <code>GlobalExceptionHandler</code>) con los servicios simulados por <code>@MockitoBean</code>. Cubre 400 (DNI de más de 15 caracteres, JSON roto, parámetro de tipo incorrecto), 401 (sin token y token inválido), 403 (rol incorrecto), 404 y 405.</li>
-            <li>1 de concurrencia en <code>backend/src/test/java/com/uade/tpejemplo/service/CobranzaConcurrenteTest.java</code>: <code>@SpringBootTest</code> con 20 hilos cobrando la misma cuota a la vez; espera una sola cobranza vigente (I-1). Sin el bloqueo falla con 10.</li>
+            <li>10 de códigos HTTP en <code>backend/src/test/java/com/uade/tpejemplo/controller/CodigosHttpTest.java</code>: <code>@WebMvcTest</code> levanta solo la capa web (controllers, <code>SecurityConfig</code>, el filtro JWT y el <code>GlobalExceptionHandler</code>) con los servicios simulados por <code>@MockitoBean</code>. Cubre 400 (DNI de más de 15 caracteres, JSON roto, parámetro de tipo incorrecto), 401 (sin token y token inválido), 403 (rol incorrecto), 404, 405, 406 y 415.</li>
+            <li>2 de concurrencia con <code>@SpringBootTest</code> en <code>backend/src/test/java/com/uade/tpejemplo/service/</code>: <code>CobranzaConcurrenteTest</code>, 20 hilos cobrando la misma cuota, espera una sola cobranza vigente (I-1; sin el bloqueo falla con 10); <code>AnulacionConcurrenteTest</code>, anular y cobrar en paralelo, nunca queda un crédito anulado con cobranza vigente.</li>
             <li><code>TpEjemploApplicationTests</code> (<code>contextLoads</code>): 1, levanta la aplicación entera.</li>
           </ul>
         </li>
-        <li><strong>Smoke</strong>: backend levantado y probado con curl, caso por caso contra M1..M10 (códigos, cálculo de cuotas, anulaciones, permisos, dashboard): 22 casos OK. El build del front no se probó ahí.</li>
+        <li><strong>Smoke</strong>: backend levantado y probado con curl, API 12/12 y recorrido visual 9/9. La auditoría final recorrió 304 casos de API con 4 roles.</li>
         <li><strong>Verificación final</strong>: API y browser sobre <code>main</code> el 06/10, incluidos tokens alterados y vencidos; las dos fallas (401 en vez de 403, 500 en vez de 400) se corrigieron después.</li>
         <li><strong>Comprobación visual</strong>: recorrido completo en el browser; capturas de la UI final y del dark theme en el reporte.</li>
         <li><strong>Casos de uso por API</strong>: <code>docs/casos-de-uso/verificar-cu.sh</code> sobre una base limpia; resultados en la sección 6 de <a href="../casos-de-uso/README.md"><code>docs/casos-de-uso/README.md</code></a>.</li>
@@ -1465,7 +1467,7 @@ SELECT * FROM COBRANZAS WHERE ANULADA = FALSE;  -- cobranzas vigentes</code></pr
         <li><strong>V0</strong> (<code>main@2a90af8</code>): proyecto inicial con docs PlantUML, requerimientos y CU.</li>
         <li><strong>V1</strong> (<code>andrei-iteracion1@86c75cc</code>, 08/09): bad smells; <code>Permisos</code>, <code>Cuota</code> con importe y su cobranza, tasa de interés, panel de supervisor.</li>
         <li><strong>V2</strong> (<code>main@45e228c</code>, tag <code>v2</code>, 15/09): GRASP + interfaces de modelo y de servicio.</li>
-        <li><strong>V3</strong> (este repo, entrega 13/10): MVC + Strategy + Adapter; bugs TPO-001..004, 007, 009, 010 cerrados; Creator del plan de cuotas y dashboard con saldo y vencido; 37 tests (dominio, códigos HTTP y concurrencia); perfiles dev y prod; Swagger; <code>GET /api/auth/me</code>; pantallas de UC06 y UC09; UI con formato es-AR y dark theme; casos de uso documentados.</li>
+        <li><strong>V3</strong> (este repo, entrega 13/10): MVC + Strategy + Adapter; bugs TPO-001..004, 007, 009, 010 cerrados; Creator del plan de cuotas y dashboard con saldo y vencido; 40 tests (dominio, códigos HTTP y concurrencia); perfiles dev y prod; Swagger; <code>GET /api/auth/me</code>; pantallas de UC06 y UC09; UI con formato es-AR y dark theme; casos de uso documentados.</li>
       </ul>
     </section>
 
@@ -1477,7 +1479,7 @@ SELECT * FROM COBRANZAS WHERE ANULADA = FALSE;  -- cobranzas vigentes</code></pr
         <li>H8, trazabilidad: <code>Cobranza</code> no sabe quién cobró ni quién anuló; <code>Credito</code> no sabe quién lo otorgó.</li>
         <li>La fecha del crédito es libre: acepta pasado y futuro (<code>dto/request/CreditoRequest.java</code>).</li>
         <li>Interés simple: la suma de cuotas puede diferir del total en centavos.</li>
-        <li>M-3: carrera entre anular un crédito y cobrar una de sus cuotas (no reproducida); mismo arreglo que I-1, bloqueando el crédito.</li>
+        <li><strong>Base persistente para prod</strong>: el perfil prod sigue con H2 en memoria; falta una base real (PostgreSQL) con migraciones y alta de admin.</li>
         <li>Tests sin cubrir: queries del dashboard (<code>@DataJpaTest</code>) y <code>Permisos</code>.</li>
         <li>Backlog GRASP: <code>TasaInteres</code> como value object.</li>
         <li>Confirmar con Regulo que ADMIN debe ver el dashboard (M10).</li>

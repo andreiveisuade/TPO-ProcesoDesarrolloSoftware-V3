@@ -12,6 +12,7 @@ hide empty members
 class Credito <<Context>> {
   -tipoPlan : TipoPlan
   +totalADevolver()
+  -calculo() : CalculoDeCuota
 }
 enum TipoPlan {
   INTERES_SIMPLE
