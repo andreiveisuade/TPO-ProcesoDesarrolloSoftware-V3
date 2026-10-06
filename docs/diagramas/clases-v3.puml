@@ -45,7 +45,7 @@ package "Controlador" {
     + actualizarRol(Long, RolRequest) : UsuarioResponse
   }
   class SupervisorController <<RestController>> {
-    + obtenerUsuarios() : List<UsuarioResponse>
+    + listarUsuarios() : List<UsuarioResponse>
     + actualizarPermisosAnulacion(Long, PermisosRequest) : UsuarioResponse
   }
   class DashboardController <<RestController>> {

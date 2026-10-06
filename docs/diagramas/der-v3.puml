@@ -70,8 +70,8 @@ end note
 
 note right of cobranzas
   Regla que el esquema NO protege: a lo sumo una cobranza
-  no anulada por cuota. La valida Cuota.registrarCobranza();
-  con requests concurrentes se duplica.
+  no anulada por cuota. La valida Cuota.registrarCobranza(),
+  serializada con bloqueo pesimista de la cuota y del crédito.
   Tampoco protege: importes > 0, tasa >= 0, ni que no
   se cobre una cuota de un crédito anulado.
 end note
