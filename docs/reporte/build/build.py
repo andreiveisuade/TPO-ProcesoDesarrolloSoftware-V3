@@ -428,9 +428,9 @@ rev = [
 rev_html = "".join(f'<div class="rev" id="{i.lower()}"><h4>{i} <span class="ref">· commit <code>{c}</code></span></h4><p><strong>Problema.</strong> {p}</p><p><strong>Cambio.</strong> {s}</p><p><strong>Concepto.</strong> {k}</p></div>' for i, c, p, s, k in rev)
 
 def cap(sub, nom, alt):
-    return f'<figure><figcaption>{alt}</figcaption><a href="../trabajo/capturas/{sub}/{nom}.png"><img src="../trabajo/capturas/{sub}/{nom}.png" alt="{alt}" style="width:100%;border:1px solid var(--linea);border-radius:4px"></a></figure>'
+    return f'<figure><figcaption>{alt}</figcaption><a href="capturas/{sub}/{nom}.png"><img src="capturas/{sub}/{nom}.png" alt="{alt}" style="width:100%;border:1px solid var(--linea);border-radius:4px"></a></figure>'
 
-capturas_ui = ('<h3>Capturas de la UI</h3><p>Antes y después de las mejoras de presentación, y el tema oscuro; detalle de cada mejora y de las variables del tema en <a href="../trabajo/ui.md"><code>docs/trabajo/ui.md</code></a>.</p>'
+capturas_ui = ('<h3>Capturas de la UI</h3><p>Antes y después de las mejoras de presentación, y el tema oscuro.</p>'
     + '<div class="par">' + cap("ui-antes", "03-creditos", "Créditos, antes") + cap("ui-despues", "03-creditos", "Créditos, después") + '</div>'
     + '<div class="par">' + cap("ui-antes", "04-cobranzas", "Cobranzas, antes") + cap("ui-despues", "04-cobranzas", "Cobranzas, después") + '</div>'
     + '<div class="par">' + cap("dark", "creditos", "Créditos, dark theme") + cap("dark", "dashboard", "Dashboard, dark theme") + '</div>')
@@ -528,7 +528,7 @@ doc = f'''<!doctype html>
 <table><thead><tr><th>Clase / paquete</th><th>Componente</th><th>Justificación</th></tr></thead><tbody>{rows}</tbody></table>
 <h3>Qué cambió en V3</h3>
 <ul>
-<li><strong>El contrato está publicado.</strong> Swagger UI (<code>/swagger-ui.html</code>, <code>config/OpenApiConfig.java</code>) documenta 19 operaciones con su request, response y los códigos que realmente produce. Mapa completo en <a href="../trabajo/api.md"><code>docs/trabajo/api.md</code></a>.</li>
+<li><strong>El contrato está publicado.</strong> Swagger UI (<code>/swagger-ui.html</code>, <code>config/OpenApiConfig.java</code>) documenta 19 operaciones con su request, response y los códigos que realmente produce.</li>
 <li><strong>El controlador traduce todos los errores.</strong> <code>exception/GlobalExceptionHandler.java</code> mapea las excepciones del modelo y de la seguridad a 400/401/403/404/405/500 con el mismo <code>ErrorResponse</code> (M5, S4).</li>
 <li><strong>401 y 403 son distintos.</strong> Sin token, <code>config/SecurityConfig.java</code> responde 401 con <code>HttpStatusEntryPoint</code>; con token y sin rol o sin permiso, 403. Antes ambos daban 403.</li>
 <li><strong>La regla está en el modelo y la vista solo oculta.</strong> Permisos de anulación (M4), guarda del ADMIN (O5) y anulabilidad (O1) dejaron de vivir solo en JSX.</li>
@@ -550,10 +550,10 @@ doc = f'''<!doctype html>
 
 <section id="verificacion"><h2>Verificación</h2>
 <div class="cuadro">
-<div><h4>Tests automáticos</h4><p><code>cd backend &amp;&amp; mvn test</code>: <strong>25 tests, 0 fallas</strong>. Son 24 de dominio puro (JUnit 5 + AssertJ, sin contexto de Spring) más <code>contextLoads</code>. <code>InteresSimpleTest</code> y <code>SistemaFrancesTest</code> cubren cada estrategia aislada; <code>CreditoTest</code>, <code>CuotaTest</code> y <code>CobranzaTest</code> cubren M1, M2, M6 y M8. Detalle: <a href="../trabajo/tests.md"><code>docs/trabajo/tests.md</code></a>.</p></div>
-<div><h4>Smoke de la API</h4><p>22 casos con curl contra el backend levantado: 401/404/405 (M5), los dos planes (M9), cobro sobre anulado (M1), 403 sin permiso (M4), vencidas (M6), dashboard por rol y con números correctos (M3, M10). Todos OK. Detalle: <a href="../trabajo/smoke.md"><code>docs/trabajo/smoke.md</code></a>.</p></div>
-<div><h4>Verificación final</h4><p>Recorrido de API y visual sobre <code>main</code> el 06/10: tokens alterados o vencidos (O2), cálculo de los dos planes, estados y saldo, permisos, dashboard. Encontró 401 donde correspondía 403 y 500 en requests mal formadas, corregidos en F1 y F2. Detalle: <a href="../trabajo/verificacion-final.md"><code>docs/trabajo/verificacion-final.md</code></a>. Los casos de uso se volvieron a recorrer por API con <code>docs/casos-de-uso/verificar-cu.sh</code>.</p></div>
-<div><h4>Comprobación visual</h4><p>Recorrido completo en el browser con capturas: login, alta, otorgamiento simple y francés, cobro, vencida, anulación, 403 forzado, dashboard ADMIN y SUPERVISOR, Swagger con token. Las dos fallas encontradas (listado sin refrescar tras anular y título “Modo Supervisor” para el ADMIN) se corrigieron en O1 y <code>d35fc0e</code>. Detalle: <a href="../trabajo/visual.md"><code>docs/trabajo/visual.md</code></a>, capturas en <a href="../trabajo/capturas/final/"><code>docs/trabajo/capturas/final/</code></a>.</p></div>
+<div><h4>Tests automáticos</h4><p><code>cd backend &amp;&amp; mvn test</code>: <strong>25 tests, 0 fallas</strong>. Son 24 de dominio puro (JUnit 5 + AssertJ, sin contexto de Spring) más <code>contextLoads</code>. <code>InteresSimpleTest</code> y <code>SistemaFrancesTest</code> cubren cada estrategia aislada; <code>CreditoTest</code>, <code>CuotaTest</code> y <code>CobranzaTest</code> cubren M1, M2, M6 y M8.</p></div>
+<div><h4>Smoke de la API</h4><p>22 casos con curl contra el backend levantado: 401/404/405 (M5), los dos planes (M9), cobro sobre anulado (M1), 403 sin permiso (M4), vencidas (M6), dashboard por rol y con números correctos (M3, M10). Todos OK.</p></div>
+<div><h4>Verificación final</h4><p>Recorrido de API y visual sobre <code>main</code> el 06/10: tokens alterados o vencidos (O2), cálculo de los dos planes, estados y saldo, permisos, dashboard. Encontró 401 donde correspondía 403 y 500 en requests mal formadas, corregidos en F1 y F2. Los casos de uso se volvieron a recorrer por API con <code>docs/casos-de-uso/verificar-cu.sh</code>.</p></div>
+<div><h4>Comprobación visual</h4><p>Recorrido completo en el browser con capturas: login, alta, otorgamiento simple y francés, cobro, vencida, anulación, 403 forzado, dashboard ADMIN y SUPERVISOR, Swagger con token. Las dos fallas encontradas (listado sin refrescar tras anular y título “Modo Supervisor” para el ADMIN) se corrigieron en O1 y <code>d35fc0e</code>.</p></div>
 </div>
 </section>
 

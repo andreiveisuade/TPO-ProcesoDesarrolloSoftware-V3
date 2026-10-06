@@ -632,7 +632,7 @@ body.lightbox-locked { overflow: hidden; }
         supervisor. Con el backend levantado: Swagger en
         <a href="http://localhost:8080/swagger-ui.html">http://localhost:8080/swagger-ui.html</a> (botón Authorize con el
         token de <code>/api/auth/login</code>), especificación en <code>/v3/api-docs</code>. Mapa completo
-        (método, ruta, controller, DTO, roles, códigos) en <a href="../trabajo/api.md"><code>docs/trabajo/api.md</code></a>.
+        (método, ruta, controller, DTO, roles, códigos) en Swagger UI.
       </p>
       <p>
         Códigos: 400 regla de negocio o validación, 401 sin token o credenciales malas, 403 sin rol o permiso, 404 no
@@ -655,8 +655,8 @@ body.lightbox-locked { overflow: hidden; }
     <section class="doc-section" id="interfaz">
       <h2>Interfaz y tema</h2>
       <ul>
-        <li><strong>Formato</strong>: moneda y fechas es-AR (<code>$ 120.000,00</code>, <code>dd/mm/aaaa</code>) desde una sola util, <code>utils/formato.js</code>. El crédito muestra badge de estado, datos rotulados, cuotas pagadas e importe por cuota (<code>pages/Creditos.jsx</code>); <code>api/apiClient.js</code> muestra todos los mensajes de validación. Capturas antes/después en <a href="../trabajo/ui.md"><code>docs/trabajo/ui.md</code></a>.</li>
-        <li><strong>Dark theme</strong>: la paleta son variables CSS (valores con nombre que el resto del CSS lee con <code>var(--...)</code>) en <code>index.css</code>, con nombre semántico (<code>--color-surface</code>, <code>--color-danger</code>). Oscuro por defecto; <code>@media (prefers-color-scheme: light)</code>, la consulta del navegador por el tema del sistema operativo, redefine las mismas variables. Sin botón ni librerías; contraste WCAG AA. Variables y capturas en <a href="../trabajo/ui.md#dark-theme"><code>docs/trabajo/ui.md</code></a>.</li>
+        <li><strong>Formato</strong>: moneda y fechas es-AR (<code>$ 120.000,00</code>, <code>dd/mm/aaaa</code>) desde una sola util, <code>utils/formato.js</code>. El crédito muestra badge de estado, datos rotulados, cuotas pagadas e importe por cuota (<code>pages/Creditos.jsx</code>); <code>api/apiClient.js</code> muestra todos los mensajes de validación. Capturas antes/después en el reporte.</li>
+        <li><strong>Dark theme</strong>: la paleta son variables CSS (valores con nombre que el resto del CSS lee con <code>var(--...)</code>) en <code>index.css</code>, con nombre semántico (<code>--color-surface</code>, <code>--color-danger</code>). Oscuro por defecto; <code>@media (prefers-color-scheme: light)</code>, la consulta del navegador por el tema del sistema operativo, redefine las mismas variables. Sin botón ni librerías; contraste WCAG AA. Capturas en el reporte.</li>
       </ul>
     </section>
 
@@ -683,10 +683,10 @@ cd frontend &amp;&amp; npm install &amp;&amp; npm run dev   # Vite, proxy /api �
     <section class="doc-section" id="verificar">
       <h2>Cómo se verifica</h2>
       <ul>
-        <li><strong>Tests</strong>: <code>cd backend &amp;&amp; mvn test</code>: 25 tests, 0 fallas. 24 tests unitarios de dominio (JUnit 5 + AssertJ, sin Spring) en <code>backend/src/test/java/com/uade/tpejemplo/model/</code>: <code>CreditoTest</code>, <code>CuotaTest</code>, <code>CobranzaTest</code>, <code>plan/InteresSimpleTest</code>, <code>plan/SistemaFrancesTest</code>, más <code>contextLoads</code>. Detalle y lo que falta cubrir: <a href="../trabajo/tests.md"><code>docs/trabajo/tests.md</code></a>.</li>
-        <li><strong>Smoke</strong>: backend levantado y probado con curl, caso por caso contra M1..M10 (códigos, cálculo de cuotas, anulaciones, permisos, dashboard): <a href="../trabajo/smoke.md"><code>docs/trabajo/smoke.md</code></a>. El build del front no se probó ahí.</li>
-        <li><strong>Verificación final</strong>: API y browser sobre <code>main</code> el 06/10, incluidos tokens alterados y vencidos; las dos fallas (401 en vez de 403, 500 en vez de 400) se corrigieron después: <a href="../trabajo/verificacion-final.md"><code>docs/trabajo/verificacion-final.md</code></a>.</li>
-        <li><strong>Comprobación visual</strong>: recorrido completo con capturas, <a href="../trabajo/visual.md"><code>docs/trabajo/visual.md</code></a>; capturas de la UI final y del dark theme en <a href="../trabajo/ui.md"><code>docs/trabajo/ui.md</code></a>.</li>
+        <li><strong>Tests</strong>: <code>cd backend &amp;&amp; mvn test</code>: 25 tests, 0 fallas. 24 tests unitarios de dominio (JUnit 5 + AssertJ, sin Spring) en <code>backend/src/test/java/com/uade/tpejemplo/model/</code>: <code>CreditoTest</code>, <code>CuotaTest</code>, <code>CobranzaTest</code>, <code>plan/InteresSimpleTest</code>, <code>plan/SistemaFrancesTest</code>, más <code>contextLoads</code>.</li>
+        <li><strong>Smoke</strong>: backend levantado y probado con curl, caso por caso contra M1..M10 (códigos, cálculo de cuotas, anulaciones, permisos, dashboard): 22 casos OK. El build del front no se probó ahí.</li>
+        <li><strong>Verificación final</strong>: API y browser sobre <code>main</code> el 06/10, incluidos tokens alterados y vencidos; las dos fallas (401 en vez de 403, 500 en vez de 400) se corrigieron después.</li>
+        <li><strong>Comprobación visual</strong>: recorrido completo en el browser; capturas de la UI final y del dark theme en el reporte.</li>
         <li><strong>Casos de uso por API</strong>: <code>docs/casos-de-uso/verificar-cu.sh</code> sobre una base limpia; resultados en la sección 6 de <a href="../casos-de-uso/README.md"><code>docs/casos-de-uso/README.md</code></a>.</li>
       </ul>
     </section>
@@ -730,7 +730,7 @@ cd frontend &amp;&amp; npm install &amp;&amp; npm run dev   # Vite, proxy /api �
         <li><code>Cobranza.anular</code> no rechaza una cobranza ya anulada: responde 204 (<code>model/Cobranza.java</code>, H1).</li>
         <li>El front ve los permisos y el rol nuevos recién al volver a loguearse; el backend los aplica desde la request siguiente (<code>store/slices/authSlice.js</code>, H4).</li>
         <li>La fecha del crédito es libre: acepta pasado y futuro (<code>dto/request/CreditoRequest.java</code>).</li>
-        <li>Interés simple: la suma de cuotas puede diferir del total en centavos (<code>docs/trabajo/tests.md</code>).</li>
+        <li>Interés simple: la suma de cuotas puede diferir del total en centavos.</li>
         <li>Tests sin cubrir: controllers, seguridad, queries del dashboard, anulación de cobranza de otro día (falta un <code>Clock</code> inyectable).</li>
         <li>Backlog GRASP: <code>TasaInteres</code> como value object.</li>
         <li>Confirmar con Regulo que ADMIN debe ver el dashboard (M10).</li>
