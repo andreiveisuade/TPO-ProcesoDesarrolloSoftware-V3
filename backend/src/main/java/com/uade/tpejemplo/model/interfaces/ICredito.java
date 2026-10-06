@@ -1,6 +1,7 @@
 package com.uade.tpejemplo.model.interfaces;
 
 import com.uade.tpejemplo.model.EstadoCredito;
+import com.uade.tpejemplo.model.TipoPlan;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -17,6 +18,8 @@ public interface ICredito {
     LocalDate getFecha();
 
     BigDecimal getTasaInteres();
+
+    TipoPlan getTipoPlan();
 
     BigDecimal getImporteCuota();
 

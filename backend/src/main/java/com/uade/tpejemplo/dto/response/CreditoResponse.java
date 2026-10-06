@@ -1,6 +1,7 @@
 package com.uade.tpejemplo.dto.response;
 
 import com.uade.tpejemplo.model.EstadoCredito;
+import com.uade.tpejemplo.model.TipoPlan;
 import com.uade.tpejemplo.model.interfaces.ICredito;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -22,6 +23,7 @@ public class CreditoResponse {
     private BigDecimal deudaOriginal;
     private LocalDate fecha;
     private BigDecimal tasaInteres;
+    private TipoPlan tipoPlan;
     private BigDecimal totalADevolver;
     private BigDecimal importeCuota;
     private Integer cantidadCuotas;
@@ -38,6 +40,7 @@ public class CreditoResponse {
             .deudaOriginal(credito.getDeudaOriginal())
             .fecha(credito.getFecha())
             .tasaInteres(credito.getTasaInteres())
+            .tipoPlan(credito.getTipoPlan())
             .totalADevolver(credito.totalADevolver())
             .importeCuota(credito.getImporteCuota())
             .cantidadCuotas(credito.getCantidadCuotas())
