@@ -76,7 +76,7 @@ public class CreditoServiceImpl implements CreditoService {
     @Transactional
     @Override
     public void anularCredito(Long id, IUsuario usuario) {
-        if (!usuario.getPermisos().isPuedeAnularCredito()) {
+        if (!usuario.puedeAnularCredito()) {
             throw new AccessDeniedException("El usuario no tiene permiso para anular creditos");
         }
 

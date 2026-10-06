@@ -44,6 +44,14 @@ public class Usuario implements IUsuario {
         return new Usuario(username, passwordHasheado, rol, permisos);
     }
 
+    public boolean puedeAnularCredito() {
+        return permisos.isPuedeAnularCredito();
+    }
+
+    public boolean puedeAnularCobranza() {
+        return permisos.isPuedeAnularCobranza();
+    }
+
     public void otorgarPermisos(Permisos permisos) {
         if (rol == Rol.ADMIN) {
             throw new BusinessException("No se pueden modificar los permisos de un administrador");

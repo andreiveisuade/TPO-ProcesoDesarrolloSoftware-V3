@@ -1,5 +1,6 @@
 package com.uade.tpejemplo.dto.response;
 
+import com.uade.tpejemplo.model.Rol;
 import com.uade.tpejemplo.model.interfaces.IUsuario;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,7 +11,7 @@ public class AuthResponse {
 
     private String token;
     private String username;
-    private String rol;
+    private Rol rol;
     private boolean puedeAnularCredito;
     private boolean puedeAnularCobranza;
 
@@ -18,9 +19,9 @@ public class AuthResponse {
         return new AuthResponse(
             token,
             usuario.getUsername(),
-            usuario.getRol().name(),
-            usuario.getPermisos().isPuedeAnularCredito(),
-            usuario.getPermisos().isPuedeAnularCobranza()
+            usuario.getRol(),
+            usuario.puedeAnularCredito(),
+            usuario.puedeAnularCobranza()
         );
     }
 }
