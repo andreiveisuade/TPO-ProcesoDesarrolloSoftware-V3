@@ -97,4 +97,20 @@ class CodigosHttpTest {
     void metodoNoSoportadoDa405() throws Exception {
         mvc.perform(delete("/api/clientes")).andExpect(status().isMethodNotAllowed());
     }
+
+    @Test
+    @WithMockUser
+    void contentTypeNoSoportadoDa415() throws Exception {
+        mvc.perform(post("/api/clientes").contentType(MediaType.TEXT_PLAIN).content("{\"dni\":\"1\"}"))
+            .andExpect(status().isUnsupportedMediaType())
+            .andExpect(jsonPath("$.status").value(415));
+    }
+
+    @Test
+    @WithMockUser
+    void acceptNoJsonDa406() throws Exception {
+        mvc.perform(get("/api/clientes").accept(MediaType.APPLICATION_XML))
+            .andExpect(status().isNotAcceptable())
+            .andExpect(jsonPath("$.status").value(406));
+    }
 }

@@ -6,6 +6,7 @@ import com.uade.tpejemplo.exception.ResourceNotFoundException;
 import com.uade.tpejemplo.model.Cobranza;
 import com.uade.tpejemplo.model.Cuota;
 import com.uade.tpejemplo.repository.CobranzaRepository;
+import com.uade.tpejemplo.repository.CreditoRepository;
 import com.uade.tpejemplo.repository.CuotaRepository;
 import com.uade.tpejemplo.service.CobranzaService;
 import com.uade.tpejemplo.model.interfaces.IUsuario;
@@ -24,10 +25,12 @@ public class CobranzaServiceImpl implements CobranzaService {
 
     private final CobranzaRepository cobranzaRepository;
     private final CuotaRepository cuotaRepository;
+    private final CreditoRepository creditoRepository;
 
     @Transactional
     @Override
     public CobranzaResponse registrar(CobranzaRequest request) {
+        creditoRepository.bloquearPorId(request.getIdCredito());
         Cuota cuota = cuotaRepository.buscarPorCreditoYNumero(request.getIdCredito(), request.getNumeroCuota())
             .orElseThrow(() -> new ResourceNotFoundException(
                 "Cuota", "idCredito/numeroCuota", request.getIdCredito() + "/" + request.getNumeroCuota()

@@ -39,6 +39,7 @@ public class DashboardServiceImpl implements DashboardService {
     public DashboardStatsResponse obtenerEstadisticasGenerales() {
         long clientes = clienteRepository.count();
         List<Credito> todos = creditoRepository.buscarTodosConCuotas();
+        // Precarga las cobranzas en la sesion (el resultado se descarta): 2 consultas en vez de N+1.
         cuotaRepository.buscarTodasConCobranzas();
         long creditos = todos.stream().filter(credito -> credito.estado() == EstadoCredito.VIGENTE).count();
 

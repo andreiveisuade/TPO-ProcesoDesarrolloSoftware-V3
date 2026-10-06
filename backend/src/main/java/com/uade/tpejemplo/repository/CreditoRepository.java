@@ -1,7 +1,9 @@
 package com.uade.tpejemplo.repository;
 
 import com.uade.tpejemplo.model.Credito;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -29,6 +31,11 @@ public interface CreditoRepository extends JpaRepository<Credito, Long> {
         SELECT DISTINCT c FROM Credito c JOIN FETCH c.cliente LEFT JOIN FETCH c.cuotas
         """)
     List<Credito> buscarTodosConCuotas();
+
+    // Bloquea el credito: cobrar y anular se serializan (siempre credito primero, despues cuota).
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT c FROM Credito c WHERE c.id = :id")
+    Optional<Credito> bloquearPorId(@Param("id") Long id);
 
     @Query("SELECT COALESCE(SUM(c.deudaOriginal), 0) FROM Credito c WHERE c.anulado = false")
     BigDecimal sumarDeudaOriginalVigente();
