@@ -1,0 +1,83 @@
+package com.uade.tpejemplo.model;
+
+import com.uade.tpejemplo.exception.BusinessException;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+class CuotaTest {
+
+    private Credito creditoOtorgado(LocalDate fecha) {
+        Credito credito = Credito.nuevo(Cliente.nuevo("30111222", "Ana"), new BigDecimal("200"),
+            fecha, BigDecimal.ZERO, 2, TipoPlan.INTERES_SIMPLE);
+        credito.generarPlanDeCuotas();
+        return credito;
+    }
+
+    @Test
+    void cuotaConVencimientoPasadoSinPagarEstaVencida() {
+        Credito credito = creditoOtorgado(LocalDate.now().minusMonths(2));
+
+        assertThat(credito.getCuotas().get(0).estaVencida()).isTrue();
+        assertThat(credito.getCuotas().get(1).estaVencida()).isFalse();
+    }
+
+    @Test
+    void cuotaPagadaNoEstaVencida() {
+        Cuota cuota = creditoOtorgado(LocalDate.now().minusMonths(2)).getCuotas().get(0);
+        cuota.registrarCobranza(new BigDecimal("100.00"));
+
+        assertThat(cuota.estaPagada()).isTrue();
+        assertThat(cuota.estaVencida()).isFalse();
+    }
+
+    @Test
+    void cobranzaAnuladaDejaLaCuotaImpaga() {
+        Cuota cuota = creditoOtorgado(LocalDate.now()).getCuotas().get(0);
+        cuota.registrarCobranza(new BigDecimal("100.00")).anular();
+
+        assertThat(cuota.estaPagada()).isFalse();
+    }
+
+    @Test
+    void rechazaCobrarDosVeces() {
+        Cuota cuota = creditoOtorgado(LocalDate.now()).getCuotas().get(0);
+        cuota.registrarCobranza(new BigDecimal("100.00"));
+
+        assertThatThrownBy(() -> cuota.registrarCobranza(new BigDecimal("100.00")))
+            .isInstanceOf(BusinessException.class)
+            .hasMessageContaining("ya fue pagada");
+    }
+
+    @Test
+    void rechazaCobrarSiElCreditoEstaAnulado() {
+        Credito credito = creditoOtorgado(LocalDate.now());
+        credito.anular();
+
+        assertThatThrownBy(() -> credito.getCuotas().get(0).registrarCobranza(new BigDecimal("100.00")))
+            .isInstanceOf(BusinessException.class)
+            .hasMessageContaining("anulado");
+    }
+
+    @Test
+    void rechazaImporteDistintoAlDeLaCuota() {
+        Cuota cuota = creditoOtorgado(LocalDate.now()).getCuotas().get(0);
+
+        assertThatThrownBy(() -> cuota.registrarCobranza(new BigDecimal("99.99")))
+            .isInstanceOf(BusinessException.class)
+            .hasMessageContaining("no coincide");
+        assertThat(cuota.estaPagada()).isFalse();
+    }
+
+    @Test
+    void aceptaElMismoImporteConOtraEscala() {
+        Cuota cuota = creditoOtorgado(LocalDate.now()).getCuotas().get(0);
+        cuota.registrarCobranza(new BigDecimal("100"));
+
+        assertThat(cuota.estaPagada()).isTrue();
+    }
+}
