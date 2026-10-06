@@ -22,7 +22,7 @@ export const anularCobranzaThunk = createAsyncThunk('cobranzas/anular', async (i
     await anularCobranzaApi(id);
     return id;
   } catch (err) {
-    return rejectWithValue(err.response?.data?.mensajes?.[0] || err.message);
+    return rejectWithValue(err.message);
   }
 });
 
