@@ -2,6 +2,13 @@
 
 Rutas Java relativas a `backend/src/main/java/com/uade/tpejemplo/`. Reporte completo: `docs/reporte/reporte-v3.html`. Casos de uso: `docs/casos-de-uso/README.md`.
 
+## Foco de la consigna: Strategy y Adapter
+
+| ID | Qué | Clase y método | Patrón / concepto |
+|---|---|---|---|
+| M9 | Cálculo de cuota intercambiable: interés simple y sistema francés | `model/interfaces/CalculoDeCuota.java`; `model/plan/InteresSimple.java`, `model/plan/SistemaFrances.java`; `model/TipoPlan.java`; `model/Credito.java` (constructor, `totalADevolver`) | **Strategy** (+ OCP, Polymorphism) |
+| M7 | JwtUtil detrás de TokenService; UsuarioDetails documentado | `service/TokenService.java`; `security/JwtUtil.java`; clientes `security/JwtAuthFilter.java`, `service/impl/AuthServiceImpl.java`; `security/UsuarioDetails.java` | **Adapter** (+ DIP, Protected Variations) |
+
 ## Hechos
 
 | ID | Qué | Clase y método | Patrón / concepto |
@@ -12,9 +19,7 @@ Rutas Java relativas a `backend/src/main/java/com/uade/tpejemplo/`. Reporte comp
 | M4 | Permisos de anulación validados en el backend (TPO-007) | `controller/CreditoController.java` `anularCredito`, `service/impl/CreditoServiceImpl.java` `anularCredito`, `service/impl/CobranzaServiceImpl.java` `anularCobranza` | MVC + Information Expert |
 | M5 | Handlers 401/403/404/405 (TPO-001, TPO-002) | `exception/GlobalExceptionHandler.java` `handleAuth`, `handleDenied`, `handleNoResource`, `handleMetodo` | MVC |
 | M6 | Cuota vencida (mora) | `model/Cuota.java` `estaVencida`; `dto/response/CuotaResponse.java` | Information Expert |
-| M7 | JwtUtil detrás de TokenService; UsuarioDetails documentado | `service/TokenService.java`; `security/JwtUtil.java`; clientes `security/JwtAuthFilter.java`, `service/impl/AuthServiceImpl.java`; `security/UsuarioDetails.java` | **Adapter** (+ DIP, Protected Variations) |
 | M8 | EstadoCredito y Credito como agregado (estado, saldo, anulación) | `model/EstadoCredito.java`; `model/Credito.java` `estado`, `saldo`, `estaCancelado`, `puedeAnularse`, `anular`; `service/impl/CreditoServiceImpl.java` `buscarCredito` | Information Expert + Creator |
-| M9 | Cálculo de cuota intercambiable: interés simple y sistema francés | `model/interfaces/CalculoDeCuota.java`; `model/plan/InteresSimple.java`, `model/plan/SistemaFrances.java`; `model/TipoPlan.java`; `model/Credito.java` (constructor, `totalADevolver`) | **Strategy** (+ OCP, Polymorphism) |
 | M10 | Dashboard también para ADMIN (TPO-010) | `config/SecurityConfig.java` `filterChain`; `frontend/src/pages/Dashboard.jsx`, `frontend/src/components/Navbar.jsx` | Control de acceso |
 | API | Swagger, 401 sin token, `@Valid` en admin/supervisor, `GET /api/creditos` | `config/OpenApiConfig.java`; `config/SecurityConfig.java`; `controller/AdminController.java`, `controller/SupervisorController.java`; `service/impl/CreditoServiceImpl.java` `listarTodos` | MVC (contrato del controlador) |
 | O1 | La vista usa `puedeAnularse` del modelo y recarga tras anular | `dto/response/CreditoResponse.java`; `frontend/src/pages/Creditos.jsx`; `frontend/src/store/slices/creditosSlice.js` | MVC + Expert |

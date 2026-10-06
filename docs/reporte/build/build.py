@@ -353,18 +353,18 @@ m10 = bloque("m10", "M10. Dashboard también para ADMIN",
     "Gana: el ADMIN accede al dashboard. Cuesta: la regla de visibilidad está en el backend y en dos componentes del front; el backend es el que manda.",
     "Cierra TPO-010. Commit <code>f7ce757</code>.")
 
-mejoras = [m1, m2, m3, m4, m5, m6, m7, m8, m9, m10]
+mejoras = [m9, m7, m1, m2, m3, m4, m5, m6, m8, m10]
 
 indice = [
+ ("m9", "Cálculo de cuota", "<strong>Strategy</strong>", "foco"),
+ ("m7", "TokenService / JwtUtil + UsuarioDetails", "<strong>Adapter</strong>", "foco"),
  ("m1", "Cobro sobre crédito anulado", "Information Expert", "TPO-004"),
  ("m2", "“Tiene cobranzas” ignora anuladas (absorbida por M8)", "Information Expert", "H5"),
  ("m3", "Dashboard con números verdaderos", "Corrección + Expert", "TPO-003"),
  ("m4", "Permisos de anulación en el backend", "MVC + Expert", "TPO-007"),
  ("m5", "Handlers HTTP 401/403/404/405", "MVC", "TPO-001, 002"),
  ("m6", "Cuota.estaVencida()", "Information Expert", "H3"),
- ("m7", "TokenService / JwtUtil + UsuarioDetails", "<strong>Adapter</strong>", "foco"),
  ("m8", "EstadoCredito + Credito agregado", "Expert + Creator", "H1, H2"),
- ("m9", "Cálculo de cuota", "<strong>Strategy</strong>", "foco"),
  ("m10", "Dashboard para ADMIN", "Control de acceso", "TPO-010"),
 ]
 tabla_indice = "".join(f'<tr><td><a href="#{k}">{k.upper()}</a></td><td>{a}</td><td>{b}</td><td>{c}</td></tr>' for k, a, b, c in indice)
@@ -537,7 +537,7 @@ doc = f'''<!doctype html>
 </section>
 
 <section id="mejoras"><h2>Mejoras al dominio</h2>
-<p>Cada mejora tapa un hueco real del dashboard de préstamos. Estructura: Patrón → Problema (código antes, <code>git show v2:&lt;ruta&gt;</code>) → Solución (código después, <code>main</code>) → Por qué → Consecuencias, con diagrama antes/después. M7 (Adapter) y M9 (Strategy) son el foco de la consigna y llevan además roles, GRASP/SOLID de fondo, cuándo usarlo y preguntas de defensa.</p>
+<p>Cada mejora tapa un hueco real del dashboard de préstamos. Estructura: Patrón → Problema (código antes, <code>git show v2:&lt;ruta&gt;</code>) → Solución (código después, <code>main</code>) → Por qué → Consecuencias, con diagrama antes/después. M9 (Strategy) y M7 (Adapter) son el foco de la consigna, van primero y llevan además roles, GRASP/SOLID de fondo, cuándo usarlo y preguntas de defensa.</p>
 <table><thead><tr><th>ID</th><th>Mejora</th><th>Patrón / concepto</th><th>Hueco</th></tr></thead><tbody>{tabla_indice}</tbody></table>
 {"".join(mejoras)}
 </section>
