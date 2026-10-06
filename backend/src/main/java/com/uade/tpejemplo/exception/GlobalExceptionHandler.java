@@ -6,10 +6,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.LocalDateTime;
@@ -40,6 +42,13 @@ public class GlobalExceptionHandler {
             .toList();
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
             new ErrorResponse(400, "Error de validación", errores, LocalDateTime.now())
+        );
+    }
+
+    @ExceptionHandler({HttpMessageNotReadableException.class, MethodArgumentTypeMismatchException.class})
+    public ResponseEntity<ErrorResponse> handleRequestInvalida(Exception ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+            new ErrorResponse(400, "Solicitud inválida", List.of("Solicitud inválida"), LocalDateTime.now())
         );
     }
 
