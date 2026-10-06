@@ -1,6 +1,6 @@
 import os, re, subprocess, sys, html
 sys.path.insert(0, os.path.dirname(__file__))
-from estilo import CSS, mvc_svg
+from estilo import CSS
 
 OUT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REPO = os.path.abspath(os.path.join(OUT, "..", ".."))
@@ -145,7 +145,7 @@ m5 = bloque("m5", "M5. Handlers HTTP específicos",
        method("main", "exception/GlobalExceptionHandler.java", r"handleMetodo"), "",
        method("main", "exception/GlobalExceptionHandler.java", r"handleGeneral")),
     "Un error del cliente no es una falla del servidor. El front ahora distingue credenciales malas (401), falta de permiso (403), recurso inexistente (404) y método incorrecto (405) de un 500 real.",
-    "Gana: los códigos que documenta Swagger son los que la API devuelve de verdad. Cuesta: un handler por familia de excepciones; el armado de <code>ErrorResponse</code> se repite (smell BS2, pendiente).",
+    "Gana: los códigos que documenta Swagger son los que la API devuelve de verdad. Cuesta: un handler por familia de excepciones; el armado de <code>ErrorResponse</code> se repetía en cada handler, hasta que BS2 lo juntó en un solo método.",
     "Cierra TPO-001 y TPO-002. Archivo: <code>exception/GlobalExceptionHandler.java</code>.")
 
 m6 = bloque("m6", "M6. Cuota.estaVencida()",
@@ -155,7 +155,7 @@ m6 = bloque("m6", "M6. Cuota.estaVencida()",
     "<code>Cuota.estaVencida()</code>, declarado en <code>ICuota</code>. <code>CuotaResponse</code> suma el campo <code>vencida</code> y <code>frontend/src/pages/Creditos.jsx</code> muestra Pagada / Vencida / Pendiente.",
     cb("main", "model/Cuota.java", method("main", "model/Cuota.java", r"public boolean estaPagada"), "", method("main", "model/Cuota.java", r"public boolean estaVencida")),
     "Saber qué cuotas están en mora es la pregunta central de un sistema de cobranzas (hueco H3, A-05 de V0). La regla vive en la entidad que tiene los datos, no en el servicio ni en la vista.",
-    "Gana: la mora es consultable desde el modelo y reutilizable (dashboard, reportes). Cuesta: depende de <code>LocalDate.now()</code>; para testear una fecha fija habría que inyectar un <code>Clock</code>.",
+    "Gana: la mora es consultable desde el modelo y reutilizable (dashboard, reportes). Cuesta: depende de la fecha de hoy; por eso <code>estaVencida(LocalDate hoy)</code> la recibe por parámetro y la versión sin parámetro delega con <code>LocalDate.now()</code>, así se testea sin reloj.",
     "Archivos: <code>model/Cuota.java</code>, <code>model/interfaces/ICuota.java</code>, <code>dto/response/CuotaResponse.java</code>, <code>frontend/src/pages/Creditos.jsx</code>.")
 
 # ---- M7 Adapter (foco) ----
@@ -424,6 +424,21 @@ rev = [
   "Se deja de trackear <code>.factorypath</code>, <code>docs/trabajo</code> sale del <code>git archive</code> (<code>.gitattributes</code>, <code>export-ignore</code>), se borran los documentos de proceso, se arreglan los links y el <code>README.md</code> queda corto, con links.",
   "El zip de entrega lleva solo código y documentación vigente."),
  ("BSF1", "c19e707", "Comentarios de copy-paste (<code>[cite: 4]</code>, “Asumiendo que…”) en <code>frontend/src/store/slices/permisosSlice.js</code>, <code>cobranzasSlice.js</code> y <code>frontend/src/pages/GestorPermisos.jsx</code>.", "Borrados.", "Bad smell: comentarios que no explican el código."),
+ ("T33", "0e7a1ad, 1210424, 4f42ebd, 86b7083", "Recorriendo los casos de uso por la UI: un permiso otorgado no se veía hasta reloguear (H4), UC06 y UC09 no tenían pantalla, crear un crédito o una cobranza no avisaba nada y los errores de validación traían el nombre técnico del campo.",
+  "<code>GET /api/auth/me</code> (<code>controller/AuthController.java</code> <code>me</code>, <code>service/impl/AuthServiceImpl.java</code> <code>actual</code>) y <code>frontend/src/components/PrivateRoute.jsx</code> lo pide al entrar a cada pantalla. Búsqueda por DNI en <code>frontend/src/pages/Clientes.jsx</code> y por número en <code>frontend/src/pages/Creditos.jsx</code>; avisos con <code>frontend/src/components/Aviso.jsx</code>; <code>GlobalExceptionHandler.handleValidation</code> devuelve solo el mensaje.",
+  "MVC: el modelo sigue mandando (M4); la vista deja de mostrar datos viejos."),
+ ("T34", "8eb2106", "No había diagrama de la base y nadie había revisado el modelo contra el esquema.",
+  "DER en <code>docs/diagramas/der-v3.puml</code> (más abajo). La revisión encontró I-1 (dos cobranzas vigentes en la misma cuota con requests simultáneas, reproducido), I-2 (DTO sin largo ni escala) e I-3 (diagrama de clases desactualizado). I-2 e I-3 se arreglaron; I-1 va al 27/10 con el arreglo ya probado.",
+  "El esquema protege identidad y unicidad; las reglas con estado viven en las entidades."),
+ ("T35", "013c07a, 0df40d1", "<code>config/SecurityConfig.java</code> armaba a mano un <code>DaoAuthenticationProvider</code> (y Spring avisaba al arrancar) y <code>GlobalExceptionHandler</code> repetía nueve veces el armado de <code>ErrorResponse</code> con el número escrito a mano.",
+  "S5: se borra el bean y Spring arma el provider con <code>UserDetailsService</code> y <code>PasswordEncoder</code>. BS2: método privado <code>error(HttpStatus, String, List&lt;String&gt;)</code> en <code>exception/GlobalExceptionHandler.java</code>. S6 no se hizo a propósito: reglas de URL y <code>@PreAuthorize</code> quedan las dos como defensa en profundidad.",
+  "Spring por convención; bad smell de código duplicado."),
+ ("T36", "d89d62d, 6cc5e17", "El servicio tenía que acordarse de pedirle el plan al crédito y guardarlo: un crédito sin plan quedaba VIGENTE con saldo 0. El dashboard no mostraba cuánto se debe ni cuánto está en mora.",
+  "O6: el constructor de <code>model/Credito.java</code> genera las cuotas (<code>generarPlanDeCuotas</code> privado, fuera de <code>ICredito</code>) y <code>cascade = PERSIST</code> las guarda. O7: <code>service/impl/DashboardServiceImpl.java</code> suma <code>Credito.saldo()</code> y las cuotas con <code>estaVencida()</code>; dos tarjetas nuevas en <code>frontend/src/pages/Dashboard.jsx</code>.",
+  "Creator (O6) e Information Expert (O7)."),
+ ("T37", "90d0e5e, 4d35266, 77dec02", "Un DNI de 16 caracteres o una deuda enorme daban 500, y una tasa con 3 decimales se redondeaba sin aviso (I-2). Los códigos HTTP y el rechazo de anular una cobranza de otro día no tenían test.",
+  "<code>@Size</code> y <code>@Digits</code> en los <code>dto/request/</code>. <code>CodigosHttpTest</code> (<code>@WebMvcTest</code>, 8 tests de 400 a 405 con la seguridad JWT real). <code>Cobranza.anular(LocalDate)</code> y <code>Cuota.estaVencida(LocalDate)</code> reciben la fecha de hoy. Total: 36 tests.",
+  "El controlador valida la forma; el modelo, la regla. Tests sin depender del reloj."),
 ]
 rev_html = "".join(f'<div class="rev" id="{i.lower()}"><h4>{i} <span class="ref">· commit <code>{c}</code></span></h4><p><strong>Problema.</strong> {p}</p><p><strong>Cambio.</strong> {s}</p><p><strong>Concepto.</strong> {k}</p></div>' for i, c, p, s, k in rev)
 
@@ -447,7 +462,7 @@ timeline = f'''<div class="timeline">
 <div class="hito"><div class="punto"></div><h4>V2</h4><p class="tema">Iteración 2: GRASP + interfaces</p><p class="meta">Mergeada 15/09 · <code>main@45e228c</code> (tag <code>v2</code>) · 5 commits</p>
 <ul><li>Information Expert: <code>Cobranza.anular()</code>, <code>Credito.anular()</code></li><li>Creator: <code>Usuario.nuevo</code></li><li>Interfaz por cada clase del modelo y de servicio</li><li>Revierte §3.7 del informe 1 (Lazy class): interfaces de servicio restituidas</li></ul></div>
 <div class="hito actual"><div class="punto"></div><h4>V3</h4><p class="tema">Iteración 3: MVC + Strategy + Adapter</p><p class="meta">Entrega 13/10/2026 · repo V3, <code>main</code> · {n_v3} commits sin merges</p>
-<ul><li><strong>Strategy</strong>: cálculo de cuota, interés simple y sistema francés (M9)</li><li><strong>Adapter</strong>: <code>TokenService</code> sobre jjwt (M7)</li><li><code>EstadoCredito</code>, saldo, mora (M6, M8)</li><li>Permisos y errores HTTP en el backend (M4, M5), Swagger</li><li>Dashboard corregido (M3, M10); 26 tests</li><li>Revierte V2: sistema francés descartado el 15/09</li></ul></div>
+<ul><li><strong>Strategy</strong>: cálculo de cuota, interés simple y sistema francés (M9)</li><li><strong>Adapter</strong>: <code>TokenService</code> sobre jjwt (M7)</li><li><code>EstadoCredito</code>, saldo, mora (M6, M8)</li><li>Permisos y errores HTTP en el backend (M4, M5), Swagger</li><li>Dashboard corregido y con saldo y vencido (M3, M10, O7); el crédito crea sus cuotas (O6); 36 tests</li><li>Revierte V2: sistema francés descartado el 15/09</li></ul></div>
 </div>
 <details><summary>Commits V2 → V3 (git log v2..main)</summary><pre><code>{e(log_v3)}</code></pre></details>'''
 
@@ -476,23 +491,33 @@ tecnologias = '''<dl class="tec">
 <dt>Lombok</dt><dd>Genera getters, constructores y loggers con anotaciones (<code>@Getter</code>, <code>@RequiredArgsConstructor</code>, <code>@Slf4j</code>). Reduce código repetido en entidades y DTO.</dd>
 <dt>springdoc-openapi / Swagger UI</dt><dd>Lee los controladores y publica el contrato de la API (OpenAPI) en una página navegable. Lo usamos como documentación viva y para probar endpoints con token.</dd>
 <dt>React, Redux y Vite</dt><dd>React construye la interfaz con componentes; Redux guarda el estado del cliente (usuario, créditos); Vite levanta el servidor de desarrollo y arma el build.</dd>
-<dt>JUnit 5 + AssertJ</dt><dd>Framework de tests y librería de aserciones de Java. Con ellos están los 26 tests.</dd>
+<dt>JUnit 5 + AssertJ</dt><dd>Framework de tests y librería de aserciones de Java. Con ellos están los 36 tests.</dd>
+<dt>Mockito y <code>@WebMvcTest</code></dt><dd>Mockito crea objetos simulados; <code>@WebMvcTest</code> levanta solo la capa web de Spring. Juntos prueban los códigos HTTP con la seguridad real y sin base.</dd>
+<dt>Bean Validation</dt><dd>Anotaciones (<code>@NotBlank</code>, <code>@Size</code>, <code>@Digits</code>) en los DTO de request que Spring chequea con <code>@Valid</code> antes del controller; lo inválido sale 400.</dd>
 <dt>Maven</dt><dd>Herramienta de build de Java: baja dependencias, compila y corre los tests (<code>mvn test</code>).</dd>
 <dt>PlantUML</dt><dd>Genera diagramas UML a partir de texto. Con él están hechos los diagramas antes/después y el diagrama de clases.</dd>
 </dl>'''
 
-clases_svg = re.sub(r"<\?xml[^>]*\?>", "", open(os.path.join(REPO, "docs/diagramas/clases-v3-general.svg")).read())
-clases_svg = re.sub(r'(<svg[^>]*?) style="[^"]*" width="[^"]*" height="[^"]*"', r'\1 style="width:100%;height:auto"', clases_svg, count=1)
+
+def archify_svg(n):
+    t = open(os.path.join(REPO, f"docs/diagramas/archify/{n}.svg")).read()
+    return re.sub(r'<svg ', '<svg style="width:100%;height:auto" ', t, count=1)
+
+def d2svg(n):
+    t = re.sub(r"<\?xml[^>]*\?>", "", open(os.path.join(REPO, f"docs/diagramas/d2/{n}.svg")).read())
+    return re.sub(r'<svg ', '<svg style="width:100%;height:auto;max-height:900px" ', t, count=1)
+
+der_svg = re.sub(r"<\?xml[^>]*\?>", "", open(os.path.join(REPO, "docs/diagramas/der-v3.svg")).read())
+der_svg = re.sub(r'(<svg[^>]*?) style="[^"]*" width="[^"]*" height="[^"]*"', r'\1 style="width:100%;height:auto"', der_svg, count=1)
 
 pendientes = '''<ul>
-<li><strong>O6</strong>: que <code>Credito</code> genere su plan de cuotas en el constructor con <code>cascade</code> (hoy lo pide <code>CreditoServiceImpl.crear</code>). Creator completo. Tamaño M, para el 27/10.</li>
-<li><strong>O7</strong>: saldo pendiente y monto vencido en el dashboard, con <code>Credito.saldo()</code> y <code>Cuota.estaVencida()</code>.</li>
+<li><strong>I-1</strong>: dos requests simultáneas pueden dejar dos cobranzas vigentes en la misma cuota. Arreglo probado en una copia: <code>@Lock(PESSIMISTIC_WRITE)</code> en <code>repository/CuotaRepository.java</code> <code>buscarPorCreditoYNumero</code>, sin el <code>JOIN FETCH</code> de cobranzas. Va el 27/10 con su <code>@DataJpaTest</code>; la demo no lo expone porque el botón se deshabilita durante la request.</li>
 <li><strong>O8</strong>: pagos parciales. Cambia <code>Cuota.estaPagada()</code> a saldo por cuota; fuera de alcance de V3.</li>
-<li><strong>S5 a S10</strong>: <code>AuthenticationProvider</code> duplicado, reglas de URL repetidas con <code>@PreAuthorize</code>, consola H2 en <code>permitAll</code> (TPO-008), CORS sin configurar, <code>ddl-auto</code>/<code>show-sql</code>, rename del paquete <code>com.uade.tpejemplo</code> (TPO-014).</li>
-<li><strong>Smells</strong>: BS2 (armado de <code>ErrorResponse</code> repetido), BS3, BS4, BS6; front DF2, BSF2, BSF4, BSF5, BSF6 (TPO-012).</li>
-<li><strong>Tests</strong>: <code>@WebMvcTest</code> de los códigos HTTP, <code>@DataJpaTest</code> del dashboard, seguridad 401/403, <code>Clock</code> inyectable para <code>Cobranza.anular()</code> y <code>Cuota.estaVencida()</code>.</li>
+<li><strong>S7 a S10</strong>: consola H2 en <code>permitAll</code> (TPO-008), CORS sin configurar, <code>ddl-auto</code>/<code>show-sql</code>, rename del paquete <code>com.uade.tpejemplo</code> (TPO-014).</li>
+<li><strong>Smells</strong>: BS3, BS4, BS6; front DF2, BSF2, BSF4, BSF5, BSF6 (TPO-012).</li>
+<li><strong>Tests</strong>: <code>@DataJpaTest</code> de las queries del dashboard y tests de <code>Permisos</code>.</li>
 <li><strong>Trazabilidad</strong>: qué usuario cobró o anuló (H8).</li>
-<li><strong>Hallazgos de los casos de uso</strong>: el front ve los permisos y el rol nuevos recién al volver a loguearse (H4). Anular una cobranza ya anulada respondía 204: corregido, ahora se rechaza (H1).</li>
+<li>Decidido, no pendiente: el doble control de roles (S6) queda como defensa en profundidad.</li>
 <li>Descartados con motivo: <code>EstadoCredito</code> como State (O9) y Strategy/Adapter “para mostrar” (O10).</li>
 </ul>'''
 
@@ -501,7 +526,7 @@ doc = f'''<!doctype html>
 <title>Reporte V3 — TPO Grupo 7</title><style>{CSS}</style></head>
 <body>
 <div id="barra"><strong style="color:var(--navy)">Reporte V3</strong>
-<nav><a href="#portada">Portada</a><a href="#timeline">Timeline</a><a href="#mvc">MVC</a><a href="#mejoras">Mejoras</a><a href="#m7">Adapter</a><a href="#m9">Strategy</a><a href="#revision">Revisión</a><a href="#verificacion">Verificación</a><a href="#clases">Clases</a><a href="#pendientes">Pendientes</a><a href="../casos-de-uso/README.md">Casos de uso</a></nav>
+<nav><a href="#portada">Portada</a><a href="#timeline">Timeline</a><a href="#mvc">MVC</a><a href="#mejoras">Mejoras</a><a href="#m7">Adapter</a><a href="#m9">Strategy</a><a href="#revision">Revisión</a><a href="#verificacion">Verificación</a><a href="#clases">Diagramas</a><a href="#pendientes">Pendientes</a><a href="../casos-de-uso/README.md">Casos de uso</a></nav>
 <button class="sec" onclick="window.print()">Exportar PDF</button></div>
 <main>
 
@@ -524,11 +549,11 @@ doc = f'''<!doctype html>
 
 <section id="mvc"><h2>MVC en Spring Boot</h2>
 <p>MVC separa <em>componentes</em>, no clases. El modelo y el controlador viven en el backend Spring Boot y la vista es la SPA React: es <strong>MVC distribuido, con la vista en el cliente</strong>. La vista no observa al modelo: le pide los datos al controlador por HTTP, y vista y controlador se hablan por DTO, como pide la slide de la clase 9.</p>
-<div class="mvcsvg">{mvc_svg}</div>
+<div class="clases">{archify_svg("mvc")}</div>
 <table><thead><tr><th>Clase / paquete</th><th>Componente</th><th>Justificación</th></tr></thead><tbody>{rows}</tbody></table>
 <h3>Qué cambió en V3</h3>
 <ul>
-<li><strong>El contrato está publicado.</strong> Swagger UI (<code>/swagger-ui.html</code>, <code>config/OpenApiConfig.java</code>) documenta 19 operaciones con su request, response y los códigos que realmente produce.</li>
+<li><strong>El contrato está publicado.</strong> Swagger UI (<code>/swagger-ui.html</code>, <code>config/OpenApiConfig.java</code>) documenta 20 operaciones con su request, response y los códigos que realmente produce.</li>
 <li><strong>El controlador traduce todos los errores.</strong> <code>exception/GlobalExceptionHandler.java</code> mapea las excepciones del modelo y de la seguridad a 400/401/403/404/405/500 con el mismo <code>ErrorResponse</code> (M5, S4).</li>
 <li><strong>401 y 403 son distintos.</strong> Sin token, <code>config/SecurityConfig.java</code> responde 401 con <code>HttpStatusEntryPoint</code>; con token y sin rol o sin permiso, 403. Antes ambos daban 403.</li>
 <li><strong>La regla está en el modelo y la vista solo oculta.</strong> Permisos de anulación (M4), guarda del ADMIN (O5) y anulabilidad (O1) dejaron de vivir solo en JSX.</li>
@@ -543,14 +568,14 @@ doc = f'''<!doctype html>
 </section>
 
 <section id="revision"><h2>Mejoras de la revisión</h2>
-<p>Después de las diez mejoras, una revisión de solo lectura (oportunidades, prácticas de Spring, bad smells; lo que quedó abierto está en el <a href="../backlog.md">backlog</a>) encontró usos flojos de los conceptos y código muerto. Entraron las que tapaban un hueco visible y eran chicas. Después de la versión del 06/10 (<code>c8ddb94</code>) entraron los arreglos de la verificación final (F1, F2), la presentación del front (UI, DT) y la limpieza de comentarios y del repo (COM, LIM).</p>
+<p>Después de las diez mejoras, una revisión de solo lectura (oportunidades, prácticas de Spring, bad smells; lo que quedó abierto está en el <a href="../backlog.md">backlog</a>) encontró usos flojos de los conceptos y código muerto. Entraron las que tapaban un hueco visible y eran chicas. Después de la versión del 06/10 (<code>c8ddb94</code>) entraron los arreglos de la verificación final (F1, F2), la presentación del front (UI, DT) y la limpieza de comentarios y del repo (COM, LIM). Al final, un recorrido de los casos de uso por la UI y una revisión del modelo dejaron T33 a T37.</p>
 {rev_html}
 {capturas_ui}
 </section>
 
 <section id="verificacion"><h2>Verificación</h2>
 <div class="cuadro">
-<div><h4>Tests automáticos</h4><p><code>cd backend &amp;&amp; mvn test</code>: <strong>26 tests, 0 fallas</strong>. Son 25 de dominio puro (JUnit 5 + AssertJ, sin contexto de Spring) más <code>contextLoads</code>. <code>InteresSimpleTest</code> y <code>SistemaFrancesTest</code> cubren cada estrategia aislada; <code>CreditoTest</code>, <code>CuotaTest</code> y <code>CobranzaTest</code> cubren M1, M2, M6 y M8.</p></div>
+<div><h4>Tests automáticos</h4><p><code>cd backend &amp;&amp; mvn test</code>: <strong>36 tests, 0 fallas</strong>. 27 de dominio puro (JUnit 5 + AssertJ, sin Spring): <code>CreditoTest</code> 8, <code>CuotaTest</code> 8, <code>InteresSimpleTest</code> 4, <code>SistemaFrancesTest</code> 4, <code>CobranzaTest</code> 3; cubren cada estrategia aislada y M1, M2, M6, M8. 8 de códigos HTTP en <code>CodigosHttpTest</code> (<code>@WebMvcTest</code>): 400, 401, 403, 404 y 405 con la seguridad JWT real. Más <code>contextLoads</code>.</p></div>
 <div><h4>Smoke de la API</h4><p>22 casos con curl contra el backend levantado: 401/404/405 (M5), los dos planes (M9), cobro sobre anulado (M1), 403 sin permiso (M4), vencidas (M6), dashboard por rol y con números correctos (M3, M10). Todos OK.</p></div>
 <div><h4>Verificación final</h4><p>Recorrido de API y visual sobre <code>main</code> el 06/10: tokens alterados o vencidos (O2), cálculo de los dos planes, estados y saldo, permisos, dashboard. Encontró 401 donde correspondía 403 y 500 en requests mal formadas, corregidos en F1 y F2. Los casos de uso se volvieron a recorrer por API con <code>docs/casos-de-uso/verificar-cu.sh</code>.</p></div>
 <div><h4>Comprobación visual</h4><p>Recorrido completo en el browser con capturas: login, alta, otorgamiento simple y francés, cobro, vencida, anulación, 403 forzado, dashboard ADMIN y SUPERVISOR, Swagger con token. Las dos fallas encontradas (listado sin refrescar tras anular y título “Modo Supervisor” para el ADMIN) se corrigieron en O1 y <code>d35fc0e</code>.</p></div>
@@ -562,9 +587,18 @@ doc = f'''<!doctype html>
 <p><a href="../casos-de-uso/casos-de-uso-v3.svg"><img src="../casos-de-uso/casos-de-uso-v3.svg" alt="Diagrama de casos de uso V3" style="width:100%;background:#fff;border:1px solid var(--linea);border-radius:4px"></a></p>
 </section>
 
-<section id="clases"><h2>Diagrama de clases V3</h2>
-<p>Vista general con los tres compartimentos por clase. Fuente: <code>docs/diagramas/clases-v3.puml</code>; también en <code>docs/diagramas/clases-v3-general.svg</code> y <code>.png</code>. Para leer el detalle, abrir el SVG aparte.</p>
-<div class="clases">{clases_svg}</div>
+<section id="clases"><h2>Diagramas de clases y DER</h2>
+<p>El diagrama de clases UML completo (tres compartimentos por clase) es el entregable: <a href="../diagramas/clases-v3-general.svg">vista general</a> y <a href="../diagramas/clases-v3-modelo.svg">detalle del modelo</a>, fuente <code>docs/diagramas/clases-v3.puml</code>. Acá van tres vistas legibles, hechas con d2 (lenguaje de diagramas a partir de texto; fuentes en <code>docs/diagramas/d2/</code>).</p>
+<h3>Strategy</h3>
+<div class="clases">{d2svg("strategy")}</div>
+<h3>Adapter</h3>
+<div class="clases">{d2svg("adapter")}</div>
+<h3>Modelo de dominio</h3>
+<p>El rombo lleno es composición: el todo crea y contiene a sus partes.</p>
+<div class="clases">{d2svg("dominio")}</div>
+<h3>DER</h3>
+<p>Las tablas que genera JPA, con claves y restricciones. Fuente: <code>docs/diagramas/der-v3.puml</code>.</p>
+<div class="clases">{der_svg}</div>
 </section>
 
 <section id="pendientes"><h2>Cambios pendientes</h2>

@@ -1,0 +1,24 @@
+...@_estilo
+direction: down
+tok: "Token (M7)" {
+  class: capa
+  direction: right
+  cli: "AuthServiceImpl\nJwtAuthFilter\n«Client»" {class: cl}
+  T: "TokenService\n«Target»" {class: rol}
+  A: "JwtUtil\n«Adapter»" {class: rol}
+  E: "jjwt (io.jsonwebtoken)\n«Adaptee»" {class: ext}
+  cli -> T: "usa"
+  A -> T: "implementa" {style.stroke-dash: 4; target-arrowhead.shape: triangle; target-arrowhead.style.filled: false}
+  A -> E: "delega"
+}
+usr: "Usuario (desde V1)" {
+  class: capa
+  direction: right
+  cli: "DaoAuthenticationProvider\n«Client»" {class: ext}
+  T: "UserDetails (Spring)\n«Target»" {class: ext}
+  A: "UsuarioDetails\n«Adapter»" {class: rol}
+  E: "IUsuario\n«Adaptee»" {class: cl}
+  cli -> T: "usa"
+  A -> T: "implementa" {style.stroke-dash: 4; target-arrowhead.shape: triangle; target-arrowhead.style.filled: false}
+  A -> E: "envuelve"
+}

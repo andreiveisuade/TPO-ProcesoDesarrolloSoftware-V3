@@ -39,26 +39,37 @@ Rutas Java relativas a `backend/src/main/java/com/uade/tpejemplo/`. Reporte comp
 | BSF1 | Borrar comentarios de copy-paste | `frontend/src/store/slices/permisosSlice.js`, `cobranzasSlice.js`; `frontend/src/pages/GestorPermisos.jsx` | Comentarios |
 | F1 | Usuario autenticado sin el rol recibe 403, no 401 | `config/SecurityConfig.java` `filterChain` (`accessDeniedHandler`) | MVC (controlador) |
 | F2 | Body mal formado o parámetro de tipo incorrecto responde 400, no 500 | `exception/GlobalExceptionHandler.java` `handleRequestInvalida` | MVC (controlador) |
-| UI | Moneda y fechas es-AR, crédito con badge de estado y datos rotulados, fecha de cobranza, todos los mensajes de error, tabla de clientes | `frontend/src/utils/formato.js`; `frontend/src/pages/Creditos.jsx`, `Cobranzas.jsx`, `Clientes.jsx`, `Dashboard.jsx`; `frontend/src/api/apiClient.js` | Vista (MVC); detalle en `docs/trabajo/ui.md` |
+| UI | Moneda y fechas es-AR, crédito con badge de estado y datos rotulados, fecha de cobranza, todos los mensajes de error, tabla de clientes | `frontend/src/utils/formato.js`; `frontend/src/pages/Creditos.jsx`, `Cobranzas.jsx`, `Clientes.jsx`, `Dashboard.jsx`; `frontend/src/api/apiClient.js` | Vista (MVC) |
 | DT | Dark theme con variables CSS semánticas y `prefers-color-scheme` | `frontend/src/index.css`; `frontend/src/pages/*.jsx`, `frontend/src/components/Navbar.jsx` | Protected Variations (estilo) |
 | COM | Comentarios: 1-3 líneas por clase, una línea por patrón, una por componente del front | `backend/src/main/java/**`, `frontend/src/**` | Bad smell: comentarios |
 | LIM | Limpieza del repo: `.factorypath` sin trackear, `docs/trabajo` fuera del `git archive`, docs de proceso borrados, README corto | `.gitattributes`, `README.md`, `docs/` | Entrega |
 | CU | Casos de uso V3: fichas, diagrama, trazabilidad y verificación por API | `docs/casos-de-uso/README.md`, `docs/casos-de-uso/verificar-cu.sh` | Documentación |
 | H1 | Anular una cobranza ya anulada se rechaza (400), como el crédito | `model/Cobranza.java` `anular` | Information Expert |
-| Tests | 26 tests (25 de dominio + contexto), 0 fallas | `backend/src/test/java/com/uade/tpejemplo/` | JUnit 5 + AssertJ |
+| O6 | El crédito nace con su plan de cuotas: el constructor las genera y JPA las guarda por cascade; `generarPlanDeCuotas` pasa a privado y sale de `ICredito` | `model/Credito.java` constructor, `generarPlanDeCuotas`; `model/interfaces/ICredito.java`; `service/impl/CreditoServiceImpl.java` `crear` | Creator |
+| O7 | Saldo pendiente y monto vencido en el dashboard | `service/impl/DashboardServiceImpl.java` `obtenerEstadisticasGenerales`; `dto/response/DashboardStatsResponse.java`; `frontend/src/pages/Dashboard.jsx` | Information Expert |
+| S5 | Spring arma el `DaoAuthenticationProvider` con los beans `UserDetailsService` y `PasswordEncoder`; se borra el armado a mano y el warning del arranque | `config/SecurityConfig.java` | Spring Security |
+| BS2 | El `ErrorResponse` se arma en un solo método; el código sale del `HttpStatus` | `exception/GlobalExceptionHandler.java` `error` | Código duplicado |
+| I-2 | Largo y escala acotados en los request: lo que no entra en la columna da 400 y no 500 ni un redondeo silencioso | `dto/request/ClienteRequest.java`, `CreditoRequest.java`, `CobranzaRequest.java`, `RegisterRequest.java` (`@Size`, `@Digits`) | Validación en el controlador (MVC) |
+| T-1 | Tests de los códigos HTTP 400/401/403/404/405 con la seguridad JWT real y los servicios simulados | `backend/src/test/java/com/uade/tpejemplo/controller/CodigosHttpTest.java` (`@WebMvcTest`) | Tests |
+| T-5 | La fecha de hoy entra por parámetro: se testea anular una cobranza de otro día y el vencimiento sin depender del reloj | `model/Cobranza.java` `anular(LocalDate)`; `model/Cuota.java` `estaVencida(LocalDate)` | Tests |
+| DER | Diagrama entidad-relación de la base, con claves y restricciones | `docs/diagramas/der-v3.puml`, `.svg`, `.png` | Documentación |
+| Tests | 36 tests, 0 fallas | `backend/src/test/java/com/uade/tpejemplo/` | JUnit 5 + AssertJ, `@WebMvcTest` |
 
-Desglose de los 26 tests:
+Desglose de los 36 tests:
 
 - `model/CreditoTest`: 8
-- `model/CuotaTest`: 7
+- `model/CuotaTest`: 8
 - `model/plan/InteresSimpleTest`: 4
 - `model/plan/SistemaFrancesTest`: 4
-- `model/CobranzaTest`: 2
+- `model/CobranzaTest`: 3
+- `controller/CodigosHttpTest`: 8
 - `TpEjemploApplicationTests` (`contextLoads`): 1
+
+Decisión S6: el control de roles queda doble a propósito, reglas de URL en `config/SecurityConfig.java` `filterChain` y `@PreAuthorize` en `controller/AdminController.java` y `controller/SupervisorController.java`. Es defensa en profundidad: si una ruta cambia y la regla de URL deja de cubrirla, el método sigue protegido.
 
 ## Recorrido de casos de uso por la UI (T33)
 
-Salen del recorrido de `docs/trabajo/recorrido-cu.md` (O1-O4 y H4). Capturas antes/después en `docs/trabajo/capturas/ui2/`.
+Salen de recorrer cada caso de uso por la UI (incluido H4).
 
 | ID | Qué | Clase y método | Patrón / concepto |
 |---|---|---|---|
@@ -91,14 +102,13 @@ Salen del recorrido de `docs/trabajo/recorrido-cu.md` (O1-O4 y H4). Capturas ant
 
 | ID | Qué | Dónde | Por qué queda |
 |---|---|---|---|
-| O6 | El crédito genera su plan en el constructor (cascade) | `model/Credito.java`, `service/impl/CreditoServiceImpl.java` `crear` | Tamaño M, riesgo JPA; 27/10 |
-| O7 | Saldo pendiente y monto vencido en el dashboard | `service/impl/DashboardServiceImpl.java`, `dto/response/DashboardStatsResponse.java` | Depende de O4; 27/10 |
 | O8 | Pagos parciales | `model/Cuota.java` `estaPagada` y todo lo que depende | Tamaño L, fuera de alcance de V3 |
-| S5-S9 | AuthenticationProvider duplicado, reglas de URL + `@PreAuthorize`, consola H2 (TPO-008), CORS, `ddl-auto`/`show-sql` | `config/SecurityConfig.java`, `application.properties` | No rompen nada; prolijidad |
+| S7-S9 | Consola H2 (TPO-008), CORS, `ddl-auto`/`show-sql` | `config/SecurityConfig.java`, `application.properties` | No rompen nada; prolijidad |
 | S10 | Renombrar paquete `com.uade.tpejemplo` (TPO-014) | todo el backend | Diff ruidoso; evaluar para el 17/11 |
-| BS2-BS6 | `ErrorResponse` repetido, chequeo de permiso en services, rol como String, nombres | `exception/GlobalExceptionHandler.java`, services, DTO | Menores |
+| BS3-BS6 | Chequeo de permiso en services, rol como String, nombres | services, DTO | Menores |
 | Front | DF2, BSF2, BSF4, BSF5, BSF6 (TPO-012) | `frontend/src/**` | Menores |
-| Tests | `@WebMvcTest` de códigos HTTP, `@DataJpaTest` del dashboard, seguridad, `Clock` inyectable | `backend/src/test` | Siguiente iteración |
+| I-1 | Dos requests simultáneas pueden dejar dos cobranzas vigentes en la misma cuota. Arreglo probado: `@Lock(PESSIMISTIC_WRITE)` en `buscarPorCreditoYNumero` sin el `JOIN FETCH` de cobranzas | `repository/CuotaRepository.java` | 27/10, con su `@DataJpaTest` |
+| Tests | `@DataJpaTest` del dashboard, `Permisos` | `backend/src/test` | Siguiente iteración |
 | H8 | Trazabilidad: qué usuario cobró o anuló | `model/Cobranza.java`, `model/Credito.java` | Modelo nuevo y cambio de API |
 | P-M9 | Tasa con unidad declarada por plan; cuota con capital/interés separados | `model/TipoPlan.java`, `model/Cuota.java` | Límites del Strategy actual (ver reporte) |
 

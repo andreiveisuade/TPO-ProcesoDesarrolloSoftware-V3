@@ -1,0 +1,206 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "Anular un crédito, de punta a punta",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1100,
+      780
+    ],
+    "column_fit": "spread",
+    "legend": {
+      "entries": {
+        "emphasis": {
+          "label": "llamada principal"
+        },
+        "return": {
+          "label": "respuesta"
+        },
+        "security": {
+          "label": "seguridad"
+        },
+        "dashed": {
+          "label": "persistencia"
+        },
+        "default": {
+          "label": "llamada"
+        }
+      }
+    }
+  },
+  "participants": [
+    {
+      "id": "ui",
+      "type": "frontend",
+      "label": "Creditos.jsx"
+    },
+    {
+      "id": "filtro",
+      "type": "security",
+      "label": "JwtAuthFilter"
+    },
+    {
+      "id": "ctrl",
+      "type": "backend",
+      "label": "CreditoController"
+    },
+    {
+      "id": "svc",
+      "type": "backend",
+      "label": "CreditoService"
+    },
+    {
+      "id": "permisos",
+      "type": "security",
+      "label": "Permisos"
+    },
+    {
+      "id": "credito",
+      "type": "backend",
+      "label": "Credito"
+    },
+    {
+      "id": "repo",
+      "type": "database",
+      "label": "CreditoRepository"
+    }
+  ],
+  "segments": [
+    {
+      "from": 160,
+      "to": 300,
+      "label": "Controlador"
+    },
+    {
+      "from": 320,
+      "to": 585,
+      "label": "Modelo"
+    },
+    {
+      "from": 600,
+      "to": 665,
+      "label": "Respuesta"
+    }
+  ],
+  "messages": [
+    {
+      "id": "req",
+      "from": "ui",
+      "to": "filtro",
+      "y": 190,
+      "label": "DELETE /api/creditos/anular/{id}",
+      "variant": "emphasis"
+    },
+    {
+      "id": "auth",
+      "from": "filtro",
+      "to": "ctrl",
+      "y": 240,
+      "label": "token válido, usuario cargado",
+      "variant": "security"
+    },
+    {
+      "id": "call",
+      "from": "ctrl",
+      "to": "svc",
+      "y": 290,
+      "label": "anularCredito(id, usuario)",
+      "variant": "emphasis"
+    },
+    {
+      "id": "perm",
+      "from": "svc",
+      "to": "permisos",
+      "y": 340,
+      "label": "isPuedeAnularCredito()",
+      "variant": "security"
+    },
+    {
+      "id": "permok",
+      "from": "permisos",
+      "to": "svc",
+      "y": 380,
+      "label": "true (si no, 403)",
+      "variant": "return"
+    },
+    {
+      "id": "find",
+      "from": "svc",
+      "to": "repo",
+      "y": 430,
+      "label": "buscarConCuotas(id)"
+    },
+    {
+      "id": "found",
+      "from": "repo",
+      "to": "svc",
+      "y": 470,
+      "label": "Credito (si no, 404)",
+      "variant": "return"
+    },
+    {
+      "id": "anular",
+      "from": "svc",
+      "to": "credito",
+      "y": 520,
+      "label": "anular()",
+      "variant": "emphasis",
+      "note": "con cobranzas vigentes: 400"
+    },
+    {
+      "id": "save",
+      "from": "svc",
+      "to": "repo",
+      "y": 570,
+      "label": "save(credito)",
+      "variant": "dashed"
+    },
+    {
+      "id": "resp",
+      "from": "ctrl",
+      "to": "ui",
+      "y": 630,
+      "label": "204 No Content",
+      "variant": "return"
+    }
+  ],
+  "activations": [
+    {
+      "participant": "filtro",
+      "from": 185,
+      "to": 245,
+      "type": "security"
+    },
+    {
+      "participant": "ctrl",
+      "from": 235,
+      "to": 635,
+      "type": "backend"
+    },
+    {
+      "participant": "svc",
+      "from": 285,
+      "to": 580,
+      "type": "backend"
+    },
+    {
+      "participant": "permisos",
+      "from": 335,
+      "to": 385,
+      "type": "security"
+    },
+    {
+      "participant": "repo",
+      "from": 425,
+      "to": 475,
+      "type": "database"
+    },
+    {
+      "participant": "credito",
+      "from": 515,
+      "to": 545,
+      "type": "backend"
+    }
+  ]
+}

@@ -1,24 +1,3 @@
-mvc_svg = '''<svg viewBox="0 0 900 330" role="img" aria-label="Capas MVC" xmlns="http://www.w3.org/2000/svg" font-family="Calibri, Carlito, sans-serif">
-<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#2E75B6"/></marker></defs>
-<g stroke="#1D2B4F" stroke-width="1.5">
-<rect x="10" y="30" width="250" height="250" rx="6" fill="#EEF4FB"/>
-<rect x="325" y="30" width="250" height="250" rx="6" fill="#E3EEF9"/>
-<rect x="640" y="30" width="250" height="250" rx="6" fill="#D6E6F5"/></g>
-<g font-size="20" fill="#1D2B4F" font-weight="600" text-anchor="middle">
-<text x="135" y="22">VISTA (React)</text><text x="450" y="22">CONTROLADOR (Spring Web)</text><text x="765" y="22">MODELO</text></g>
-<g font-size="14" fill="#1D2B4F" text-anchor="middle">
-<text x="135" y="75">pages/*</text><text x="135" y="105">components/*</text><text x="135" y="135">store/slices/* (thunks)</text><text x="135" y="165">api/apiClient.js</text>
-<text x="135" y="215" font-size="12" fill="#555">valida con required en el JSX</text>
-<text x="450" y="75">controller/* (@RestController)</text><text x="450" y="105">dto/request + dto/response</text><text x="450" y="135">GlobalExceptionHandler</text><text x="450" y="165">security/* + SecurityConfig</text>
-<text x="450" y="215" font-size="12" fill="#555">valida con @Valid</text>
-<text x="765" y="75">service/* + service/impl/*</text><text x="765" y="105">model/* + model/interfaces/*</text><text x="765" y="135">repository/*</text><text x="765" y="165">BusinessException</text>
-<text x="765" y="215" font-size="12" fill="#555">valida reglas en las entidades</text></g>
-<g stroke="#2E75B6" stroke-width="2" marker-end="url(#ar)" marker-start="url(#ar)" fill="none">
-<line x1="262" y1="120" x2="323" y2="120"/><line x1="577" y1="120" x2="638" y2="120"/></g>
-<g font-size="12" fill="#2E75B6" text-anchor="middle"><text x="293" y="108">HTTP + JSON</text><text x="607" y="108">DTO → interfaz</text></g>
-<g stroke="#1D2B4F" stroke-width="1.5" fill="#fff"><path d="M765 292 v10 M745 292 h40" stroke-dasharray="0"/><rect x="705" y="302" width="120" height="24" rx="4"/></g>
-<text x="765" y="319" font-size="13" fill="#1D2B4F" text-anchor="middle">Base de datos (JPA)</text>
-</svg>'''
 CSS = '''
 :root{--navy:#1D2B4F;--azul:#2E75B6;--azul-claro:#EEF4FB;--texto:#222;--gris:#666;--linea:#D9E1EC;--fondo:#fff;--rojo:#B3261E;--ambar:#B38600;--verde:#2E7D32}
 *{box-sizing:border-box}

@@ -391,6 +391,7 @@ body.lightbox-locked { overflow: hidden; }
   .sidebar.open { transform: none; box-shadow: var(--shadow); }
   .content { padding: 64px 20px 90px; }
 }
+.d2 { background: #fff; border-radius: 6px; padding: 12px; }
 </style>
 </head>
 <body>
@@ -453,7 +454,7 @@ body.lightbox-locked { overflow: hidden; }
           <tr><td>Maven</td><td>Build y dependencias del backend (<code>backend/pom.xml</code>); <code>mvn spring-boot:run</code> lo levanta y <code>mvn test</code> corre los tests.</td></tr>
           <tr><td>Spring Boot 3.4</td><td>Framework que arma la aplicación: servidor web embebido, inyección de dependencias y configuración por <code>application.properties</code>.</td></tr>
           <tr><td>Spring Web</td><td>Parte de Spring para exponer la API REST: los <code>@RestController</code> de <code>controller/</code>.</td></tr>
-          <tr><td>Bean Validation</td><td>Anotaciones como <code>@NotNull</code> o <code>@Positive</code> en <code>dto/request/</code>; <code>@Valid</code> en el controller rechaza con 400 lo mal formado.</td></tr>
+          <tr><td>Bean Validation</td><td>Anotaciones como <code>@NotNull</code>, <code>@Positive</code>, <code>@Size</code> o <code>@Digits</code> en <code>dto/request/</code>; <code>@Valid</code> en el controller rechaza con 400 lo mal formado.</td></tr>
           <tr><td>Spring Data JPA / Hibernate</td><td>JPA es el estándar Java para mapear clases a tablas; Hibernate lo implementa. Mapea <code>model/</code> y da los <code>repository/</code> con consultas <code>@Query</code>.</td></tr>
           <tr><td>H2</td><td>Base de datos SQL en memoria: no hay que instalar nada y se borra al reiniciar. Es la base del proyecto.</td></tr>
           <tr><td>Spring Security</td><td>Controla quién entra a cada ruta: roles en <code>config/SecurityConfig.java</code> y filtro de token por request.</td></tr>
@@ -461,7 +462,10 @@ body.lightbox-locked { overflow: hidden; }
           <tr><td>Lombok</td><td>Genera getters, constructores y builders con anotaciones (<code>@Getter</code>, <code>@RequiredArgsConstructor</code>) para no escribirlos a mano.</td></tr>
           <tr><td>springdoc-openapi / Swagger</td><td>Genera la documentación de la API desde las anotaciones de los controllers y la sirve navegable en <code>/swagger-ui.html</code>.</td></tr>
           <tr><td>Spring Boot Actuator</td><td>Endpoints de diagnóstico de la aplicación (como health). Está como dependencia en <code>pom.xml</code>.</td></tr>
-          <tr><td>JUnit 5 + AssertJ</td><td>Framework de tests y librería de aserciones; vienen en <code>spring-boot-starter-test</code>. Los usan los tests de <code>model/</code>.</td></tr>
+          <tr><td>JUnit 5 + AssertJ</td><td>Framework de tests y librería de aserciones; vienen en <code>spring-boot-starter-test</code>. Los usan todos los tests.</td></tr>
+          <tr><td>Mockito / <code>@WebMvcTest</code></td><td>Mockito crea objetos simulados; <code>@WebMvcTest</code> levanta solo la capa web de Spring. Juntos prueban los códigos HTTP sin base ni servicios reales (<code>controller/CodigosHttpTest.java</code>).</td></tr>
+          <tr><td>PlantUML y d2</td><td>Dos lenguajes que dibujan diagramas a partir de texto. PlantUML hace el diagrama de clases UML completo y el DER (<code>docs/diagramas/*.puml</code>); d2 hace las vistas simplificadas de Strategy, Adapter y el dominio (<code>docs/diagramas/d2/</code>).</td></tr>
+          <tr><td>Archify</td><td>Genera diagramas de arquitectura, secuencia y estados desde un JSON validado; con él están el panorama MVC, el flujo de anular un crédito y los estados del crédito (<code>docs/diagramas/archify/</code>).</td></tr>
           <tr><td>React 19</td><td>Librería para construir la interfaz con componentes; las pantallas están en <code>frontend/src/pages/</code>.</td></tr>
           <tr><td>React Router</td><td>Navegación entre pantallas del front sin recargar la página.</td></tr>
           <tr><td>Redux Toolkit / React Redux</td><td>Estado global del front (usuario logueado, listas) en <code>store/slices/</code>, con thunks que llaman a la API.</td></tr>
@@ -497,7 +501,7 @@ body.lightbox-locked { overflow: hidden; }
         <li>Listar créditos (todos o de un cliente) con estado (vigente, cancelado, anulado), saldo y cuotas pagadas, pendientes o vencidas.</li>
         <li>Registrar el cobro de una cuota y listar las cobranzas de un crédito.</li>
         <li>Anular cobranzas del día y créditos sin cobranzas vigentes, según permisos del usuario.</li>
-        <li>Dashboard con totales de lo vigente para supervisor y administrador.</li>
+        <li>Dashboard con totales de lo vigente, saldo pendiente y monto vencido, para supervisor y administrador.</li>
         <li>Registro y login con JWT; gestión de roles (ADMIN) y de permisos de anulación (SUPERVISOR, ADMIN).</li>
       </ul>
     </section>
@@ -509,23 +513,23 @@ body.lightbox-locked { overflow: hidden; }
         <thead><tr><th>#</th><th>Regla</th><th>Dónde</th></tr></thead>
         <tbody>
           <tr><td>R1</td><td>El DNI del cliente es único</td><td><code>service/impl/ClienteServiceImpl.java</code> <code>crear</code></td></tr>
-          <tr><td>R2</td><td>Capital &gt; 0, tasa entre 0 y 999,99, al menos 1 cuota, tipo de plan obligatorio</td><td><code>dto/request/CreditoRequest.java</code></td></tr>
+          <tr><td>R2</td><td>Capital &gt; 0 con hasta 8 enteros y 2 decimales, tasa entre 0 y 999,99 con 2 decimales, al menos 1 cuota, tipo de plan obligatorio. DNI hasta 15 caracteres, nombre y username hasta 255, importe de cobranza hasta 10 enteros y 2 decimales (<code>@Size</code> y <code>@Digits</code>, anotaciones de Bean Validation que Spring chequea con <code>@Valid</code> antes de entrar al controller: lo que no entra en la columna da 400 y no 500)</td><td><code>dto/request/CreditoRequest.java</code>, <code>dto/request/ClienteRequest.java</code>, <code>dto/request/CobranzaRequest.java</code>, <code>dto/request/RegisterRequest.java</code></td></tr>
           <tr><td>R3</td><td>Interés simple: <code>total = capital × (1 + tasa/100)</code>, cuota = total / N con redondeo HALF_UP a 2 decimales</td><td><code>model/plan/InteresSimple.java</code> <code>totalADevolver</code>, <code>importeCuota</code></td></tr>
           <tr><td>R4</td><td>Sistema francés: cuota = C·i / (1 − (1+i)<sup>−n</sup>), con i = tasa/100 por período; tasa 0 → C/N; total = cuota × N</td><td><code>model/plan/SistemaFrances.java</code> <code>importeCuota</code>, <code>totalADevolver</code></td></tr>
-          <tr><td>R5</td><td>Plan de N cuotas numeradas 1..N, vencimiento <code>fecha + i meses</code></td><td><code>model/Credito.java</code> <code>generarPlanDeCuotas</code></td></tr>
+          <tr><td>R5</td><td>El crédito nace con su plan: N cuotas numeradas 1..N, vencimiento <code>fecha + i meses</code>, persistidas por cascade</td><td><code>model/Credito.java</code> constructor y <code>generarPlanDeCuotas</code> (privado)</td></tr>
           <tr><td>R6</td><td>No se cobra sobre un crédito anulado</td><td><code>model/Cuota.java</code> <code>registrarCobranza</code></td></tr>
           <tr><td>R7</td><td>Una cuota tiene a lo sumo una cobranza vigente; las anuladas no cuentan</td><td><code>model/Cuota.java</code> <code>estaPagada</code>, <code>registrarCobranza</code></td></tr>
           <tr><td>R8</td><td>El importe cobrado tiene que ser exactamente el de la cuota (no hay pago parcial)</td><td><code>model/Cuota.java</code> <code>registrarCobranza</code></td></tr>
           <tr><td>R9</td><td>La fecha de la cobranza la pone el sistema (hoy)</td><td><code>model/Cobranza.java</code> constructor</td></tr>
-          <tr><td>R10</td><td>Solo se anulan cobranzas del día</td><td><code>model/Cobranza.java</code> <code>anular</code></td></tr>
+          <tr><td>R10</td><td>Solo se anulan cobranzas del día, y no dos veces</td><td><code>model/Cobranza.java</code> <code>anular(LocalDate)</code></td></tr>
           <tr><td>R11</td><td>No se anula un crédito ya anulado ni uno con cobranzas vigentes</td><td><code>model/Credito.java</code> <code>anular</code>, <code>tieneCobranzas</code></td></tr>
-          <tr><td>R12</td><td>Una cuota está vencida si no está pagada y su vencimiento es anterior a hoy</td><td><code>model/Cuota.java</code> <code>estaVencida</code></td></tr>
+          <tr><td>R12</td><td>Una cuota está vencida si no está pagada y su vencimiento es anterior a hoy</td><td><code>model/Cuota.java</code> <code>estaVencida(LocalDate)</code></td></tr>
           <tr><td>R13</td><td>Estado del crédito: ANULADO si se anuló; CANCELADO si todas las cuotas están pagas; si no, VIGENTE</td><td><code>model/Credito.java</code> <code>estado</code>, <code>estaCancelado</code></td></tr>
           <tr><td>R14</td><td>Saldo = suma de cuotas impagas; 0 si está anulado</td><td><code>model/Credito.java</code> <code>saldo</code></td></tr>
           <tr><td>R15</td><td>Anular un crédito requiere <code>puedeAnularCredito</code>; anular una cobranza, <code>puedeAnularCobranza</code></td><td><code>service/impl/CreditoServiceImpl.java</code> <code>anularCredito</code>; <code>service/impl/CobranzaServiceImpl.java</code> <code>anularCobranza</code></td></tr>
           <tr><td>R16</td><td>Nadie otorga ni quita el rol ADMIN</td><td><code>service/impl/AdminServiceImpl.java</code> <code>actualizarRol</code></td></tr>
           <tr><td>R17</td><td>El registro crea siempre un USER sin permisos; username único</td><td><code>service/impl/AuthServiceImpl.java</code> <code>registrar</code></td></tr>
-          <tr><td>R18</td><td>El dashboard cuenta solo créditos no anulados, financiado = suma de deuda original vigente, cobrado = cobranzas no anuladas</td><td><code>repository/CreditoRepository.java</code> <code>contarVigentes</code>, <code>sumarDeudaOriginalVigente</code>; <code>repository/CobranzaRepository.java</code> <code>sumarImporteVigente</code></td></tr>
+          <tr><td>R18</td><td>El dashboard cuenta solo créditos no anulados, financiado = suma de deuda original vigente, cobrado = cobranzas no anuladas, saldo pendiente = suma de <code>Credito.saldo</code>, vencido = cuotas vencidas de créditos no anulados</td><td><code>service/impl/DashboardServiceImpl.java</code> <code>obtenerEstadisticasGenerales</code>; <code>repository/CreditoRepository.java</code> <code>contarVigentes</code>, <code>sumarDeudaOriginalVigente</code>; <code>repository/CobranzaRepository.java</code> <code>sumarImporteVigente</code></td></tr>
         </tbody>
       </table></div>
     </section>
@@ -541,17 +545,17 @@ body.lightbox-locked { overflow: hidden; }
           <tr><td>UC03 Emitir token JWT</td><td><span class="tag tag-ok">implementado</span></td><td>Es un mecanismo de UC01/UC02, no un CU</td></tr>
           <tr><td>UC04 Registrar cliente</td><td><span class="tag tag-ok">implementado</span></td><td>Sin modificación ni baja</td></tr>
           <tr><td>UC05 Listar clientes</td><td><span class="tag tag-ok">implementado</span></td><td>Sin paginación</td></tr>
-          <tr><td>UC06 Buscar cliente por DNI</td><td><span class="tag tag-pend">solo backend</span></td><td>Sin vista</td></tr>
+          <tr><td>UC06 Buscar cliente por DNI</td><td><span class="tag tag-ok">implementado</span></td><td>Bloque de búsqueda en <code>pages/Clientes.jsx</code></td></tr>
           <tr><td>UC07 Otorgar crédito</td><td><span class="tag tag-ok">implementado</span></td><td>Con tipo de plan (M9)</td></tr>
           <tr><td>UC08 Generar plan de cuotas</td><td><span class="tag tag-ok">implementado</span></td><td>Include de UC07</td></tr>
-          <tr><td>UC09 Consultar crédito</td><td><span class="tag tag-pend">solo backend</span></td><td>Sin vista</td></tr>
+          <tr><td>UC09 Consultar crédito</td><td><span class="tag tag-ok">implementado</span></td><td>Búsqueda por número en <code>pages/Creditos.jsx</code></td></tr>
           <tr><td>UC10 Listar créditos</td><td><span class="tag tag-ok">implementado</span></td><td>Por cliente y general (<code>GET /api/creditos</code>)</td></tr>
           <tr><td>UC11 Anular crédito</td><td><span class="tag tag-ok">implementado</span></td><td>Permiso aplicado en backend (M4); ignora cobranzas anuladas (M8)</td></tr>
           <tr><td>UC12 Eliminar crédito</td><td><span class="tag">retirado</span></td><td>Duplicaba UC11 salteando su regla</td></tr>
           <tr><td>UC13 Registrar cobro</td><td><span class="tag tag-ok">implementado</span></td><td>Rechaza crédito anulado (M1); no registra quién cobró</td></tr>
           <tr><td>UC14 Listar cobranzas del crédito</td><td><span class="tag tag-ok">implementado</span></td><td></td></tr>
-          <tr><td>UC15 Anular cobranza</td><td><span class="tag tag-ok">implementado</span></td><td>Permiso aplicado en backend (M4)</td></tr>
-          <tr><td>UC16 Ver estadísticas</td><td><span class="tag tag-ok">implementado</span></td><td>Números corregidos (M3), también ADMIN (M10)</td></tr>
+          <tr><td>UC15 Anular cobranza</td><td><span class="tag tag-ok">implementado</span></td><td>Permiso aplicado en backend (M4); rechaza la doble anulación</td></tr>
+          <tr><td>UC16 Ver estadísticas</td><td><span class="tag tag-ok">implementado</span></td><td>Números corregidos (M3), también ADMIN (M10), saldo pendiente y vencido (O7)</td></tr>
           <tr><td>UC17 Administrar metas</td><td><span class="tag">retirado</span></td><td>Con <code>MetaCobranza</code> en V1 (Data class)</td></tr>
           <tr><td>UC18 Listar usuarios</td><td><span class="tag tag-ok">implementado</span></td><td>ADMIN ve todos menos ADMIN; SUPERVISOR ve todos</td></tr>
           <tr><td>UC19 Asignar permisos de anulación</td><td><span class="tag tag-ok">implementado</span></td><td>Desde V3 el backend los aplica (M4)</td></tr>
@@ -574,35 +578,728 @@ body.lightbox-locked { overflow: hidden; }
           <tr><td>Vista</td><td>Frontend: <code>pages/</code>, <code>components/</code>, <code>store/slices/</code>, <code>api/</code> (<code>apiClient.js</code>, único punto HTTP)</td></tr>
         </tbody>
       </table></div>
-      <p><strong>Flujo de un request</strong> (anular un crédito):</p>
-      <ol>
-        <li><code>pages/Creditos.jsx</code> oculta el botón si el usuario no tiene el permiso y, si lo tiene, despacha el thunk que llama a <code>api/</code>.</li>
-        <li><code>security/JwtAuthFilter.java</code> valida el token vía <code>service/TokenService</code> y carga el usuario.</li>
-        <li><code>config/SecurityConfig.java</code> exige autenticación para <code>/api/creditos/**</code>.</li>
-        <li><code>controller/CreditoController.java</code> <code>anularCredito</code> toma el <code>UsuarioDetails</code> autenticado y llama al servicio.</li>
-        <li><code>service/impl/CreditoServiceImpl.java</code> <code>anularCredito</code> pregunta a <code>Permisos</code> y le pide al <code>Credito</code> que se anule (<code>model/Credito.java</code> <code>anular</code>).</li>
-        <li>Si algo falla, <code>exception/GlobalExceptionHandler.java</code> traduce: <code>BusinessException</code> → 400, <code>AccessDeniedException</code> → 403, <code>ResourceNotFoundException</code> → 404.</li>
-      </ol>
-      <figure class="diagram">
-        <img src="../diagramas/clases-v3-general.png" alt="Diagrama de clases V3, vista general" />
-        <figcaption>Diagrama de clases V3, general (<code>docs/diagramas/clases-v3-general.png</code>, fuente <code>clases-v3.puml</code>)</figcaption>
-      </figure>
+      <figure class="diagram"><div class="d2"><svg style="width:100%;height:auto" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" role="img" lang="es" aria-labelledby="archify-diagram-title archify-diagram-description" data-preset="classic" data-quality-profile="showcase"><style>svg{--bg:#ffffff;--grid:transparent;--panel:#ffffff;--panel-border:#D9E1EC;--text:#1D2B4F;--text-muted:#555f73;--text-dim:#8a94a6;--text-faint:#666;--mask:#ffffff;--lane-fill:#F6F9FD;--lane-stroke:#D9E1EC;--arrow:#7d8aa3;--arrow-emphasis:#2E75B6;
+--frontend-fill:#EEF4FB;--frontend-stroke:#2E75B6;--backend-fill:#ffffff;--backend-stroke:#1D2B4F;--database-fill:#F1F3F7;--database-stroke:#4A5A7A;--cloud-fill:#FFF8E6;--cloud-stroke:#B38600;--security-fill:#FCEFEE;--security-stroke:#B3261E;--messagebus-fill:#FFF3E8;--messagebus-stroke:#B35C00;--external-fill:#F4F4F4;--external-stroke:#666;
+font-family:"Calibri Light",Calibri,Carlito,"Segoe UI",system-ui,sans-serif}
+svg text{font-family:"Calibri Light",Calibri,Carlito,"Segoe UI",system-ui,sans-serif}
+.c-grid{stroke: var(--grid); fill: none;}
+.c-mask{fill: var(--mask); stroke: none;}
+.c-frontend{fill: var(--frontend-fill);   stroke: var(--frontend-stroke);}
+.c-backend{fill: var(--backend-fill);    stroke: var(--backend-stroke);}
+.c-database{fill: var(--database-fill);   stroke: var(--database-stroke);}
+.c-security{fill: var(--security-fill);   stroke: var(--security-stroke);}
+.t-primary{fill: var(--text);}
+.t-muted{fill: var(--text-muted);}
+.t-frontend{fill: var(--frontend-stroke);}
+.t-backend{fill: var(--backend-stroke);}
+.t-cloud{fill: var(--cloud-stroke);}
+.t-security{fill: var(--security-stroke);}
+.t-messagebus{fill: var(--messagebus-stroke);}
+svg .semantic-sigil{fill: none;
+      stroke: currentColor;
+      stroke-width: 1.35;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      opacity: 0.76;
+      pointer-events: none;}
+svg .semantic-sigil .sigil-fill{fill: currentColor; stroke: none;}
+svg .s-frontend{color: var(--frontend-stroke);}
+svg .s-backend{color: var(--backend-stroke);}
+svg .s-database{color: var(--database-stroke);}
+svg .s-security{color: var(--security-stroke);}
+.a-default{stroke: var(--arrow); fill: none;}
+.a-emphasis{stroke: var(--arrow-emphasis); fill: none;}
+.a-security{stroke: var(--security-stroke); fill: none; stroke-dasharray: 5,5;}
+.a-dashed{stroke: var(--database-stroke); fill: none; stroke-dasharray: 4,4;}
+.m-default{fill: var(--arrow);}
+.m-emphasis{fill: var(--arrow-emphasis);}
+.m-security{fill: var(--security-stroke);}
+.m-dashed{fill: var(--database-stroke);}
+.c-region{fill: rgba(251, 191, 36, 0.05); stroke: var(--cloud-stroke); stroke-dasharray: 8,4;}</style>
+        <title id="archify-diagram-title">Dashboard de préstamos V3: MVC por capas</title>
+        <desc id="archify-diagram-description">An architecture diagram generated by Archify.</desc>
+        <!-- Definitions -->
+        <defs>
+          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-default" />
+          </marker>
+          <marker id="arrowhead-emphasis" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-emphasis" />
+          </marker>
+          <marker id="arrowhead-security" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-security" />
+          </marker>
+          <marker id="arrowhead-dashed" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-dashed" />
+          </marker>
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" class="c-grid" stroke-width="0.5"/>
+          </pattern>
+        </defs>
+
+        <!-- Background Grid -->
+        <rect width="100%" height="100%" fill="url(#grid)" />
+
+        <!-- Boundaries (behind everything) -->
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="region" data-composition-frame-id="0" data-composition-frame-label="Backend Spring Boot" x="30" y="150" width="940" height="394" rx="12" class="c-region" stroke-width="1"/>
+
+        <!-- Connection paths (before components for correct z-order) -->
+        <path data-edge-from="spa" data-edge-to="ctrl" data-edge-label="HTTP + JSON (DTO)" data-edge-key="0" data-edge-id="http" data-composition-points="500,104;500,180" d="M 500 104 L 500 180" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <path data-edge-from="filtro" data-edge-to="ctrl" data-edge-label="request autenticada" data-edge-key="1" data-edge-id="auth" data-composition-points="760,212;600,212" d="M 760 212 L 600 212" class="a-security" stroke-width="1.5" marker-end="url(#arrowhead-security)"/>
+        <path data-edge-from="ctrl" data-edge-to="errores" data-edge-label="excepciones" data-edge-key="2" data-edge-id="err" data-composition-points="400,212;260,212" d="M 400 212 L 260 212" class="a-dashed" stroke-width="1.5" marker-end="url(#arrowhead-dashed)"/>
+        <path data-edge-from="ctrl" data-edge-to="svc" data-edge-label="casos de uso" data-edge-key="3" data-edge-id="casos" data-composition-points="500,244;500,320" d="M 500 244 L 500 320" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="filtro" data-edge-to="token" data-edge-label="valida token" data-edge-key="4" data-edge-id="valida" data-composition-points="850,244;850,320" d="M 850 244 L 850 320" class="a-security" stroke-width="1.5" marker-end="url(#arrowhead-security)"/>
+        <path data-edge-from="svc" data-edge-to="dominio" data-edge-label="delega reglas" data-edge-key="5" data-edge-id="reglas" data-composition-points="500,384;500,460" d="M 500 384 L 500 460" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <path data-edge-from="dominio" data-edge-to="plan" data-edge-label="calcula cuota" data-edge-key="6" data-edge-id="calc" data-composition-points="400,492;260,492" d="M 400 492 L 260 492" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="svc" data-edge-to="repo" data-edge-label="persiste" data-edge-key="7" data-edge-id="persist" data-composition-points="600,352;680,352;680,492;760,492" d="M 600 352 L 672 352 Q 680 352 680 360 L 680 484 Q 680 492 688 492 L 760 492" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+        <!-- Components -->
+        <g id="node-spa" data-node-id="spa" data-node-label="Vista React" tabindex="0" role="button" aria-label="Focus Vista React, pages/ + store/slices/, Architecture component" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="pages/ + store/slices/" data-node-tag="api/apiClient.js" data-node-context="Architecture component">
+          <title>Vista React · pages/ + store/slices/ · Architecture component · api/apiClient.js</title>
+          <rect x="400" y="40" width="200" height="64" rx="6" class="c-mask"/>
+          <rect x="400" y="40" width="200" height="64" rx="6" class="c-frontend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="frontend" class="semantic-sigil s-frontend" transform="translate(406 46) scale(0.6875)">
+            <rect x="2" y="3" width="12" height="10" rx="2"/>
+            <path d="M2 6.5h12"/>
+            <circle cx="4.1" cy="4.8" r=".7" class="sigil-fill"/>
+            <circle cx="6.3" cy="4.8" r=".7" class="sigil-fill"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="500" y="70" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Vista React</text>
+        <text data-detail="context" x="500" y="86" class="t-muted" font-size="9" text-anchor="middle">pages/ + store/slices/</text>
+        <text data-detail="fine" x="500" y="96" class="t-frontend" font-size="7" text-anchor="middle">api/apiClient.js</text>
+        </g>
+
+        <g id="node-filtro" data-node-id="filtro" data-node-label="JwtAuthFilter" tabindex="0" role="button" aria-label="Focus JwtAuthFilter, SecurityConfig, Backend Spring Boot" aria-pressed="false" data-node-kind="security" data-node-sublabel="SecurityConfig" data-node-context="Backend Spring Boot">
+          <title>JwtAuthFilter · SecurityConfig · Backend Spring Boot</title>
+          <rect x="760" y="180" width="180" height="64" rx="6" class="c-mask"/>
+          <rect x="760" y="180" width="180" height="64" rx="6" class="c-security" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="security" class="semantic-sigil s-security" transform="translate(766 186) scale(0.6875)">
+            <path d="M8 2.2 13 4v3.5c0 3.1-1.8 5.4-5 6.5-3.2-1.1-5-3.4-5-6.5V4Z"/>
+            <path d="m5.8 8 1.5 1.5 3-3"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="850" y="210" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">JwtAuthFilter</text>
+        <text data-detail="context" x="850" y="226" class="t-muted" font-size="9" text-anchor="middle">SecurityConfig</text>
+        </g>
+
+        <g id="node-ctrl" data-node-id="ctrl" data-node-label="Controllers" tabindex="0" role="button" aria-label="Focus Controllers, 7 @RestController, Backend Spring Boot" aria-pressed="false" data-node-kind="backend" data-node-sublabel="7 @RestController" data-node-context="Backend Spring Boot">
+          <title>Controllers · 7 @RestController · Backend Spring Boot</title>
+          <rect x="400" y="180" width="200" height="64" rx="6" class="c-mask"/>
+          <rect x="400" y="180" width="200" height="64" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(406 186) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="500" y="210" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Controllers</text>
+        <text data-detail="context" x="500" y="226" class="t-muted" font-size="9" text-anchor="middle">7 @RestController</text>
+        </g>
+
+        <g id="node-errores" data-node-id="errores" data-node-label="GlobalExceptionHandler" tabindex="0" role="button" aria-label="Focus GlobalExceptionHandler, excepción → HTTP, Backend Spring Boot" aria-pressed="false" data-node-kind="backend" data-node-sublabel="excepción → HTTP" data-node-context="Backend Spring Boot">
+          <title>GlobalExceptionHandler · excepción → HTTP · Backend Spring Boot</title>
+          <rect x="60" y="180" width="200" height="64" rx="6" class="c-mask"/>
+          <rect x="60" y="180" width="200" height="64" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(66 186) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="160" y="210" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">GlobalExceptionHandler</text>
+        <text data-detail="context" x="160" y="226" class="t-muted" font-size="9" text-anchor="middle">excepción → HTTP</text>
+        </g>
+
+        <g id="node-svc" data-node-id="svc" data-node-label="Services" tabindex="0" role="button" aria-label="Focus Services, CreditoService y otros, Backend Spring Boot" aria-pressed="false" data-node-kind="backend" data-node-sublabel="CreditoService y otros" data-node-context="Backend Spring Boot">
+          <title>Services · CreditoService y otros · Backend Spring Boot</title>
+          <rect x="400" y="320" width="200" height="64" rx="6" class="c-mask"/>
+          <rect x="400" y="320" width="200" height="64" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(406 326) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="500" y="350" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Services</text>
+        <text data-detail="context" x="500" y="366" class="t-muted" font-size="9" text-anchor="middle">CreditoService y otros</text>
+        </g>
+
+        <g id="node-token" data-node-id="token" data-node-label="TokenService" tabindex="0" role="button" aria-label="Focus TokenService, Adapter: JwtUtil, Backend Spring Boot" aria-pressed="false" data-node-kind="security" data-node-sublabel="Adapter: JwtUtil" data-node-context="Backend Spring Boot">
+          <title>TokenService · Adapter: JwtUtil · Backend Spring Boot</title>
+          <rect x="760" y="320" width="180" height="64" rx="6" class="c-mask"/>
+          <rect x="760" y="320" width="180" height="64" rx="6" class="c-security" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="security" class="semantic-sigil s-security" transform="translate(766 326) scale(0.6875)">
+            <path d="M8 2.2 13 4v3.5c0 3.1-1.8 5.4-5 6.5-3.2-1.1-5-3.4-5-6.5V4Z"/>
+            <path d="m5.8 8 1.5 1.5 3-3"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="850" y="350" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">TokenService</text>
+        <text data-detail="context" x="850" y="366" class="t-muted" font-size="9" text-anchor="middle">Adapter: JwtUtil</text>
+        </g>
+
+        <g id="node-dominio" data-node-id="dominio" data-node-label="Entidades" tabindex="0" role="button" aria-label="Focus Entidades, Credito, Cuota, Cobranza, Backend Spring Boot" aria-pressed="false" data-node-kind="backend" data-node-sublabel="Credito, Cuota, Cobranza" data-node-tag="reglas de negocio" data-node-context="Backend Spring Boot">
+          <title>Entidades · Credito, Cuota, Cobranza · Backend Spring Boot · reglas de negocio</title>
+          <rect x="400" y="460" width="200" height="64" rx="6" class="c-mask"/>
+          <rect x="400" y="460" width="200" height="64" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(406 466) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="500" y="490" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Entidades</text>
+        <text data-detail="context" x="500" y="506" class="t-muted" font-size="9" text-anchor="middle">Credito, Cuota, Cobranza</text>
+        <text data-detail="fine" x="500" y="516" class="t-backend" font-size="7" text-anchor="middle">reglas de negocio</text>
+        </g>
+
+        <g id="node-plan" data-node-id="plan" data-node-label="TipoPlan" tabindex="0" role="button" aria-label="Focus TipoPlan, Strategy de cuota, Backend Spring Boot" aria-pressed="false" data-node-kind="backend" data-node-sublabel="Strategy de cuota" data-node-context="Backend Spring Boot">
+          <title>TipoPlan · Strategy de cuota · Backend Spring Boot</title>
+          <rect x="60" y="460" width="200" height="64" rx="6" class="c-mask"/>
+          <rect x="60" y="460" width="200" height="64" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(66 466) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="160" y="490" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">TipoPlan</text>
+        <text data-detail="context" x="160" y="506" class="t-muted" font-size="9" text-anchor="middle">Strategy de cuota</text>
+        </g>
+
+        <g id="node-repo" data-node-id="repo" data-node-label="Repositories + H2" tabindex="0" role="button" aria-label="Focus Repositories + H2, Spring Data JPA, Backend Spring Boot" aria-pressed="false" data-node-kind="database" data-node-sublabel="Spring Data JPA" data-node-context="Backend Spring Boot">
+          <title>Repositories + H2 · Spring Data JPA · Backend Spring Boot</title>
+          <rect x="760" y="460" width="180" height="64" rx="6" class="c-mask"/>
+          <rect x="760" y="460" width="180" height="64" rx="6" class="c-database" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="database" class="semantic-sigil s-database" transform="translate(766 466) scale(0.6875)">
+            <ellipse cx="8" cy="4" rx="5" ry="2"/>
+            <path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="850" y="490" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Repositories + H2</text>
+        <text data-detail="context" x="850" y="506" class="t-muted" font-size="9" text-anchor="middle">Spring Data JPA</text>
+        </g>
+
+        <!-- Connection labels -->
+        <g data-detail="context" data-edge-from="spa" data-edge-to="ctrl" data-edge-label="HTTP + JSON (DTO)" data-edge-key="0" data-edge-id="http">
+          <rect x="454.2" y="130" width="91.6" height="14" rx="3" class="c-mask"/>
+          <text x="500" y="140" class="t-backend" font-size="8" text-anchor="middle">HTTP + JSON (DTO)</text>
+        </g>
+        <g data-detail="context" data-edge-from="filtro" data-edge-to="ctrl" data-edge-label="request autenticada" data-edge-key="1" data-edge-id="auth">
+          <rect x="629.4" y="192" width="101.2" height="14" rx="3" class="c-mask"/>
+          <text x="680" y="202" class="t-security" font-size="8" text-anchor="middle">request autenticada</text>
+        </g>
+        <g data-detail="context" data-edge-from="ctrl" data-edge-to="errores" data-edge-label="excepciones" data-edge-key="2" data-edge-id="err">
+          <rect x="298.6" y="192" width="62.8" height="14" rx="3" class="c-mask"/>
+          <text x="330" y="202" class="t-messagebus" font-size="8" text-anchor="middle">excepciones</text>
+        </g>
+        <g data-detail="context" data-edge-from="ctrl" data-edge-to="svc" data-edge-label="casos de uso" data-edge-key="3" data-edge-id="casos">
+          <rect x="466.2" y="270" width="67.6" height="14" rx="3" class="c-mask"/>
+          <text x="500" y="280" class="t-muted" font-size="8" text-anchor="middle">casos de uso</text>
+        </g>
+        <g data-detail="context" data-edge-from="filtro" data-edge-to="token" data-edge-label="valida token" data-edge-key="4" data-edge-id="valida">
+          <rect x="816.2" y="270" width="67.6" height="14" rx="3" class="c-mask"/>
+          <text x="850" y="280" class="t-security" font-size="8" text-anchor="middle">valida token</text>
+        </g>
+        <g data-detail="context" data-edge-from="svc" data-edge-to="dominio" data-edge-label="delega reglas" data-edge-key="5" data-edge-id="reglas">
+          <rect x="463.8" y="410" width="72.4" height="14" rx="3" class="c-mask"/>
+          <text x="500" y="420" class="t-backend" font-size="8" text-anchor="middle">delega reglas</text>
+        </g>
+        <g data-detail="context" data-edge-from="dominio" data-edge-to="plan" data-edge-label="calcula cuota" data-edge-key="6" data-edge-id="calc">
+          <rect x="293.8" y="472" width="72.4" height="14" rx="3" class="c-mask"/>
+          <text x="330" y="482" class="t-muted" font-size="8" text-anchor="middle">calcula cuota</text>
+        </g>
+        <g data-detail="context" data-edge-from="svc" data-edge-to="repo" data-edge-label="persiste" data-edge-key="7" data-edge-id="persist">
+          <rect x="655.8" y="402" width="48.4" height="14" rx="3" class="c-mask"/>
+          <text x="680" y="412" class="t-muted" font-size="8" text-anchor="middle">persiste</text>
+        </g>
+
+        <!-- Boundary labels (foreground masks keep routes out of titles) -->
+        <g data-graph-role="structural-frame-label" data-composition-frame-id="0" data-composition-frame-kind="region" data-composition-frame-label="Backend Spring Boot">
+          <rect data-graph-role="structural-frame-label-mask" x="34" y="160" width="112.6" height="16" rx="3" class="c-mask"/>
+          <text data-boundary-label="" x="38" y="173" class="t-cloud" font-size="9" font-weight="600">Backend Spring Boot</text>
+        </g>
+
+        <!-- Legend -->
+        <g data-legend="" data-legend-bridge="">
+          <text x="40" y="604" class="t-primary" font-size="12" font-weight="650">Legend</text>
+          <g data-legend-semantic-kind="frontend" data-legend-kind="frontend" data-legend-label="Vista" data-legend-x="40" data-legend-baseline="624" data-legend-width="68">
+            <rect x="40" y="615" width="16" height="10" rx="2.5" class="c-frontend" stroke-width="1"/>
+            <text x="62" y="624" class="t-muted" font-size="10" font-weight="500">Vista</text>
+          </g>
+          <g data-legend-semantic-kind="backend" data-legend-kind="backend" data-legend-label="Backend" data-legend-x="130" data-legend-baseline="624" data-legend-width="78">
+            <rect x="130" y="615" width="16" height="10" rx="2.5" class="c-backend" stroke-width="1"/>
+            <text x="152" y="624" class="t-muted" font-size="10" font-weight="500">Backend</text>
+          </g>
+          <g data-legend-semantic-kind="database" data-legend-kind="database" data-legend-label="Datos" data-legend-x="230" data-legend-baseline="624" data-legend-width="68">
+            <rect x="230" y="615" width="16" height="10" rx="2.5" class="c-database" stroke-width="1"/>
+            <text x="252" y="624" class="t-muted" font-size="10" font-weight="500">Datos</text>
+          </g>
+          <g data-legend-semantic-kind="security" data-legend-kind="security" data-legend-label="Seguridad" data-legend-x="320" data-legend-baseline="624" data-legend-width="88">
+            <rect x="320" y="615" width="16" height="10" rx="2.5" class="c-security" stroke-width="1"/>
+            <text x="342" y="624" class="t-muted" font-size="10" font-weight="500">Seguridad</text>
+          </g>
+        </g>
+      </svg></div><figcaption>Panorama MVC por capas. Fuente: <code>docs/diagramas/archify/mvc.architecture.json</code></figcaption></figure>
+      <p><strong>Flujo de un request</strong> (anular un crédito). Si falta el permiso responde 403, si el crédito no existe 404 y si tiene cobranzas vigentes 400, todo traducido por <code>exception/GlobalExceptionHandler.java</code>. La vista oculta el botón sin permiso, pero quien decide es el servicio.</p>
+      <figure class="diagram"><div class="d2"><svg style="width:100%;height:auto" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 780" role="img" lang="es" aria-labelledby="archify-diagram-title archify-diagram-description" data-preset="classic" data-quality-profile="showcase"><style>svg{--bg:#ffffff;--grid:transparent;--panel:#ffffff;--panel-border:#D9E1EC;--text:#1D2B4F;--text-muted:#555f73;--text-dim:#8a94a6;--text-faint:#666;--mask:#ffffff;--lane-fill:#F6F9FD;--lane-stroke:#D9E1EC;--arrow:#7d8aa3;--arrow-emphasis:#2E75B6;
+--frontend-fill:#EEF4FB;--frontend-stroke:#2E75B6;--backend-fill:#ffffff;--backend-stroke:#1D2B4F;--database-fill:#F1F3F7;--database-stroke:#4A5A7A;--cloud-fill:#FFF8E6;--cloud-stroke:#B38600;--security-fill:#FCEFEE;--security-stroke:#B3261E;--messagebus-fill:#FFF3E8;--messagebus-stroke:#B35C00;--external-fill:#F4F4F4;--external-stroke:#666;
+font-family:"Calibri Light",Calibri,Carlito,"Segoe UI",system-ui,sans-serif}
+svg text{font-family:"Calibri Light",Calibri,Carlito,"Segoe UI",system-ui,sans-serif}
+.c-grid{stroke: var(--grid); fill: none;}
+.c-mask{fill: var(--mask); stroke: none;}
+.c-frontend{fill: var(--frontend-fill);   stroke: var(--frontend-stroke);}
+.c-backend{fill: var(--backend-fill);    stroke: var(--backend-stroke);}
+.c-database{fill: var(--database-fill);   stroke: var(--database-stroke);}
+.c-security{fill: var(--security-fill);   stroke: var(--security-stroke);}
+.t-primary{fill: var(--text);}
+.t-muted{fill: var(--text-muted);}
+.t-dim{fill: var(--text-dim);}
+.t-backend{fill: var(--backend-stroke);}
+.t-security{fill: var(--security-stroke);}
+.t-messagebus{fill: var(--messagebus-stroke);}
+svg .semantic-sigil{fill: none;
+      stroke: currentColor;
+      stroke-width: 1.35;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      opacity: 0.76;
+      pointer-events: none;}
+svg .semantic-sigil .sigil-fill{fill: currentColor; stroke: none;}
+svg .s-frontend{color: var(--frontend-stroke);}
+svg .s-backend{color: var(--backend-stroke);}
+svg .s-database{color: var(--database-stroke);}
+svg .s-security{color: var(--security-stroke);}
+.a-default{stroke: var(--arrow); fill: none;}
+.a-emphasis{stroke: var(--arrow-emphasis); fill: none;}
+.a-security{stroke: var(--security-stroke); fill: none; stroke-dasharray: 5,5;}
+.a-dashed{stroke: var(--database-stroke); fill: none; stroke-dasharray: 4,4;}
+.m-default{fill: var(--arrow);}
+.m-emphasis{fill: var(--arrow-emphasis);}
+.m-security{fill: var(--security-stroke);}
+.m-dashed{fill: var(--database-stroke);}
+.c-lane{fill: var(--lane-fill); stroke: var(--lane-stroke); stroke-dasharray: 6,6;}</style>
+        <title id="archify-diagram-title">Anular un crédito, de punta a punta</title>
+        <desc id="archify-diagram-description">A sequence diagram generated by Archify.</desc>
+        <!-- Definitions -->
+        <defs>
+          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-default" />
+          </marker>
+          <marker id="arrowhead-emphasis" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-emphasis" />
+          </marker>
+          <marker id="arrowhead-security" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-security" />
+          </marker>
+          <marker id="arrowhead-dashed" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-dashed" />
+          </marker>
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" class="c-grid" stroke-width="0.5"/>
+          </pattern>
+        </defs>
+
+        <!-- Background Grid -->
+        <rect width="100%" height="100%" fill="url(#grid)" />
+
+        <!-- Time Segments -->
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="segment" data-composition-frame-id="0" x="48" y="160" width="1004" height="140" rx="10" class="c-lane" stroke-width="1"/>
+
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="segment" data-composition-frame-id="1" x="48" y="320" width="1004" height="265" rx="10" class="c-lane" stroke-width="1"/>
+
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="segment" data-composition-frame-id="2" x="48" y="600" width="1004" height="65" rx="10" class="c-lane" stroke-width="1"/>
+
+        <!-- Lifelines -->
+        <path d="M 119.5 142 L 119.5 715" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
+        <path d="M 266.66666666666663 142 L 266.66666666666663 715" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
+        <path d="M 413.8333333333333 142 L 413.8333333333333 715" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
+        <path d="M 561 142 L 561 715" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
+        <path d="M 708.1666666666666 142 L 708.1666666666666 715" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
+        <path d="M 855.3333333333333 142 L 855.3333333333333 715" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
+        <path d="M 1002.5 142 L 1002.5 715" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
+
+        <!-- Activations -->
+        <rect x="261.66666666666663" y="185" width="10" height="60" rx="3" class="c-mask"/>
+        <rect x="261.66666666666663" y="185" width="10" height="60" rx="3" class="c-security" stroke-width="1"/>
+        <rect x="408.8333333333333" y="235" width="10" height="400" rx="3" class="c-mask"/>
+        <rect x="408.8333333333333" y="235" width="10" height="400" rx="3" class="c-backend" stroke-width="1"/>
+        <rect x="556" y="285" width="10" height="295" rx="3" class="c-mask"/>
+        <rect x="556" y="285" width="10" height="295" rx="3" class="c-backend" stroke-width="1"/>
+        <rect x="703.1666666666666" y="335" width="10" height="50" rx="3" class="c-mask"/>
+        <rect x="703.1666666666666" y="335" width="10" height="50" rx="3" class="c-security" stroke-width="1"/>
+        <rect x="997.5" y="425" width="10" height="50" rx="3" class="c-mask"/>
+        <rect x="997.5" y="425" width="10" height="50" rx="3" class="c-database" stroke-width="1"/>
+        <rect x="850.3333333333333" y="515" width="10" height="30" rx="3" class="c-mask"/>
+        <rect x="850.3333333333333" y="515" width="10" height="30" rx="3" class="c-backend" stroke-width="1"/>
+
+        <!-- Messages -->
+        <g data-edge-from="ui" data-edge-to="filtro" data-edge-label="DELETE /api/creditos/anular/{id}" data-edge-key="0" data-edge-id="req">
+          <path data-composition-edge-from="ui" data-composition-edge-to="filtro" data-composition-edge-id="req" data-composition-points="126.5,190;259.66666666666663,190" d="M 126.5 190 L 259.66666666666663 190" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <g data-detail="context">
+          <rect x="103.88333333333331" y="170" width="178.4" height="16" rx="3" class="c-mask"/>
+          <text x="193.08333333333331" y="180" class="t-backend" font-size="9" text-anchor="middle">DELETE /api/creditos/anular/{id}</text>
+        </g>
+        </g>
+
+        <g data-edge-from="filtro" data-edge-to="ctrl" data-edge-label="token válido, usuario cargado" data-edge-key="1" data-edge-id="auth">
+          <path data-composition-edge-from="filtro" data-composition-edge-to="ctrl" data-composition-edge-id="auth" data-composition-points="273.66666666666663,240;406.8333333333333,240" d="M 273.66666666666663 240 L 406.8333333333333 240" class="a-security" stroke-width="1.4" marker-end="url(#arrowhead-security)"/>
+        <g data-detail="context">
+          <rect x="258.85" y="220" width="162.8" height="16" rx="3" class="c-mask"/>
+          <text x="340.25" y="230" class="t-security" font-size="9" text-anchor="middle">token válido, usuario cargado</text>
+        </g>
+        </g>
+
+        <g data-edge-from="ctrl" data-edge-to="svc" data-edge-label="anularCredito(id, usuario)" data-edge-key="2" data-edge-id="call">
+          <path data-composition-edge-from="ctrl" data-composition-edge-to="svc" data-composition-edge-id="call" data-composition-points="420.8333333333333,290;554,290" d="M 420.8333333333333 290 L 554 290" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <g data-detail="context">
+          <rect x="413.8166666666666" y="270" width="147.20000000000002" height="16" rx="3" class="c-mask"/>
+          <text x="487.41666666666663" y="280" class="t-backend" font-size="9" text-anchor="middle">anularCredito(id, usuario)</text>
+        </g>
+        </g>
+
+        <g data-edge-from="svc" data-edge-to="permisos" data-edge-label="isPuedeAnularCredito()" data-edge-key="3" data-edge-id="perm">
+          <path data-composition-edge-from="svc" data-composition-edge-to="permisos" data-composition-edge-id="perm" data-composition-points="568,340;701.1666666666666,340" d="M 568 340 L 701.1666666666666 340" class="a-security" stroke-width="1.4" marker-end="url(#arrowhead-security)"/>
+        <g data-detail="context">
+          <rect x="571.3833333333332" y="320" width="126.4" height="16" rx="3" class="c-mask"/>
+          <text x="634.5833333333333" y="330" class="t-security" font-size="9" text-anchor="middle">isPuedeAnularCredito()</text>
+        </g>
+        </g>
+
+        <g data-edge-from="permisos" data-edge-to="svc" data-edge-label="true (si no, 403)" data-edge-key="4" data-edge-id="permok">
+          <path data-composition-edge-from="permisos" data-composition-edge-to="svc" data-composition-edge-id="permok" data-composition-points="701.1666666666666,380;568,380" d="M 701.1666666666666 380 L 568 380" class="a-default" stroke-width="1.4" stroke-dasharray="3,5" marker-end="url(#arrowhead)"/>
+        <g data-detail="context">
+          <rect x="584.3833333333332" y="360" width="100.4" height="16" rx="3" class="c-mask"/>
+          <text x="634.5833333333333" y="370" class="t-muted" font-size="9" text-anchor="middle">true (si no, 403)</text>
+        </g>
+        </g>
+
+        <g data-edge-from="svc" data-edge-to="repo" data-edge-label="buscarConCuotas(id)" data-edge-key="5" data-edge-id="find">
+          <path data-composition-edge-from="svc" data-composition-edge-to="repo" data-composition-edge-id="find" data-composition-points="568,430;995.5,430" d="M 568 430 L 995.5 430" class="a-default" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+        <g data-detail="context">
+          <rect x="726.35" y="410" width="110.8" height="16" rx="3" class="c-mask"/>
+          <text x="781.75" y="420" class="t-backend" font-size="9" text-anchor="middle">buscarConCuotas(id)</text>
+        </g>
+        </g>
+
+        <g data-edge-from="repo" data-edge-to="svc" data-edge-label="Credito (si no, 404)" data-edge-key="6" data-edge-id="found">
+          <path data-composition-edge-from="repo" data-composition-edge-to="svc" data-composition-edge-id="found" data-composition-points="995.5,470;568,470" d="M 995.5 470 L 568 470" class="a-default" stroke-width="1.4" stroke-dasharray="3,5" marker-end="url(#arrowhead)"/>
+        <g data-detail="context">
+          <rect x="723.75" y="450" width="116" height="16" rx="3" class="c-mask"/>
+          <text x="781.75" y="460" class="t-muted" font-size="9" text-anchor="middle">Credito (si no, 404)</text>
+        </g>
+        </g>
+
+        <g data-edge-from="svc" data-edge-to="credito" data-edge-label="anular()" data-edge-key="7" data-edge-id="anular">
+          <path data-composition-edge-from="svc" data-composition-edge-to="credito" data-composition-edge-id="anular" data-composition-points="568,520;848.3333333333333,520" d="M 568 520 L 848.3333333333333 520" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <g data-detail="context">
+          <rect x="681.3666666666667" y="500" width="53.6" height="16" rx="3" class="c-mask"/>
+          <text x="708.1666666666666" y="510" class="t-backend" font-size="9" text-anchor="middle">anular()</text>
+        </g>
+        <text data-detail="fine" x="580" y="538" class="t-dim" font-size="7">con cobranzas vigentes: 400</text>
+        </g>
+
+        <g data-edge-from="svc" data-edge-to="repo" data-edge-label="save(credito)" data-edge-key="8" data-edge-id="save">
+          <path data-composition-edge-from="svc" data-composition-edge-to="repo" data-composition-edge-id="save" data-composition-points="568,570;995.5,570" d="M 568 570 L 995.5 570" class="a-dashed" stroke-width="1.4" marker-end="url(#arrowhead-dashed)"/>
+        <g data-detail="context">
+          <rect x="741.95" y="550" width="79.60000000000001" height="16" rx="3" class="c-mask"/>
+          <text x="781.75" y="560" class="t-messagebus" font-size="9" text-anchor="middle">save(credito)</text>
+        </g>
+        </g>
+
+        <g data-edge-from="ctrl" data-edge-to="ui" data-edge-label="204 No Content" data-edge-key="9" data-edge-id="resp">
+          <path data-composition-edge-from="ctrl" data-composition-edge-to="ui" data-composition-edge-id="resp" data-composition-points="406.8333333333333,630;126.5,630" d="M 406.8333333333333 630 L 126.5 630" class="a-default" stroke-width="1.4" stroke-dasharray="3,5" marker-end="url(#arrowhead)"/>
+        <g data-detail="context">
+          <rect x="224.26666666666662" y="610" width="84.8" height="16" rx="3" class="c-mask"/>
+          <text x="266.66666666666663" y="620" class="t-muted" font-size="9" text-anchor="middle">204 No Content</text>
+        </g>
+        </g>
+
+        <!-- Segment Labels -->
+        <g data-graph-role="segment-label" data-segment-id="0">
+          <rect x="56" y="138" width="71.2" height="18" rx="3" class="c-mask"/>
+          <text x="62" y="151" class="t-dim" font-size="9" font-weight="600">Controlador</text>
+        </g>
+        <g data-graph-role="segment-label" data-segment-id="1">
+          <rect x="56" y="298" width="45.2" height="18" rx="3" class="c-mask"/>
+          <text x="62" y="311" class="t-dim" font-size="9" font-weight="600">Modelo</text>
+        </g>
+        <g data-graph-role="segment-label" data-segment-id="2">
+          <rect x="56" y="578" width="60.800000000000004" height="18" rx="3" class="c-mask"/>
+          <text x="62" y="591" class="t-dim" font-size="9" font-weight="600">Respuesta</text>
+        </g>
+
+        <!-- Participants -->
+        <g id="node-ui" data-node-id="ui" data-node-label="Creditos.jsx" tabindex="0" role="button" aria-label="Focus Creditos.jsx, Sequence participant" aria-pressed="false" data-node-kind="frontend" data-node-context="Sequence participant">
+          <title>Creditos.jsx · Sequence participant</title>
+          <rect x="62" y="72" width="115" height="54" rx="6" class="c-mask"/>
+          <rect x="62" y="72" width="115" height="54" rx="6" class="c-frontend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="frontend" class="semantic-sigil s-frontend" transform="translate(68 78) scale(0.6875)">
+            <rect x="2" y="3" width="12" height="10" rx="2"/>
+            <path d="M2 6.5h12"/>
+            <circle cx="4.1" cy="4.8" r=".7" class="sigil-fill"/>
+            <circle cx="6.3" cy="4.8" r=".7" class="sigil-fill"/>
+          </g>
+          <text data-node-label="" x="119.5" y="94" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Creditos.jsx</text>
+        </g>
+
+        <g id="node-filtro" data-node-id="filtro" data-node-label="JwtAuthFilter" tabindex="0" role="button" aria-label="Focus JwtAuthFilter, Sequence participant" aria-pressed="false" data-node-kind="security" data-node-context="Sequence participant">
+          <title>JwtAuthFilter · Sequence participant</title>
+          <rect x="209.16666666666663" y="72" width="115" height="54" rx="6" class="c-mask"/>
+          <rect x="209.16666666666663" y="72" width="115" height="54" rx="6" class="c-security" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="security" class="semantic-sigil s-security" transform="translate(215.16666666666663 78) scale(0.6875)">
+            <path d="M8 2.2 13 4v3.5c0 3.1-1.8 5.4-5 6.5-3.2-1.1-5-3.4-5-6.5V4Z"/>
+            <path d="m5.8 8 1.5 1.5 3-3"/>
+          </g>
+          <text data-node-label="" x="266.66666666666663" y="94" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">JwtAuthFilter</text>
+        </g>
+
+        <g id="node-ctrl" data-node-id="ctrl" data-node-label="CreditoController" tabindex="0" role="button" aria-label="Focus CreditoController, Sequence participant" aria-pressed="false" data-node-kind="backend" data-node-context="Sequence participant">
+          <title>CreditoController · Sequence participant</title>
+          <rect x="356.3333333333333" y="72" width="115" height="54" rx="6" class="c-mask"/>
+          <rect x="356.3333333333333" y="72" width="115" height="54" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(362.3333333333333 78) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" x="413.8333333333333" y="94" class="t-primary" font-size="10.4" font-weight="600" text-anchor="middle">CreditoController</text>
+        </g>
+
+        <g id="node-svc" data-node-id="svc" data-node-label="CreditoService" tabindex="0" role="button" aria-label="Focus CreditoService, Sequence participant" aria-pressed="false" data-node-kind="backend" data-node-context="Sequence participant">
+          <title>CreditoService · Sequence participant</title>
+          <rect x="503.5" y="72" width="115" height="54" rx="6" class="c-mask"/>
+          <rect x="503.5" y="72" width="115" height="54" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(509.5 78) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" x="561" y="94" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">CreditoService</text>
+        </g>
+
+        <g id="node-permisos" data-node-id="permisos" data-node-label="Permisos" tabindex="0" role="button" aria-label="Focus Permisos, Sequence participant" aria-pressed="false" data-node-kind="security" data-node-context="Sequence participant">
+          <title>Permisos · Sequence participant</title>
+          <rect x="650.6666666666666" y="72" width="115" height="54" rx="6" class="c-mask"/>
+          <rect x="650.6666666666666" y="72" width="115" height="54" rx="6" class="c-security" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="security" class="semantic-sigil s-security" transform="translate(656.6666666666666 78) scale(0.6875)">
+            <path d="M8 2.2 13 4v3.5c0 3.1-1.8 5.4-5 6.5-3.2-1.1-5-3.4-5-6.5V4Z"/>
+            <path d="m5.8 8 1.5 1.5 3-3"/>
+          </g>
+          <text data-node-label="" x="708.1666666666666" y="94" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Permisos</text>
+        </g>
+
+        <g id="node-credito" data-node-id="credito" data-node-label="Credito" tabindex="0" role="button" aria-label="Focus Credito, Sequence participant" aria-pressed="false" data-node-kind="backend" data-node-context="Sequence participant">
+          <title>Credito · Sequence participant</title>
+          <rect x="797.8333333333333" y="72" width="115" height="54" rx="6" class="c-mask"/>
+          <rect x="797.8333333333333" y="72" width="115" height="54" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(803.8333333333333 78) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" x="855.3333333333333" y="94" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Credito</text>
+        </g>
+
+        <g id="node-repo" data-node-id="repo" data-node-label="CreditoRepository" tabindex="0" role="button" aria-label="Focus CreditoRepository, Sequence participant" aria-pressed="false" data-node-kind="database" data-node-context="Sequence participant">
+          <title>CreditoRepository · Sequence participant</title>
+          <rect x="945" y="72" width="115" height="54" rx="6" class="c-mask"/>
+          <rect x="945" y="72" width="115" height="54" rx="6" class="c-database" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="database" class="semantic-sigil s-database" transform="translate(951 78) scale(0.6875)">
+            <ellipse cx="8" cy="4" rx="5" ry="2"/>
+            <path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/>
+          </g>
+          <text data-node-label="" x="1002.5" y="94" class="t-primary" font-size="10.4" font-weight="600" text-anchor="middle">CreditoRepository</text>
+        </g>
+
+        <!-- Legend -->
+        <g data-legend="">
+          <text x="40" y="706" class="t-primary" font-size="12" font-weight="650">Legend</text>
+          <g data-legend-semantic-kind="emphasis" data-legend-x="40" data-legend-baseline="726" data-legend-width="128">
+            <path d="M 40 723 L 74 723" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+            <text x="83" y="726" class="t-muted" font-size="10" font-weight="500">llamada principal</text>
+          </g>
+          <g data-legend-semantic-kind="return" data-legend-x="190" data-legend-baseline="726" data-legend-width="88">
+            <path d="M 190 723 L 224 723" class="a-default" stroke-width="1.4" stroke-dasharray="3,5" marker-end="url(#arrowhead)"/>
+            <text x="233" y="726" class="t-muted" font-size="10" font-weight="500">respuesta</text>
+          </g>
+          <g data-legend-semantic-kind="security" data-legend-x="300" data-legend-baseline="726" data-legend-width="88">
+            <path d="M 300 723 L 334 723" class="a-security" stroke-width="1.4" marker-end="url(#arrowhead-security)"/>
+            <text x="343" y="726" class="t-muted" font-size="10" font-weight="500">seguridad</text>
+          </g>
+          <g data-legend-semantic-kind="dashed" data-legend-x="410" data-legend-baseline="726" data-legend-width="103">
+            <path d="M 410 723 L 444 723" class="a-dashed" stroke-width="1.4" marker-end="url(#arrowhead-dashed)"/>
+            <text x="453" y="726" class="t-muted" font-size="10" font-weight="500">persistencia</text>
+          </g>
+          <g data-legend-semantic-kind="default" data-legend-x="535" data-legend-baseline="726" data-legend-width="78">
+            <path d="M 535 723 L 569 723" class="a-default" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+            <text x="578" y="726" class="t-muted" font-size="10" font-weight="500">llamada</text>
+          </g>
+        </g>
+      </svg></div><figcaption>Fuente: <code>docs/diagramas/archify/anular-credito.sequence.json</code></figcaption></figure>
+      
+      <p>Diagrama de clases UML completo: <a href="../diagramas/clases-v3-general.svg">vista general</a>.</p>
     </section>
 
     <section class="doc-section" id="dominio">
       <h2>Modelo de dominio</h2>
-      <figure class="diagram">
-        <img src="../diagramas/clases-v3-modelo.png" alt="Diagrama de clases V3, modelo" />
-        <figcaption>Modelo V3 (<code>docs/diagramas/clases-v3-modelo.png</code>)</figcaption>
-      </figure>
+      <p>Diagramas: <a href="../reporte/reporte-v3.html#clases">reporte, "Diagramas de clases y DER"</a> (modelo de dominio, Strategy, Adapter y DER). Detalle UML: <a href="../diagramas/clases-v3-modelo.svg">clases-v3-modelo.svg</a>.</p>
       <h3>Estados del crédito</h3>
+      <p>El estado se calcula en <code>model/Credito.java</code> <code>estado</code>; solo se guarda <code>anulado</code>. El crédito es agregado de sus cuotas (M8).</p>
+      <figure class="diagram"><div class="d2"><svg style="width:100%;height:auto" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 680" role="img" lang="es" aria-labelledby="archify-diagram-title archify-diagram-description" data-preset="classic" data-quality-profile="showcase"><style>svg{--bg:#ffffff;--grid:transparent;--panel:#ffffff;--panel-border:#D9E1EC;--text:#1D2B4F;--text-muted:#555f73;--text-dim:#8a94a6;--text-faint:#666;--mask:#ffffff;--lane-fill:#F6F9FD;--lane-stroke:#D9E1EC;--arrow:#7d8aa3;--arrow-emphasis:#2E75B6;
+--frontend-fill:#EEF4FB;--frontend-stroke:#2E75B6;--backend-fill:#ffffff;--backend-stroke:#1D2B4F;--database-fill:#F1F3F7;--database-stroke:#4A5A7A;--cloud-fill:#FFF8E6;--cloud-stroke:#B38600;--security-fill:#FCEFEE;--security-stroke:#B3261E;--messagebus-fill:#FFF3E8;--messagebus-stroke:#B35C00;--external-fill:#F4F4F4;--external-stroke:#666;
+font-family:"Calibri Light",Calibri,Carlito,"Segoe UI",system-ui,sans-serif}
+svg text{font-family:"Calibri Light",Calibri,Carlito,"Segoe UI",system-ui,sans-serif}
+.c-grid{stroke: var(--grid); fill: none;}
+.c-mask{fill: var(--mask); stroke: none;}
+.c-frontend{fill: var(--frontend-fill);   stroke: var(--frontend-stroke);}
+.c-backend{fill: var(--backend-fill);    stroke: var(--backend-stroke);}
+.c-database{fill: var(--database-fill);   stroke: var(--database-stroke);}
+.c-security{fill: var(--security-fill);   stroke: var(--security-stroke);}
+.t-primary{fill: var(--text);}
+.t-muted{fill: var(--text-muted);}
+.t-dim{fill: var(--text-dim);}
+.t-backend{fill: var(--backend-stroke);}
+.t-security{fill: var(--security-stroke);}
+.t-messagebus{fill: var(--messagebus-stroke);}
+svg .semantic-sigil{fill: none;
+      stroke: currentColor;
+      stroke-width: 1.35;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      opacity: 0.76;
+      pointer-events: none;}
+svg .semantic-sigil .sigil-fill{fill: currentColor; stroke: none;}
+svg .s-frontend{color: var(--frontend-stroke);}
+svg .s-backend{color: var(--backend-stroke);}
+svg .s-database{color: var(--database-stroke);}
+svg .s-security{color: var(--security-stroke);}
+.a-default{stroke: var(--arrow); fill: none;}
+.a-emphasis{stroke: var(--arrow-emphasis); fill: none;}
+.a-security{stroke: var(--security-stroke); fill: none; stroke-dasharray: 5,5;}
+.a-dashed{stroke: var(--database-stroke); fill: none; stroke-dasharray: 4,4;}
+.m-default{fill: var(--arrow);}
+.m-emphasis{fill: var(--arrow-emphasis);}
+.m-security{fill: var(--security-stroke);}
+.m-dashed{fill: var(--database-stroke);}</style>
+        <title id="archify-diagram-title">Estados del crédito</title>
+        <desc id="archify-diagram-description">A lifecycle diagram generated by Archify.</desc>
+        <!-- Definitions -->
+        <defs>
+          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-default" />
+          </marker>
+          <marker id="arrowhead-emphasis" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-emphasis" />
+          </marker>
+          <marker id="arrowhead-security" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-security" />
+          </marker>
+          <marker id="arrowhead-dashed" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-dashed" />
+          </marker>
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" class="c-grid" stroke-width="0.5"/>
+          </pattern>
+        </defs>
+
+        <!-- Background Grid -->
+        <rect width="100%" height="100%" fill="url(#grid)" />
+
+        <!-- Lifecycle bands -->
+        <path d="M 72 112 L 908 112" class="a-default" stroke-width="0.8" stroke-dasharray="3,8"/>
+        <text x="72" y="100" class="t-dim" font-size="10" font-weight="600">01 / Estado derivado: Credito.estado()</text>
+        <path d="M 72 264 L 908 264" class="a-default" stroke-width="0.8" stroke-dasharray="3,8"/>
+        <text x="72" y="252" class="t-dim" font-size="10" font-weight="600">02 / Reglas de transición</text>
+        <path d="M 72 436 L 908 436" class="a-default" stroke-width="0.8" stroke-dasharray="3,8"/>
+        <text x="72" y="424" class="t-dim" font-size="10" font-weight="600">03 / Anulación (único campo guardado: anulado)</text>
+
+        <!-- Primary lifecycle rail -->
+        <path d="M 154 157 L 748 157" class="a-emphasis" stroke-width="2.2" marker-end="url(#arrowhead-emphasis)"/>
+
+        <!-- Transition paths -->
+        <path data-edge-from="otorgado" data-edge-to="vigente" data-edge-label="genera cuotas" data-edge-key="0" data-composition-points="153,157;343,157" d="M 153 157 L 343 157" class="a-default" stroke-width="1.1" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="vigente" data-edge-to="cancelado" data-edge-label="Cuota.registrarCobranza() última" data-edge-key="1" data-composition-points="461,157;651,157" d="M 461 157 L 651 157" class="a-emphasis" stroke-width="2" marker-end="url(#arrowhead-emphasis)"/>
+        <path data-edge-from="cancelado" data-edge-to="vigente" data-edge-label="Cobranza.anular() mismo día" data-edge-key="2" data-composition-points="651,157;651,98;461,98;461,157" d="M 651 157 L 651 108 Q 651 98 641 98 L 471 98 Q 461 98 461 108 L 461 157" class="a-dashed" stroke-width="1.1" marker-end="url(#arrowhead-dashed)"/>
+        <path data-edge-from="vigente" data-edge-to="anulado" data-edge-label="Credito.anular(): sin cobranzas + puedeAnularCredito" data-edge-key="3" data-composition-points="402,188;402,450" d="M 402 188 L 402 450" class="a-security" stroke-width="1.1" marker-end="url(#arrowhead-security)"/>
+
+        <!-- States -->
+        <g id="node-otorgado" data-node-id="otorgado" data-node-label="Otorgado" tabindex="0" role="button" aria-label="Focus Otorgado, Credito.nuevo(), Estado derivado: Credito.estado()" aria-pressed="false" data-node-kind="start" data-node-sublabel="Credito.nuevo()" data-node-context="Estado derivado: Credito.estado()">
+          <title>Otorgado · Credito.nuevo() · Estado derivado: Credito.estado()</title>
+          <rect x="35" y="126" width="118" height="62" rx="7" class="c-mask"/>
+          <rect x="35" y="126" width="118" height="62" rx="7" class="c-frontend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="start" class="semantic-sigil s-frontend" transform="translate(136 132) scale(0.6875)">
+            <circle cx="8" cy="8" r="5"/>
+            <path d="m7 5.4 3.6 2.6L7 10.6Z" class="sigil-fill"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="94" y="147" class="t-primary" font-size="10" font-weight="600" text-anchor="middle">Otorgado</text>
+          <text data-detail="context" x="94" y="163" class="t-muted" font-size="7" text-anchor="middle">Credito.nuevo()</text>
+        </g>
+
+        <g id="node-vigente" data-node-id="vigente" data-node-label="VIGENTE" tabindex="0" role="button" aria-label="Focus VIGENTE, quedan cuotas impagas, Estado derivado: Credito.estado()" aria-pressed="false" data-node-kind="active" data-node-sublabel="quedan cuotas impagas" data-node-context="Estado derivado: Credito.estado()">
+          <title>VIGENTE · quedan cuotas impagas · Estado derivado: Credito.estado()</title>
+          <rect x="343" y="126" width="118" height="62" rx="7" class="c-mask"/>
+          <rect x="343" y="126" width="118" height="62" rx="7" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="active" class="semantic-sigil s-backend" transform="translate(444 132) scale(0.6875)">
+            <path d="M2 8h3l1.5-3.5L9 12l1.6-4H14"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="402" y="147" class="t-primary" font-size="10" font-weight="600" text-anchor="middle">VIGENTE</text>
+          <text data-detail="context" x="402" y="163" class="t-muted" font-size="7" text-anchor="middle">quedan cuotas impagas</text>
+        </g>
+
+        <g id="node-cancelado" data-node-id="cancelado" data-node-label="CANCELADO" tabindex="0" role="button" aria-label="Focus CANCELADO, todas las cuotas pagadas, Estado derivado: Credito.estado()" aria-pressed="false" data-node-kind="success" data-node-sublabel="todas las cuotas pagadas" data-node-context="Estado derivado: Credito.estado()">
+          <title>CANCELADO · todas las cuotas pagadas · Estado derivado: Credito.estado()</title>
+          <rect x="651" y="126" width="118" height="62" rx="7" class="c-mask"/>
+          <rect x="651" y="126" width="118" height="62" rx="7" class="c-database" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="success" class="semantic-sigil s-database" transform="translate(752 132) scale(0.6875)">
+            <circle cx="8" cy="8" r="5.3"/>
+            <path d="m5.2 8 1.8 1.8 3.8-4"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="710" y="147" class="t-primary" font-size="10" font-weight="600" text-anchor="middle">CANCELADO</text>
+          <text data-detail="context" x="710" y="163" class="t-muted" font-size="7" text-anchor="middle">todas las cuotas pagadas</text>
+        </g>
+
+        <g id="node-anulado" data-node-id="anulado" data-node-label="ANULADO" tabindex="0" role="button" aria-label="Focus ANULADO, model/Credito.java, Anulación (único campo guardado: anulado)" aria-pressed="false" data-node-kind="failure" data-node-sublabel="model/Credito.java" data-node-context="Anulación (único campo guardado: anulado)">
+          <title>ANULADO · model/Credito.java · Anulación (único campo guardado: anulado)</title>
+          <rect x="343" y="450" width="118" height="58" rx="7" class="c-mask"/>
+          <rect x="343" y="450" width="118" height="58" rx="7" class="c-security" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="failure" class="semantic-sigil s-security" transform="translate(444 456) scale(0.6875)">
+            <circle cx="8" cy="8" r="5.3"/>
+            <path d="m5.7 5.7 4.6 4.6m0-4.6-4.6 4.6"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="402" y="471" class="t-primary" font-size="10" font-weight="600" text-anchor="middle">ANULADO</text>
+          <text data-detail="context" x="402" y="487" class="t-muted" font-size="7" text-anchor="middle">model/Credito.java</text>
+        </g>
+
+        <!-- Transition labels -->
+        <g data-detail="context" data-edge-from="otorgado" data-edge-to="vigente" data-edge-label="genera cuotas" data-edge-key="0">
+          <rect x="210.15" y="136" width="75.7" height="16" rx="4" class="c-mask"/>
+          <text x="248" y="147" class="t-muted" font-size="8" text-anchor="middle">genera cuotas</text>
+        </g>
+        <g data-detail="context" data-edge-from="vigente" data-edge-to="cancelado" data-edge-label="Cuota.registrarCobranza() última" data-edge-key="1">
+          <rect x="471.6" y="136" width="168.8" height="16" rx="4" class="c-mask"/>
+          <text x="556" y="147" class="t-backend" font-size="8" text-anchor="middle">Cuota.registrarCobranza() última</text>
+        </g>
+        <g data-detail="context" data-edge-from="cancelado" data-edge-to="vigente" data-edge-label="Cobranza.anular() mismo día" data-edge-key="2">
+          <rect x="483.85" y="77" width="144.3" height="16" rx="4" class="c-mask"/>
+          <text x="556" y="88" class="t-messagebus" font-size="8" text-anchor="middle">Cobranza.anular() mismo día</text>
+        </g>
+        <g data-detail="context" data-edge-from="vigente" data-edge-to="anulado" data-edge-label="Credito.anular(): sin cobranzas + puedeAnularCredito" data-edge-key="3">
+          <rect x="268.6" y="191" width="266.8" height="16" rx="4" class="c-mask"/>
+          <text x="402" y="202" class="t-security" font-size="8" text-anchor="middle">Credito.anular(): sin cobranzas + puedeAnularCredito</text>
+        </g>
+
+        <!-- Legend -->
+        <g data-legend="" data-legend-bridge="">
+          <text x="40" y="624" class="t-primary" font-size="12" font-weight="650">Legend</text>
+          <g data-legend-semantic-kind="start" data-legend-kind="start" data-legend-label="Inicio" data-legend-x="40" data-legend-baseline="644" data-legend-width="73">
+            <rect x="40" y="636" width="14" height="9" rx="2" class="c-frontend" stroke-width="1"/>
+            <text x="62" y="644" class="t-muted" font-size="10" font-weight="500">Inicio</text>
+          </g>
+          <g data-legend-semantic-kind="active" data-legend-kind="active" data-legend-label="Estado activo" data-legend-x="135" data-legend-baseline="644" data-legend-width="108">
+            <rect x="135" y="636" width="14" height="9" rx="2" class="c-backend" stroke-width="1"/>
+            <text x="157" y="644" class="t-muted" font-size="10" font-weight="500">Estado activo</text>
+          </g>
+          <g data-legend-semantic-kind="success" data-legend-kind="success" data-legend-label="Cancelado (pagado)" data-legend-x="265" data-legend-baseline="644" data-legend-width="133">
+            <rect x="265" y="636" width="14" height="9" rx="2" class="c-database" stroke-width="1"/>
+            <text x="287" y="644" class="t-muted" font-size="10" font-weight="500">Cancelado (pagado)</text>
+          </g>
+          <g data-legend-semantic-kind="failure" data-legend-kind="failure" data-legend-label="Anulado (final)" data-legend-x="420" data-legend-baseline="644" data-legend-width="118">
+            <rect x="420" y="636" width="14" height="9" rx="2" class="c-security" stroke-width="1"/>
+            <text x="442" y="644" class="t-muted" font-size="10" font-weight="500">Anulado (final)</text>
+          </g>
+        </g>
+      </svg></div><figcaption>Fuente: <code>docs/diagramas/archify/credito-estados.lifecycle.json</code></figcaption></figure>
+      <h3>Creator: el crédito nace con sus cuotas (O6)</h3>
       <p>
-        <code>model/EstadoCredito.java</code>: <code>VIGENTE</code>, <code>CANCELADO</code>, <code>ANULADO</code>. Se
-        calcula, no se persiste: <code>model/Credito.java</code> <code>estado</code> mira el boolean <code>anulado</code>
-        y sus cuotas. El crédito es agregado de sus cuotas (<code>@OneToMany</code> lazy, ordenado por número) y
-        responde <code>saldo</code>, <code>estaCancelado</code>, <code>tieneCobranzas</code> y <code>puedeAnularse</code>
-        (M8).
+        El constructor de <code>model/Credito.java</code> llama a <code>generarPlanDeCuotas</code>, que ahora es privado
+        y salió de <code>model/interfaces/ICredito.java</code>. La relación lleva <code>cascade = CascadeType.PERSIST</code>
+        (JPA guarda las cuotas al guardar el crédito), así que <code>service/impl/CreditoServiceImpl.java</code>
+        <code>crear</code> ya no las guarda aparte. No puede existir un crédito sin plan.
       </p>
+      <h3>Información del dashboard (O7)</h3>
+      <p>
+        <code>service/impl/DashboardServiceImpl.java</code> <code>obtenerEstadisticasGenerales</code> suma
+        <code>Credito.saldo</code> para el saldo pendiente y <code>Cuota.estaVencida</code> para el monto vencido:
+        Information Expert, cada número lo calcula quien tiene el dato. Viajan en
+        <code>dto/response/DashboardStatsResponse.java</code> y se ven en <code>pages/Dashboard.jsx</code>.
+      </p>
+      
       <h3>Strategy de cálculo</h3>
       <div class="table-wrap"><table>
         <thead><tr><th>Rol</th><th>Clase</th></tr></thead>
@@ -620,7 +1317,7 @@ body.lightbox-locked { overflow: hidden; }
           <tr><td>Target</td><td><code>service/TokenService.java</code></td><td><code>UserDetails</code> de Spring Security</td></tr>
           <tr><td>Adapter</td><td><code>security/JwtUtil.java</code></td><td><code>security/UsuarioDetails.java</code></td></tr>
           <tr><td>Adaptee</td><td>librería jjwt</td><td><code>model/interfaces/IUsuario.java</code></td></tr>
-          <tr><td>Client</td><td><code>service/impl/AuthServiceImpl.java</code>, <code>security/JwtAuthFilter.java</code></td><td><code>DaoAuthenticationProvider</code> vía <code>security/UserDetailsServiceImpl.java</code></td></tr>
+          <tr><td>Client</td><td><code>service/impl/AuthServiceImpl.java</code>, <code>security/JwtAuthFilter.java</code></td><td><code>DaoAuthenticationProvider</code> (lo arma Spring solo con los beans <code>UserDetailsService</code> y <code>PasswordEncoder</code>) vía <code>security/UserDetailsServiceImpl.java</code></td></tr>
         </tbody>
       </table></div>
     </section>
@@ -628,16 +1325,19 @@ body.lightbox-locked { overflow: hidden; }
     <section class="doc-section" id="api">
       <h2>API</h2>
       <p>
-        19 endpoints en 7 controllers bajo <code>/api</code>: auth, clientes, créditos, cobranzas, dashboard, admin y
+        20 endpoints en 7 controllers bajo <code>/api</code>: auth, clientes, créditos, cobranzas, dashboard, admin y
         supervisor. Con el backend levantado: Swagger en
         <a href="http://localhost:8080/swagger-ui.html">http://localhost:8080/swagger-ui.html</a> (botón Authorize con el
-        token de <code>/api/auth/login</code>), especificación en <code>/v3/api-docs</code>. Mapa completo
+        token de <code>/api/auth/login</code>), especificación en <code>/v3/api-docs</code>.
+        <code>GET /api/auth/me</code> (<code>controller/AuthController.java</code> <code>me</code>) devuelve el usuario
+        autenticado con su rol y permisos actuales, sin token nuevo; el front lo llama al entrar a cada pantalla
+        (<code>components/PrivateRoute.jsx</code>), así un permiso otorgado se ve sin volver a loguearse. Mapa completo
         (método, ruta, controller, DTO, roles, códigos) en Swagger UI.
       </p>
       <p>
         Códigos: 400 regla de negocio o validación, 401 sin token o credenciales malas, 403 sin rol o permiso, 404 no
         existe, 405 método no soportado (<code>exception/GlobalExceptionHandler.java</code>). Todos los errores salen
-        con <code>dto/response/ErrorResponse.java</code>.
+        con <code>dto/response/ErrorResponse.java</code>; los de validación traen solo el mensaje, sin el nombre del campo.
       </p>
     </section>
 
@@ -645,9 +1345,10 @@ body.lightbox-locked { overflow: hidden; }
       <h2>Seguridad</h2>
       <ul>
         <li><strong>JWT</strong>: login y registro devuelven un token (<code>security/JwtUtil.java</code>, expira en 24 h según <code>jwt.expiration-ms</code>). <code>security/JwtAuthFilter.java</code> lo valida en cada request. Sesión stateless.</li>
-        <li><strong>Roles</strong> (<code>config/SecurityConfig.java</code> <code>filterChain</code>): <code>/api/auth/**</code> y Swagger públicos; <code>/api/admin/**</code> solo ADMIN; <code>/api/supervisor/**</code> solo SUPERVISOR; <code>/api/dashboard/**</code> SUPERVISOR o ADMIN; el resto, cualquier autenticado.</li>
+        <li><strong>Roles</strong> (<code>config/SecurityConfig.java</code> <code>filterChain</code>): <code>/api/auth/**</code> y Swagger públicos, salvo <code>/api/auth/me</code>, que pide token; <code>/api/admin/**</code> solo ADMIN; <code>/api/supervisor/**</code> solo SUPERVISOR; <code>/api/dashboard/**</code> SUPERVISOR o ADMIN; el resto, cualquier autenticado.</li>
         <li><strong>Permisos de anulación</strong> (<code>model/Permisos.java</code>): <code>puedeAnularCredito</code> y <code>puedeAnularCobranza</code>, por usuario. Los aplica el servicio (R15); el front solo oculta botones.</li>
         <li>Sin token → 401 (<code>HttpStatusEntryPoint</code>); con token y sin el rol → 403 (<code>accessDeniedHandler</code>, ambos en <code>config/SecurityConfig.java</code> <code>filterChain</code>); sin permiso de anulación → 403 desde <code>exception/GlobalExceptionHandler.java</code> <code>handleDenied</code>.</li>
+        <li><strong>Doble control de roles</strong>: las zonas de admin y supervisor se chequean en las reglas de URL de <code>config/SecurityConfig.java</code> y otra vez con <code>@PreAuthorize</code> en <code>controller/AdminController.java</code> y <code>controller/SupervisorController.java</code>. Es a propósito (ver "Decisiones de diseño").</li>
         <li>Body mal formado o parámetro de tipo incorrecto → 400 (<code>exception/GlobalExceptionHandler.java</code> <code>handleRequestInvalida</code>).</li>
       </ul>
     </section>
@@ -697,14 +1398,11 @@ SELECT * FROM COBRANZAS WHERE ANULADA = FALSE;  -- cobranzas vigentes</code></pr
     <section class="doc-section" id="verificar">
       <h2>Cómo se verifica</h2>
       <ul>
-        <li><strong>Tests</strong>: <code>cd backend &amp;&amp; mvn test</code>: 26 tests, 0 fallas. 25 tests unitarios de dominio (JUnit 5 + AssertJ, sin Spring) en <code>backend/src/test/java/com/uade/tpejemplo/model/</code>, más <code>contextLoads</code>:
+        <li><strong>Tests</strong>: <code>cd backend &amp;&amp; mvn test</code>: 36 tests, 0 fallas. JUnit 5 (el framework de tests de Java) con AssertJ (aserciones encadenadas legibles):
           <ul>
-            <li><code>CreditoTest</code>: 8</li>
-            <li><code>CuotaTest</code>: 7</li>
-            <li><code>plan/InteresSimpleTest</code>: 4</li>
-            <li><code>plan/SistemaFrancesTest</code>: 4</li>
-            <li><code>CobranzaTest</code>: 2</li>
-            <li><code>TpEjemploApplicationTests</code> (<code>contextLoads</code>): 1</li>
+            <li>27 unitarios de dominio, sin Spring, en <code>backend/src/test/java/com/uade/tpejemplo/model/</code>: <code>CreditoTest</code> 8, <code>CuotaTest</code> 8, <code>plan/InteresSimpleTest</code> 4, <code>plan/SistemaFrancesTest</code> 4, <code>CobranzaTest</code> 3. La fecha de hoy entra por parámetro (<code>model/Cobranza.java</code> <code>anular(LocalDate)</code>, <code>model/Cuota.java</code> <code>estaVencida(LocalDate)</code>), así se prueba el rechazo de anular una cobranza de otro día y el vencimiento sin depender del reloj.</li>
+            <li>8 de códigos HTTP en <code>backend/src/test/java/com/uade/tpejemplo/controller/CodigosHttpTest.java</code>: <code>@WebMvcTest</code> levanta solo la capa web (controllers, <code>SecurityConfig</code>, el filtro JWT y el <code>GlobalExceptionHandler</code>) con los servicios simulados por <code>@MockitoBean</code>. Cubre 400 (DNI de más de 15 caracteres, JSON roto, parámetro de tipo incorrecto), 401 (sin token y token inválido), 403 (rol incorrecto), 404 y 405.</li>
+            <li><code>TpEjemploApplicationTests</code> (<code>contextLoads</code>): 1, levanta la aplicación entera.</li>
           </ul>
         </li>
         <li><strong>Smoke</strong>: backend levantado y probado con curl, caso por caso contra M1..M10 (códigos, cálculo de cuotas, anulaciones, permisos, dashboard): 22 casos OK. El build del front no se probó ahí.</li>
@@ -728,6 +1426,11 @@ SELECT * FROM COBRANZAS WHERE ANULADA = FALSE;  -- cobranzas vigentes</code></pr
           <tr><td>Permisos validados en el servicio con el usuario autenticado (M4)</td><td>En MVC la vista oculta pero el modelo decide. Costo: el servicio queda acoplado a <code>IUsuario</code>.</td></tr>
           <tr><td><code>JwtUtil</code> detrás de <code>TokenService</code> (M7)</td><td>Los clientes de auth dejan de depender de jjwt. Una sola implementación: es frontera con una librería, no polimorfismo.</td></tr>
           <tr><td>Dashboard también para ADMIN (M10)</td><td>Cierra TPO-010. Pendiente confirmar con Regulo.</td></tr>
+          <tr><td>El crédito crea sus cuotas al nacer, con cascade (O6)</td><td>Creator: lo crea quien las contiene. Antes el servicio tenía que acordarse de pedir el plan y guardarlo; un crédito sin plan quedaba VIGENTE con saldo 0 y no se cancelaba nunca.</td></tr>
+          <tr><td>Saldo pendiente y vencido calculados por las entidades (O7)</td><td>Information Expert: el servicio suma lo que responden <code>Credito.saldo</code> y <code>Cuota.estaVencida</code>, no repite la regla en una query.</td></tr>
+          <tr><td>Doble control de roles: reglas de URL en <code>config/SecurityConfig.java</code> y <code>@PreAuthorize</code> en <code>AdminController</code> y <code>SupervisorController</code> (S6, no se unificó)</td><td>Defensa en profundidad: si alguien cambia o agrega una ruta y la regla de URL deja de cubrirla, el método sigue protegido. El costo es declarar el rol en dos lugares.</td></tr>
+          <tr><td>Fecha de hoy por parámetro en <code>Cobranza.anular</code> y <code>Cuota.estaVencida</code></td><td>Alcanza para testear sin inyectar un <code>Clock</code>: la versión sin parámetro delega con <code>LocalDate.now()</code>.</td></tr>
+          <tr><td><code>GET /api/auth/me</code> en vez de refrescar el token</td><td>El token solo lleva el username; rol y permisos se leen de la base en cada request. El front pide <code>/me</code> al cambiar de pantalla y queda al día sin reloguear.</td></tr>
           <tr><td>React + REST como MVC</td><td>MVC separa componentes, no clases: la vista es una pieza aparte y se comunica por DTO.</td></tr>
         </tbody>
       </table></div>
@@ -739,7 +1442,7 @@ SELECT * FROM COBRANZAS WHERE ANULADA = FALSE;  -- cobranzas vigentes</code></pr
         <li><strong>V0</strong> (<code>main@2a90af8</code>): proyecto inicial con docs PlantUML, requerimientos y CU.</li>
         <li><strong>V1</strong> (<code>andrei-iteracion1@86c75cc</code>, 08/09): bad smells; <code>Permisos</code>, <code>Cuota</code> con importe y su cobranza, tasa de interés, panel de supervisor.</li>
         <li><strong>V2</strong> (<code>main@45e228c</code>, tag <code>v2</code>, 15/09): GRASP + interfaces de modelo y de servicio.</li>
-        <li><strong>V3</strong> (este repo, entrega 13/10): MVC + Strategy + Adapter; bugs TPO-001..004, 007, 009, 010 cerrados; tests de dominio; Swagger; UI con formato es-AR y dark theme; casos de uso documentados.</li>
+        <li><strong>V3</strong> (este repo, entrega 13/10): MVC + Strategy + Adapter; bugs TPO-001..004, 007, 009, 010 cerrados; Creator del plan de cuotas y dashboard con saldo y vencido; 36 tests (dominio y códigos HTTP); Swagger; <code>GET /api/auth/me</code>; pantallas de UC06 y UC09; UI con formato es-AR y dark theme; casos de uso documentados.</li>
       </ul>
     </section>
 
@@ -750,13 +1453,12 @@ SELECT * FROM COBRANZAS WHERE ANULADA = FALSE;  -- cobranzas vigentes</code></pr
         <li>TPO-014: el paquete <code>com.uade.tpejemplo</code> y <code>TpEjemploApplication</code> no nombran el sistema.</li>
         <li>TPO-012: smells del frontend, fuera de alcance por decisión.</li>
         <li>Trazabilidad: <code>Cobranza</code> no sabe quién cobró ni quién anuló; <code>Credito</code> no sabe quién lo otorgó.</li>
-        <li>El front ve los permisos y el rol nuevos recién al volver a loguearse; el backend los aplica desde la request siguiente (<code>store/slices/authSlice.js</code>, H4).</li>
         <li>La fecha del crédito es libre: acepta pasado y futuro (<code>dto/request/CreditoRequest.java</code>).</li>
         <li>Interés simple: la suma de cuotas puede diferir del total en centavos.</li>
-        <li>Tests sin cubrir: controllers, seguridad, queries del dashboard, anulación de cobranza de otro día (falta un <code>Clock</code> inyectable).</li>
+        <li>I-1: dos requests simultáneas pueden dejar dos cobranzas vigentes en la misma cuota. Arreglo probado en una copia: <code>@Lock(PESSIMISTIC_WRITE)</code> en <code>repository/CuotaRepository.java</code> <code>buscarPorCreditoYNumero</code> sin el <code>JOIN FETCH</code> de cobranzas. Va al 27/10 con su test.</li>
+        <li>Tests sin cubrir: queries del dashboard (<code>@DataJpaTest</code>) y <code>Permisos</code>.</li>
         <li>Backlog GRASP: <code>TasaInteres</code> como value object.</li>
         <li>Confirmar con Regulo que ADMIN debe ver el dashboard (M10).</li>
-        <li>UC06 y UC09 sin vista en el front.</li>
       </ul>
     </section>
 

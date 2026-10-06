@@ -1,0 +1,245 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Dashboard de préstamos V3: MVC por capas",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1000,
+      640
+    ],
+    "legend": {
+      "entries": {
+        "frontend": {
+          "label": "Vista"
+        },
+        "backend": {
+          "label": "Backend"
+        },
+        "database": {
+          "label": "Datos"
+        },
+        "security": {
+          "label": "Seguridad"
+        }
+      }
+    }
+  },
+  "components": [
+    {
+      "id": "spa",
+      "type": "frontend",
+      "label": "Vista React",
+      "sublabel": "pages/ + store/slices/",
+      "pos": [
+        400,
+        40
+      ],
+      "size": [
+        200,
+        64
+      ],
+      "tag": "api/apiClient.js"
+    },
+    {
+      "id": "filtro",
+      "type": "security",
+      "label": "JwtAuthFilter",
+      "sublabel": "SecurityConfig",
+      "pos": [
+        760,
+        180
+      ],
+      "size": [
+        180,
+        64
+      ]
+    },
+    {
+      "id": "ctrl",
+      "type": "backend",
+      "label": "Controllers",
+      "sublabel": "7 @RestController",
+      "pos": [
+        400,
+        180
+      ],
+      "size": [
+        200,
+        64
+      ]
+    },
+    {
+      "id": "errores",
+      "type": "backend",
+      "label": "GlobalExceptionHandler",
+      "sublabel": "excepción → HTTP",
+      "pos": [
+        60,
+        180
+      ],
+      "size": [
+        200,
+        64
+      ]
+    },
+    {
+      "id": "svc",
+      "type": "backend",
+      "label": "Services",
+      "sublabel": "CreditoService y otros",
+      "pos": [
+        400,
+        320
+      ],
+      "size": [
+        200,
+        64
+      ]
+    },
+    {
+      "id": "token",
+      "type": "security",
+      "label": "TokenService",
+      "sublabel": "Adapter: JwtUtil",
+      "pos": [
+        760,
+        320
+      ],
+      "size": [
+        180,
+        64
+      ]
+    },
+    {
+      "id": "dominio",
+      "type": "backend",
+      "label": "Entidades",
+      "sublabel": "Credito, Cuota, Cobranza",
+      "pos": [
+        400,
+        460
+      ],
+      "size": [
+        200,
+        64
+      ],
+      "tag": "reglas de negocio"
+    },
+    {
+      "id": "plan",
+      "type": "backend",
+      "label": "TipoPlan",
+      "sublabel": "Strategy de cuota",
+      "pos": [
+        60,
+        460
+      ],
+      "size": [
+        200,
+        64
+      ]
+    },
+    {
+      "id": "repo",
+      "type": "database",
+      "label": "Repositories + H2",
+      "sublabel": "Spring Data JPA",
+      "pos": [
+        760,
+        460
+      ],
+      "size": [
+        180,
+        64
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Backend Spring Boot",
+      "wraps": [
+        "filtro",
+        "ctrl",
+        "errores",
+        "svc",
+        "token",
+        "dominio",
+        "plan",
+        "repo"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "http",
+      "from": "spa",
+      "to": "ctrl",
+      "label": "HTTP + JSON (DTO)",
+      "variant": "emphasis",
+      "labelAt": [
+        500,
+        140
+      ]
+    },
+    {
+      "id": "auth",
+      "from": "filtro",
+      "to": "ctrl",
+      "label": "request autenticada",
+      "variant": "security"
+    },
+    {
+      "id": "err",
+      "from": "ctrl",
+      "to": "errores",
+      "label": "excepciones",
+      "variant": "dashed"
+    },
+    {
+      "id": "casos",
+      "from": "ctrl",
+      "to": "svc",
+      "label": "casos de uso",
+      "labelAt": [
+        500,
+        280
+      ]
+    },
+    {
+      "id": "valida",
+      "from": "filtro",
+      "to": "token",
+      "label": "valida token",
+      "variant": "security",
+      "labelAt": [
+        850,
+        280
+      ]
+    },
+    {
+      "id": "reglas",
+      "from": "svc",
+      "to": "dominio",
+      "label": "delega reglas",
+      "variant": "emphasis",
+      "labelAt": [
+        500,
+        420
+      ]
+    },
+    {
+      "id": "calc",
+      "from": "dominio",
+      "to": "plan",
+      "label": "calcula cuota"
+    },
+    {
+      "id": "persist",
+      "from": "svc",
+      "to": "repo",
+      "label": "persiste"
+    }
+  ]
+}

@@ -20,6 +20,7 @@ package "Controlador" {
   class AuthController <<RestController>> {
     + register(RegisterRequest) : AuthResponse
     + login(LoginRequest) : AuthResponse
+    + me(UserDetails) : AuthResponse
   }
   class ClienteController <<RestController>> {
     + crear(ClienteRequest) : ClienteResponse
@@ -29,6 +30,7 @@ package "Controlador" {
   class CreditoController <<RestController>> {
     + crear(CreditoRequest) : CreditoResponse
     + buscarPorId(Long) : CreditoResponse
+    + listarTodos() : List<CreditoResponse>
     + listarPorCliente(String) : List<CreditoResponse>
     + anularCredito(Long, UsuarioDetails) : void
   }
@@ -56,6 +58,7 @@ package "Modelo" {
     interface AuthService {
       + registrar(RegisterRequest) : AuthResponse
       + login(LoginRequest) : AuthResponse
+      + actual(String) : AuthResponse
     }
     interface ClienteService {
       + crear(ClienteRequest) : ClienteResponse
@@ -65,6 +68,7 @@ package "Modelo" {
     interface CreditoService {
       + crear(CreditoRequest) : CreditoResponse
       + buscarPorId(Long) : CreditoResponse
+      + listarTodos() : List<CreditoResponse>
       + listarPorCliente(String) : List<CreditoResponse>
       + anularCredito(Long, IUsuario) : void
     }
@@ -157,7 +161,7 @@ CreditoServiceImpl ..> Credito : crea / anula
 CobranzaServiceImpl ..> Cuota : registrarCobranza
 CobranzaServiceImpl ..> Cobranza : anula
 AdminServiceImpl ..> Usuario : permisos / rol
-DashboardServiceImpl ..> Credito : estadísticas
+DashboardServiceImpl ..> Credito : saldo() y cuotas vencidas
 
 TokenService <|.. JwtUtil
 JwtUtil ..> Jwts : delega
@@ -192,7 +196,6 @@ package "model.interfaces" {
   }
   interface ICredito {
     + totalADevolver() : BigDecimal
-    + generarPlanDeCuotas() : List<ICuota>
     + estado() : EstadoCredito
     + saldo() : BigDecimal
     + estaCancelado() : boolean
@@ -203,6 +206,7 @@ package "model.interfaces" {
   interface ICuota {
     + estaPagada() : boolean
     + estaVencida() : boolean
+    + estaVencida(LocalDate) : boolean
     + registrarCobranza(BigDecimal) : ICobranza
   }
   interface ICobranza {
@@ -216,8 +220,8 @@ package "model.interfaces" {
     + asignarRol(Rol) : void
   }
   interface IPermisos {
-    + permiteAnularCredito() : boolean
-    + permiteAnularCobranza() : boolean
+    + isPuedeAnularCredito() : boolean
+    + isPuedeAnularCobranza() : boolean
   }
   interface IRol {
     + autoridad() : String
@@ -244,7 +248,7 @@ package "model" {
     - anulado : boolean
     + {static} nuevo(Cliente, BigDecimal, LocalDate, BigDecimal, Integer, TipoPlan) : Credito
     + totalADevolver() : BigDecimal
-    + generarPlanDeCuotas() : List<Cuota>
+    - generarPlanDeCuotas() : void
     + estado() : EstadoCredito
     + saldo() : BigDecimal
     + estaCancelado() : boolean
@@ -259,6 +263,7 @@ package "model" {
     - fechaVencimiento : LocalDate
     + estaPagada() : boolean
     + estaVencida() : boolean
+    + estaVencida(LocalDate) : boolean
     + registrarCobranza(BigDecimal) : Cobranza
   }
   class Cobranza {
@@ -267,6 +272,7 @@ package "model" {
     - fechaCobranza : LocalDate
     - anulada : boolean
     + anular() : void
+    + anular(LocalDate) : void
   }
   class Usuario {
     - id : Long
@@ -282,8 +288,6 @@ package "model" {
     + {static} de(boolean, boolean) : Permisos
     + {static} ninguno() : Permisos
     + {static} todos() : Permisos
-    + permiteAnularCredito() : boolean
-    + permiteAnularCobranza() : boolean
   }
   enum Rol {
     ADMIN
@@ -324,7 +328,7 @@ CalculoDeCuota <|.. InteresSimple
 CalculoDeCuota <|.. SistemaFrances
 
 Credito "0..*" --> "1" Cliente : cliente
-Credito "1" *-- "1..*" Cuota : cuotas
+Credito "1" *-- "1..*" Cuota : cuotas\n(Creator, cascade PERSIST)
 Cuota "1" *-- "0..*" Cobranza : cobranzas
 Credito --> "1" TipoPlan : tipoPlan
 TipoPlan --> "1" CalculoDeCuota : calculo

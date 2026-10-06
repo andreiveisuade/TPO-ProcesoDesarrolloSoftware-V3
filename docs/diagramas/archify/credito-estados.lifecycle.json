@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "diagram_type": "lifecycle",
+  "meta": {
+    "title": "Estados del crédito",
+    "viewBox": [
+      980,
+      680
+    ],
+    "quality_profile": "showcase",
+    "legend": {
+      "entries": {
+        "start": {
+          "label": "Inicio"
+        },
+        "active": {
+          "label": "Estado activo"
+        },
+        "success": {
+          "label": "Cancelado (pagado)"
+        },
+        "failure": {
+          "label": "Anulado (final)"
+        }
+      }
+    }
+  },
+  "lanes": [
+    {
+      "id": "main",
+      "label": "Estado derivado: Credito.estado()"
+    },
+    {
+      "id": "reglas",
+      "label": "Reglas de transición"
+    },
+    {
+      "id": "terminal",
+      "label": "Anulación (único campo guardado: anulado)"
+    }
+  ],
+  "states": [
+    {
+      "id": "otorgado",
+      "type": "start",
+      "label": "Otorgado",
+      "sublabel": "Credito.nuevo()",
+      "lane": "main",
+      "col": 0
+    },
+    {
+      "id": "vigente",
+      "type": "active",
+      "label": "VIGENTE",
+      "sublabel": "quedan cuotas impagas",
+      "lane": "main",
+      "col": 2
+    },
+    {
+      "id": "cancelado",
+      "type": "success",
+      "label": "CANCELADO",
+      "sublabel": "todas las cuotas pagadas",
+      "lane": "main",
+      "col": 4
+    },
+    {
+      "id": "anulado",
+      "type": "failure",
+      "label": "ANULADO",
+      "sublabel": "model/Credito.java",
+      "lane": "terminal",
+      "col": 0
+    }
+  ],
+  "transitions": [
+    {
+      "from": "otorgado",
+      "to": "vigente",
+      "label": "genera cuotas"
+    },
+    {
+      "from": "vigente",
+      "to": "cancelado",
+      "label": "Cuota.registrarCobranza() última",
+      "variant": "emphasis"
+    },
+    {
+      "from": "cancelado",
+      "to": "vigente",
+      "label": "Cobranza.anular() mismo día",
+      "variant": "dashed",
+      "route": "top-channel"
+    },
+    {
+      "from": "vigente",
+      "to": "anulado",
+      "label": "Credito.anular(): sin cobranzas + puedeAnularCredito",
+      "variant": "security",
+      "route": "straight",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelDy": 24
+    }
+  ]
+}

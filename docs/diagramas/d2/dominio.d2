@@ -1,0 +1,12 @@
+...@_estilo
+direction: down
+Cliente: "Cliente\ndni, nombre" {class: cl}
+Credito: "Credito\nestado(), saldo(), anular()" {class: rol}
+Cuota: "Cuota\nestaPagada(), estaVencida()" {class: cl}
+Cobranza: "Cobranza\nanular(hoy)" {class: cl}
+Usuario: "Usuario\nrol: Rol" {class: cl}
+Permisos: "Permisos «Embeddable»\npuedeAnularCredito\npuedeAnularCobranza" {class: cl}
+Credito -> Cliente: "cliente  0..* → 1"
+Credito <- Cuota: "1 ◆ 1..*  (Creator, cascade)" {source-arrowhead.shape: diamond; source-arrowhead.style.filled: true}
+Cuota <- Cobranza: "1 ◆ 0..*  (a lo sumo 1 vigente)" {source-arrowhead.shape: diamond; source-arrowhead.style.filled: true}
+Usuario <- Permisos: "1 ◆ 1" {source-arrowhead.shape: diamond; source-arrowhead.style.filled: true}

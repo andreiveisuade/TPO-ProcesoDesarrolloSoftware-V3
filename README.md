@@ -15,7 +15,7 @@ cd frontend && npm install && npm run dev      # proxy /api → :8080
 
 Usuarios de prueba (password = usuario): `admin`, `supervisor`, `user`.
 
-Tests: `cd backend && mvn test` (26 tests).
+Tests: `cd backend && mvn test` (36 tests: 27 de dominio, 8 de códigos HTTP y el de contexto).
 
 ## Documentación
 
@@ -25,5 +25,6 @@ Tests: `cd backend && mvn test` (26 tests).
 - [Consola H2](http://localhost:8080/h2-console): JDBC URL `jdbc:h2:mem:tpdb`, usuario `sa`, sin password (ver el manual, "Cómo levantarlo")
 - [Lista de mejoras](docs/entrega/lista-mejoras.md)
 - [Casos de uso](docs/casos-de-uso/README.md)
+- [Diagrama de clases](docs/diagramas/clases-v3-general.svg) y [DER](docs/diagramas/der-v3.svg)
 - Demo guiada: `bash docs/demo.sh`
 - [Backlog](docs/backlog.md)
