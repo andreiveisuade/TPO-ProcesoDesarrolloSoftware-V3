@@ -6,7 +6,6 @@ export default function Creditos() {
   const dispatch = useDispatch();
   
   const { user } = useSelector((state) => state.auth);
-  console.log("Usuario actual en Redux:", user);
   const { lista, loading, error } = useSelector((state) => state.creditos);
   
   const [dni, setDni] = useState('');
