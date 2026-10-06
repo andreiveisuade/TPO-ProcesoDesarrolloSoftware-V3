@@ -7,6 +7,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import com.uade.tpejemplo.model.TipoPlan;
+import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -16,10 +18,12 @@ import java.time.LocalDate;
 public class CreditoRequest {
 
     @NotBlank(message = "El DNI del cliente es obligatorio")
+    @Size(max = 15, message = "El DNI admite hasta 15 caracteres")
     private String dniCliente;
 
     @NotNull(message = "La deuda original es obligatoria")
     @Positive(message = "La deuda original debe ser mayor a cero")
+    @Digits(integer = 8, fraction = 2, message = "La deuda admite hasta 8 enteros y 2 decimales")
     private BigDecimal deudaOriginal;
 
     @NotNull(message = "La fecha es obligatoria")
@@ -29,6 +33,7 @@ public class CreditoRequest {
     @NotNull(message = "La tasa de interes es obligatoria")
     @DecimalMin(value = "0", message = "La tasa de interes no puede ser negativa")
     @DecimalMax(value = "999.99", message = "La tasa de interes es demasiado alta")
+    @Digits(integer = 3, fraction = 2, message = "La tasa admite hasta 2 decimales")
     private BigDecimal tasaInteres;
 
     @NotNull(message = "La cantidad de cuotas es obligatoria")
