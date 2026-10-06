@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import com.uade.tpejemplo.dto.request.PermisosRequest;
 import com.uade.tpejemplo.dto.response.UsuarioResponse;
 import com.uade.tpejemplo.service.AdminService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
@@ -24,7 +25,7 @@ public class SupervisorController {
     }
 
     @PutMapping("/usuarios/{id}/permisos-anulacion")
-    public UsuarioResponse actualizarPermisosAnulacion(@PathVariable Long id, @RequestBody PermisosRequest request) {
+    public UsuarioResponse actualizarPermisosAnulacion(@PathVariable Long id, @Valid @RequestBody PermisosRequest request) {
         return adminService.actualizarPermisos(id, request);
     }
 }

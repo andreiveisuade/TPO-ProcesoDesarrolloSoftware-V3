@@ -7,6 +7,7 @@ import com.uade.tpejemplo.dto.request.PermisosRequest;
 import com.uade.tpejemplo.dto.request.RolRequest;
 import com.uade.tpejemplo.dto.response.UsuarioResponse;
 import com.uade.tpejemplo.service.AdminService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
@@ -25,12 +26,12 @@ public class AdminController {
     }
 
     @PutMapping("/usuarios/{id}/permisos")
-    public UsuarioResponse actualizarPermisos(@PathVariable Long id, @RequestBody PermisosRequest request) {
+    public UsuarioResponse actualizarPermisos(@PathVariable Long id, @Valid @RequestBody PermisosRequest request) {
         return adminService.actualizarPermisos(id, request);
     }
 
     @PutMapping("/usuarios/{id}/rol")
-    public UsuarioResponse actualizarRol(@PathVariable Long id, @RequestBody RolRequest request) {
+    public UsuarioResponse actualizarRol(@PathVariable Long id, @Valid @RequestBody RolRequest request) {
         return adminService.actualizarRol(id, request);
     }
 }
