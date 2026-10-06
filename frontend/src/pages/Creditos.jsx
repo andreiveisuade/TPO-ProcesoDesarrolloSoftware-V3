@@ -1,4 +1,5 @@
 import { formatMoneda, formatFecha } from '../utils/formato';
+import Aviso from '../components/Aviso';
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchCreditosPorCliente, addCredito, clearCreditos, anularCreditoThunk } from '../store/slices/creditosSlice';
@@ -12,13 +13,21 @@ export default function Creditos() {
   
   const [dni, setDni] = useState('');
   const [buscado, setBuscado] = useState(false);
+  const [errorBusqueda, setErrorBusqueda] = useState(null);
+  const [exito, setExito] = useState(null);
   const [form, setForm] = useState({ dniCliente:'', deudaOriginal:'', fecha:'', tasaInteres:'', cantidadCuotas:'', tipoPlan:'INTERES_SIMPLE' });
 
   const buscar = async (e) => {
     e.preventDefault();
     dispatch(clearCreditos());
-    const result = await dispatch(fetchCreditosPorCliente(dni));
-    if (result.meta.requestStatus === 'fulfilled') setBuscado(true);
+    setErrorBusqueda(null);
+    try {
+      await dispatch(fetchCreditosPorCliente(dni)).unwrap();
+      setBuscado(true);
+    } catch (err) {
+      setBuscado(false);
+      setErrorBusqueda(err);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -29,8 +38,10 @@ export default function Creditos() {
       tasaInteres: Number(form.tasaInteres),
       cantidadCuotas: Number(form.cantidadCuotas),
     };
+    setExito(null);
     const result = await dispatch(addCredito(payload));
     if (result.meta.requestStatus === 'fulfilled') {
+      setExito(`Crédito #${result.payload.id} creado para el DNI ${form.dniCliente}.`);
       setForm({ dniCliente:'', deudaOriginal:'', fecha:'', tasaInteres:'', cantidadCuotas:'', tipoPlan:'INTERES_SIMPLE' });
       if (form.dniCliente === dni) dispatch(fetchCreditosPorCliente(dni));
     }
@@ -65,11 +76,13 @@ export default function Creditos() {
           />
           <button style={styles.btn}>Buscar</button>
         </form>
+        {errorBusqueda && <div style={{ marginTop: '12px' }}><Aviso>{errorBusqueda}</Aviso></div>}
       </div>
 
       <div style={styles.card}>
         <h3>Nuevo crédito</h3>
-        {error && <div style={styles.error}>{error}</div>}
+        <Aviso>{error}</Aviso>
+        <Aviso tipo="exito">{exito}</Aviso>
         <form onSubmit={handleSubmit} style={styles.grid}>
           <input style={styles.input} placeholder="DNI cliente" value={form.dniCliente} onChange={e => setForm({...form, dniCliente: e.target.value})} required />
           <input style={styles.input} placeholder="Deuda original" value={form.deudaOriginal} onChange={e => setForm({...form, deudaOriginal: e.target.value})} type="number" required />
@@ -156,7 +169,6 @@ const styles = {
   input:        { padding:'10px', border:'1px solid var(--color-border-strong)', borderRadius:'6px', width:'100%', boxSizing:'border-box' },
   btn:          { padding:'10px 20px', backgroundColor:'var(--color-primary)', color:'var(--color-on-primary)', border:'none', borderRadius:'6px', cursor:'pointer', fontWeight:'bold' },
   btnAnular:    { background: 'var(--color-danger-solid)', color: 'var(--color-on-primary)', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', marginBottom: '10px', fontSize: '0.85em' },
-  error:        { background:'var(--color-danger-bg)', color:'var(--color-danger)', padding:'10px', borderRadius:'6px', marginBottom:'12px', fontSize:'0.9rem' },
   empty:        { color:'var(--color-text-muted)', fontStyle: 'italic' },
   creditoBox:   { borderLeft:'4px solid var(--color-primary)', paddingLeft:'16px', marginBottom:'20px', paddingBottom: '15px', borderBottom: '1px solid var(--color-border)' },
   table:        { width:'100%', borderCollapse:'collapse', marginTop:'8px', fontSize: '0.9em' },

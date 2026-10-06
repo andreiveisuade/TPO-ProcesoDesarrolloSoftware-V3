@@ -39,9 +39,9 @@ const creditosSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchCreditosPorCliente.pending,   (state) => { state.loading = true;  state.error = null; })
+      .addCase(fetchCreditosPorCliente.pending,   (state) => { state.loading = true; })
       .addCase(fetchCreditosPorCliente.fulfilled, (state, action) => { state.loading = false; state.lista = action.payload; })
-      .addCase(fetchCreditosPorCliente.rejected,  (state, action) => { state.loading = false; state.error = action.payload; })
+      .addCase(fetchCreditosPorCliente.rejected,  (state) => { state.loading = false; })
       
       .addCase(addCredito.pending,                (state) => { state.loading = true;  state.error = null; })
       .addCase(addCredito.fulfilled,              (state, action) => { state.loading = false; state.lista.push(action.payload); })

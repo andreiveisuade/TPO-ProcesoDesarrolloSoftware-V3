@@ -1,4 +1,5 @@
 import { formatMoneda, formatFecha } from '../utils/formato';
+import Aviso from '../components/Aviso';
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchCobranzasPorCredito, addCobranza, clearCobranzas, anularCobranzaThunk } from '../store/slices/cobranzasSlice';
@@ -11,20 +12,30 @@ export default function Cobranzas() {
   
   const [idCredito, setIdCredito] = useState('');
   const [buscado, setBuscado]     = useState(false);
+  const [errorBusqueda, setErrorBusqueda] = useState(null);
+  const [exito, setExito]         = useState(null);
   const [form, setForm]           = useState({ idCredito:'', numeroCuota:'', importe:'' });
 
   const buscar = async (e) => {
     e.preventDefault();
     dispatch(clearCobranzas());
-    const result = await dispatch(fetchCobranzasPorCredito(idCredito));
-    if (result.meta.requestStatus === 'fulfilled') setBuscado(true);
+    setErrorBusqueda(null);
+    try {
+      await dispatch(fetchCobranzasPorCredito(idCredito)).unwrap();
+      setBuscado(true);
+    } catch (err) {
+      setBuscado(false);
+      setErrorBusqueda(err);
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const payload = { idCredito: Number(form.idCredito), numeroCuota: Number(form.numeroCuota), importe: Number(form.importe) };
+    setExito(null);
     const result = await dispatch(addCobranza(payload));
     if (result.meta.requestStatus === 'fulfilled') {
+      setExito(`Cobranza #${result.payload.id} registrada: cuota ${form.numeroCuota} del crédito #${form.idCredito}.`);
       setForm({ idCredito:'', numeroCuota:'', importe:'' });
       if (String(form.idCredito) === idCredito) dispatch(fetchCobranzasPorCredito(idCredito));
     }
@@ -52,11 +63,13 @@ export default function Cobranzas() {
           <input style={styles.input} placeholder="ID del crédito" type="number" value={idCredito} onChange={e => setIdCredito(e.target.value)} required />
           <button style={styles.btn}>Buscar</button>
         </form>
+        {errorBusqueda && <div style={{ marginTop: '12px' }}><Aviso>{errorBusqueda}</Aviso></div>}
       </div>
 
       <div style={styles.card}>
         <h3>Registrar pago de cuota</h3>
-        {error && <div style={styles.error}>{error}</div>}
+        <Aviso>{error}</Aviso>
+        <Aviso tipo="exito">{exito}</Aviso>
         <form onSubmit={handleSubmit} style={styles.row}>
           <input style={styles.input} placeholder="ID crédito" type="number" value={form.idCredito} onChange={e => setForm({...form, idCredito: e.target.value})} required />
           <input style={styles.input} placeholder="Nro. cuota"  type="number" min="1" value={form.numeroCuota}   onChange={e => setForm({...form, numeroCuota: e.target.value})}   required />
@@ -119,7 +132,6 @@ const styles = {
   row:   { display:'flex', gap:'12px', flexWrap:'wrap' },
   input: { padding:'10px', border:'1px solid var(--color-border-strong)', borderRadius:'6px', flex:'1', minWidth:'120px' },
   btn:   { padding:'10px 20px', backgroundColor:'var(--color-primary)', color:'var(--color-on-primary)', border:'none', borderRadius:'6px', cursor:'pointer', fontWeight:'bold' },
-  error: { background:'var(--color-danger-bg)', color:'var(--color-danger)', padding:'10px', borderRadius:'6px', marginBottom:'12px', fontSize:'0.9rem' },
   empty: { color:'var(--color-text-muted)', fontStyle: 'italic' },
   table: { width:'100%', borderCollapse:'collapse', textAlign: 'left', marginTop: '10px' },
   th:    { padding: '12px 8px', color: 'var(--color-text-muted)' },
