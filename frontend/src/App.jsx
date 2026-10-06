@@ -26,7 +26,7 @@ export default function App() {
         <Route path="/estadisticas" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
         <Route path="/admin/roles" element={<RoleRoute roles={[ROLES.ADMIN]}><PanelAdmin /></RoleRoute>} />
         <Route path="/supervisor/permisos-anulacion" element={<RoleRoute roles={[ROLES.SUPERVISOR]}><GestorPermisos /></RoleRoute>} />
-        <Route path="*"          element={<Navigate to="/login" replace />} />
+        <Route path="*"          element={<PrivateRoute><Navigate to="/clientes" replace /></PrivateRoute>} />
       </Routes>
     </BrowserRouter>
   );
