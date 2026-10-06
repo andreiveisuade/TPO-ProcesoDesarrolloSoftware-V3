@@ -24,7 +24,7 @@ const Dashboard = () => {
 
   return (
     <div style={styles.container}>
-      <h2>
+      <h2 style={styles.title}>
         Panel de Estadísticas 
         <span style={styles.supervisorBadge}>(Modo {user?.rol === 'ADMIN' ? 'Admin' : 'Supervisor'})</span>
       </h2>
@@ -52,14 +52,8 @@ const Dashboard = () => {
 };
 
 const styles = {
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    padding: '40px',
-    backgroundColor: 'var(--color-bg)',
-    minHeight: '100vh',
-  },
+  container: { padding:'32px', maxWidth:'900px', margin:'0 auto' },
+  title:     { color:'var(--color-heading)', marginBottom:'24px', borderBottom: '2px solid var(--color-border)', paddingBottom: '10px' },
   center: {
     display: 'flex',
     justifyContent: 'center',
