@@ -58,6 +58,12 @@ public class AuthServiceImpl implements AuthService {
         return AuthResponse.desde(tokenService.generarToken(usuario.getUsername()), usuario);
     }
 
+    // Sin token nuevo: el front conserva el que ya tiene y solo refresca rol y permisos.
+    @Override
+    public AuthResponse actual(String username) {
+        return AuthResponse.desde(null, buscar(username));
+    }
+
     private Usuario buscar(String username) {
         return usuarioRepository.findByUsername(username)
             .orElseThrow(() -> new ResourceNotFoundException("Usuario", "username", username));
