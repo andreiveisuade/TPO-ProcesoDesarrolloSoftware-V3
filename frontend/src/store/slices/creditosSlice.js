@@ -35,7 +35,6 @@ const creditosSlice = createSlice({
   },
   reducers: {
     clearCreditos(state) { state.lista = []; },
-    clearError(state)    { state.error = null; },
   },
   extraReducers: (builder) => {
     builder
@@ -53,5 +52,5 @@ const creditosSlice = createSlice({
   },
 });
 
-export const { clearCreditos, clearError } = creditosSlice.actions;
+export const { clearCreditos } = creditosSlice.actions;
 export default creditosSlice.reducer;

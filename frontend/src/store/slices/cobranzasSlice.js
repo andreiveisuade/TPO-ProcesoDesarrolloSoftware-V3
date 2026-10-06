@@ -35,7 +35,6 @@ const cobranzasSlice = createSlice({
   },
   reducers: {
     clearCobranzas(state) { state.lista = []; },
-    clearError(state)     { state.error = null; },
   },
   extraReducers: (builder) => {
     builder
@@ -62,5 +61,5 @@ const cobranzasSlice = createSlice({
   },
 });
 
-export const { clearCobranzas, clearError } = cobranzasSlice.actions;
+export const { clearCobranzas } = cobranzasSlice.actions;
 export default cobranzasSlice.reducer;
