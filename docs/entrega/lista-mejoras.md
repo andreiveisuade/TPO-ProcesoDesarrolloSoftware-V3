@@ -6,8 +6,30 @@ Rutas Java relativas a `backend/src/main/java/com/uade/tpejemplo/`. Reporte comp
 
 | ID | Qué | Clase y método | Patrón / concepto |
 |---|---|---|---|
-| M9 | Cálculo de cuota intercambiable: interés simple y sistema francés | `model/interfaces/CalculoDeCuota.java`; `model/plan/InteresSimple.java`, `model/plan/SistemaFrances.java`; `model/TipoPlan.java`; `model/Credito.java` (constructor, `totalADevolver`) | **Strategy** (+ OCP, Polymorphism) |
-| M7 | Target `TokenService`, Adapter `JwtUtil`, Adaptee jjwt (librería que no controlamos); además `UsuarioDetails` adapta `IUsuario` a `UserDetails` | `service/TokenService.java`; `security/JwtUtil.java`; clientes `security/JwtAuthFilter.java`, `service/impl/AuthServiceImpl.java`; `security/UsuarioDetails.java` | **Adapter** (+ DIP, Protected Variations) |
+| M9 | Cálculo de cuota intercambiable: interés simple y sistema francés. Context `Credito` con referencia a la Strategy (`calculo()`); elige quien otorga (`TipoPlan`); sin `setEstrategia` (cambiaría cuotas emitidas). Revierte el descarte del 15/09: Strategy necesita dos algoritmos reales | `model/interfaces/CalculoDeCuota.java`; `model/plan/InteresSimple.java`, `model/plan/SistemaFrances.java`; `model/TipoPlan.java`; `model/Credito.java` (constructor, `calculo`, `totalADevolver`) | **Strategy** (+ OCP, Polymorphism) |
+| M7 | `UsuarioDetails` adapta `IUsuario` a `UserDetails` (ejemplo de manual). Target `TokenService`, Adapter `JwtUtil` que contiene `SecretKey` y `JwtParser` de jjwt como campos `final` (Object Adapter) | `service/TokenService.java`; `security/JwtUtil.java`; clientes `security/JwtAuthFilter.java`, `service/impl/AuthServiceImpl.java`; `security/UsuarioDetails.java` | **Adapter** (+ DIP, Protected Variations) |
+
+## Convenciones: excepciones a propósito
+
+| Clase | Excepción | Motivo |
+|---|---|---|
+| `model/EstadoCredito.java` | sin `IEstadoCredito` | Enum de valores sin comportamiento |
+| `model/TipoPlan.java` | sin `ITipoPlan` | Enum registro de estrategias |
+| `model/interfaces/CalculoDeCuota.java` | sin prefijo `I` | Interfaz Strategy: nombre de rol |
+| `service/TokenService.java` → `security/JwtUtil.java` | no es `TokenServiceImpl` | Es el Adapter; infraestructura, no caso de uso |
+| `model/interfaces/IRol.java` | sin consumidor | Existe por la convención (ISP parcial) |
+
+## Evolución del sistema (Problema → Solución → Buena práctica)
+
+| Mejora | Problema | Solución | Buena práctica |
+|---|---|---|---|
+| Swagger | No había contrato de la API | `config/OpenApiConfig.java`, `/swagger-ui.html`, 20 operaciones | MVC: contrato vista-controlador |
+| Perfiles dev/prod y CORS | Consola H2 sin login, una sola config | `application-dev.properties`, `application-prod.properties`, `config/SecurityConfig.java` `corsConfigurationSource` | Configuración externalizada |
+| UI | Importes, fechas y errores crudos; sin avisos | `frontend/src/utils/formato.js`, `frontend/src/components/Aviso.jsx`, `frontend/src/pages/Creditos.jsx` | MVC: la vista solo presenta |
+| Dark theme | Colores a mano en cada `.jsx` | Variables CSS en `frontend/src/index.css` | Protected Variations (estilo) |
+| Casos de uso | UC06/UC09 sin pantalla; permisos viejos hasta reloguear | `frontend/src/pages/Clientes.jsx`, `Creditos.jsx`; `GET /api/auth/me` | MVC: el modelo es la autoridad |
+| Tests | Cero tests en V2 | 37 tests (dominio, HTTP, concurrencia) | Testeabilidad |
+| Limpieza | Javadoc ruidoso, basura en el zip | Comentarios por patrón, `.gitattributes` | Bad smell: comentarios |
 
 ## Hechos
 

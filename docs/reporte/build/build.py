@@ -65,10 +65,11 @@ def diagramas(key, tit_a="Antes (V2)", tit_d="Después (V3)", solo_antes=False):
     return out + '</div>'
 
 
-def bloque(id_, titulo, patron, problema, antes, solucion, despues, por_que, consecuencias, ref="", extra="", diag=None):
+def bloque(id_, titulo, patron, problema, antes, solucion, despues, por_que, consecuencias, ref="", extra="", diag=None, intro=""):
     return f'''<article class="mejora" id="{id_}">
 <h3>{titulo} <span class="badge impl">implementada</span></h3>
 {('<p class="ref">' + ref + '</p>') if ref else ''}
+{intro}
 <dl class="estructura">
 <dt>Patrón</dt><dd>{patron}</dd>
 <dt>Problema (código antes)</dt><dd><p>{problema}</p>{antes}</dd>
@@ -159,63 +160,61 @@ m6 = bloque("m6", "M6. Cuota.estaVencida()",
     "Archivos: <code>model/Cuota.java</code>, <code>model/interfaces/ICuota.java</code>, <code>dto/response/CuotaResponse.java</code>, <code>frontend/src/pages/Creditos.jsx</code>.")
 
 # ---- M7 Adapter (foco) ----
-roles7 = '''<table><thead><tr><th>Rol (apunte clase 10)</th><th>Adapter 1: tokens (nuevo en V3)</th><th>Adapter 2: usuario (desde V1)</th></tr></thead><tbody>
-<tr><td><strong>Cliente</strong>: solo conoce el Target</td><td><code>service/impl/AuthServiceImpl.java</code> (login y registro) y <code>security/JwtAuthFilter.java</code> (cada request)</td><td><code>DaoAuthenticationProvider</code> de Spring Security, vía <code>security/UserDetailsServiceImpl.java</code></td></tr>
-<tr><td><strong>Target</strong>: la interfaz que el cliente espera</td><td><code>service/TokenService.java</code> (propia: <code>generarToken</code>, <code>extraerUsername</code>, <code>esValido</code>)</td><td><code>UserDetails</code> (de Spring Security, no la controlamos)</td></tr>
-<tr><td><strong>Adapter</strong>: implementa el Target y contiene al Adaptado</td><td><code>security/JwtUtil.java implements TokenService</code></td><td><code>security/UsuarioDetails.java implements UserDetails</code></td></tr>
-<tr><td><strong>Adaptado</strong>: lo existente que no se toca</td><td>la librería jjwt (<code>Jwts.builder()</code>, <code>Jwts.parser()</code>, <code>Claims</code>, <code>Keys</code>, <code>JwtException</code>)</td><td><code>model/interfaces/IUsuario.java</code> / <code>model/Usuario.java</code></td></tr>
-</tbody></table>'''
+roles7 = """<table><thead><tr><th>Rol (slide 26/28, clase 10)</th><th>Adapter 1: UsuarioDetails (desde V1)</th><th>Adapter 2: JwtUtil (V3)</th></tr></thead><tbody>
+<tr><td><strong>Client</strong>: solo conoce el Target</td><td>Spring Security (<code>DaoAuthenticationProvider</code>, vía <code>security/UserDetailsServiceImpl.java</code>)</td><td><code>service/impl/AuthServiceImpl.java</code>, <code>security/JwtAuthFilter.java</code></td></tr>
+<tr><td><strong>Target</strong>: la interfaz que el cliente espera</td><td><code>UserDetails</code> (de Spring, no se toca)</td><td><code>service/TokenService.java</code> (propia)</td></tr>
+<tr><td><strong>Adapter</strong>: implementa el Target y <strong>contiene</strong> al Adaptee</td><td><code>security/UsuarioDetails.java</code>: <code>private final IUsuario usuario</code></td><td><code>security/JwtUtil.java</code>: <code>private final SecretKey key</code>, <code>private final JwtParser parser</code></td></tr>
+<tr><td><strong>Adaptee</strong>: lo existente con otra interfaz</td><td><code>model/interfaces/IUsuario.java</code></td><td>jjwt: <code>JwtParser</code> y <code>SecretKey</code>, armados una vez en el constructor</td></tr>
+</tbody></table>"""
 
-extra7 = f'''<h4 style="margin-top:22px">Roles</h4>{roles7}
-<p>Variante: <strong>Object Adapter</strong> (por composición). <code>UsuarioDetails</code> guarda un <code>IUsuario</code> en un campo y <code>JwtUtil</code> delega en la API de jjwt. El Class Adapter necesita herencia múltiple y en Java no se puede.</p>
+extra7 = f"""<h4 style="margin-top:22px">Roles</h4>{roles7}
+<ul>
+<li><strong>Object Adapter</strong> (composición 1 a 1): en Java es el único viable (slide 27).</li>
+<li><code>UsuarioDetails</code> es el <strong>ejemplo de manual</strong>: calca el <code>AdapterPagosExternos</code> de la slide 28. Traduce <code>getRol().autoridad()</code> → <code>GrantedAuthority</code>.</li>
+<li><code>JwtUtil</code> <strong>contiene</strong> al Adaptee: <code>SecretKey</code> y <code>JwtParser</code> como campos <code>final</code> (<code>2ef8410</code>). Antes rearmaba la clave y el parser en cada llamada: era un wrapper de estáticos, no un Object Adapter.</li>
+</ul>
+<h4>Cuándo usarlo (apunte)</h4>
+<p>Integrar código de terceros o legacy <strong>que no se puede modificar</strong>. Acá: <code>UserDetails</code> (Spring) y jjwt. Si la clase se puede tocar, se modifica y listo.</p>
 <div class="cuadro">
 <div><h4>GRASP de fondo</h4><ul>
-<li><strong>Indirection</strong>: <code>TokenService</code> se interpone entre los clientes y jjwt.</li>
-<li><strong>Pure Fabrication</strong>: <code>JwtUtil</code> y <code>UsuarioDetails</code> no son conceptos del préstamo; existen para mantener el dominio limpio.</li>
-<li><strong>Protected Variations</strong>: si cambia la librería de tokens, el cambio queda encerrado en <code>JwtUtil</code>.</li>
-<li><strong>Low Coupling</strong>: el filtro y el servicio de auth no importan nada de jjwt.</li></ul></div>
+<li><strong>Indirection</strong>: <code>TokenService</code> entre los clientes y jjwt.</li>
+<li><strong>Pure Fabrication</strong>: <code>JwtUtil</code>, <code>UsuarioDetails</code>.</li>
+<li><strong>Protected Variations</strong>: cambiar la librería toca solo <code>JwtUtil</code>.</li></ul></div>
 <div><h4>SOLID de fondo</h4><ul>
-<li><strong>DIP</strong>: <code>AuthServiceImpl</code> y <code>JwtAuthFilter</code> dependen de la abstracción propia <code>TokenService</code>, no de una clase concreta atada a una librería.</li>
-<li><strong>SRP</strong>: <code>JwtUtil</code> solo traduce entre nuestro contrato y jjwt; <code>UsuarioDetails</code> solo traduce entre <code>IUsuario</code> y <code>UserDetails</code>.</li>
-<li><strong>OCP</strong>: otra implementación de tokens (opacos, otra librería) es una clase nueva que implementa <code>TokenService</code>, sin modificar los clientes.</li></ul></div>
+<li><strong>DIP</strong>: los clientes dependen de <code>TokenService</code>.</li>
+<li><strong>SRP</strong>: cada Adapter solo traduce.</li>
+<li><strong>Target limpio</strong> (O2): sin tipos de jjwt ni de Spring.</li></ul></div>
 </div>
-<h4>Cuándo usarlo (y por qué acá sí)</h4>
-<p>El apunte dice: usar Adapter cuando hay que integrar código de terceros o legacy <em>que no se puede modificar</em>. Si se puede tocar la clase origen, es más simple modificarla. Lo que no podemos tocar acá es jjwt, la librería de terceros, y no <code>JwtUtil</code>: por eso jjwt es el Adaptado y <code>JwtUtil</code> el Adapter. En el segundo caso, <code>UserDetails</code> es de Spring Security y tampoco se toca. <code>Usuario</code> sí es nuestro, pero en V0 implementaba <code>UserDetails</code> con cuatro <code>return true</code> y dejaba al dominio atado al framework.</p>
-<h4>Errores típicos del apunte, contrastados</h4>
-<ul>
-<li><em>“El Target sigue exponiendo tipos del Adaptado”</em>: en la primera versión de M7 el filtro atrapaba <code>io.jsonwebtoken.JwtException</code> y <code>esValido</code> recibía un <code>UserDetails</code>. La revisión O2 lo corrigió: <code>extraerUsername</code> devuelve <code>Optional&lt;String&gt;</code>, <code>JwtUtil</code> atrapa las excepciones de jjwt y <code>esValido</code> recibe el username.</li>
-<li><em>“Usarlo cuando se puede cambiar la clase”</em>: no aplica. Ni jjwt ni <code>UserDetails</code> se pueden cambiar.</li>
-<li><em>“Decenas de Adapters sobre un subsistema”</em>: hay uno por subsistema externo (tokens y Spring Security), así que no hace falta una Facade.</li>
-<li><em>“Olvidar mantenerlo sincronizado”</em>: si jjwt cambia su API (ya pasó de <code>parserBuilder()</code> a <code>parser()</code> en la 0.12), se toca solo <code>JwtUtil</code>.</li></ul>
 <h4>Preguntas incómodas</h4>
 <dl class="qa">
-<dt>“¿Por qué es un Adapter, si <code>JwtUtil</code> es código de ustedes?”</dt>
-<dd>Porque el Adaptado es jjwt, no <code>JwtUtil</code>. <code>JwtUtil</code> es el Adapter: implementa nuestro Target (<code>service/TokenService.java</code>) traduciendo a <code>Jwts.builder()</code> / <code>Jwts.parser()</code>. Los clientes (<code>JwtAuthFilter</code>, <code>AuthServiceImpl</code>) no saben que jjwt existe.</dd>
-<dt>“¿Una interfaz con una sola implementación no es sobre-ingeniería?”</dt>
-<dd>Es el costo que el apunte acepta para DIP: con una interfaz propia, cambiar el proveedor de tokens o sustituirlo en un test es tocar una clase. Además el Target no expone nada de jjwt: sin la interfaz, el contrato <em>sería</em> la librería.</dd>
-<dt>“<code>TokenService</code> está en <code>service/</code> y su implementación en <code>security/</code>: ¿el Target no está acoplado al framework?”</dt>
-<dd>Ya no. Desde O2 la firma es <code>esValido(String token, String username)</code> y <code>extraerUsername</code> devuelve <code>Optional&lt;String&gt;</code>: ningún tipo de Spring Security ni de jjwt en el Target. El Target vive del lado de quien lo usa (DIP) y la implementación, del lado de la infraestructura.</dd>
-<dt>“¿Y <code>UsuarioDetails</code>?”</dt>
-<dd>Es el Adapter más limpio: compone un <code>IUsuario</code> (<code>security/UsuarioDetails.java</code>) y traduce <code>getRol()</code> a <code>getAuthorities()</code>. Implementa solo los tres miembros que el dominio sabe contestar; los otros cuatro quedan con el default de <code>UserDetails</code>.</dd>
+<dt>“¿Por qué es Adapter si <code>JwtUtil</code> es de ustedes?”</dt>
+<dd>El Adaptee es <strong>jjwt</strong>, no <code>JwtUtil</code>. <code>JwtUtil</code> es el Adapter.</dd>
+<dt>“¿Una interfaz con una sola implementación?”</dt>
+<dd>Es el costo de <strong>DIP</strong>: sin interfaz, el contrato sería la librería.</dd>
+<dt>“¿<code>UsuarioDetails</code> adapta una clase propia?”</dt>
+<dd>Sí, clase 9 lo admite (“externas al dominio, <strong>o no</strong>”). Lo intocable es <code>UserDetails</code>: el dominio no depende de Spring.</dd>
 </dl>
-<h4>Diagramas: Adapter 2, <code>UsuarioDetails</code> (V0 → V1)</h4>
+<h4>Diagramas: <code>UsuarioDetails</code> (V0 → V1)</h4>
 {diagramas("adapter", tit_a="Antes (V0): Usuario implements UserDetails", tit_d="Después (V1 en adelante)")}
-<h4>Diagramas: Adapter 1, tokens (V2 → V3)</h4>'''
+<h4>Diagramas: <code>JwtUtil</code> (V2 → V3)</h4>"""
 
-m7 = bloque("m7", "M7. Adapter: JwtUtil detrás de TokenService (y UsuarioDetails)",
-    "<strong>Adapter</strong> (GoF, estructural): convertir la interfaz de algo existente que no podemos modificar en la interfaz que espera el cliente. Acá protege a los clientes de autenticación de jjwt, una librería de terceros. jjwt es la implementación Java de JWT (JSON Web Token, un token firmado que el backend emite en el login y valida en cada request para saber quién llama).",
-    "<code>AuthServiceImpl</code> y <code>JwtAuthFilter</code> dependían de la clase concreta <code>JwtUtil</code>, que exponía jjwt sin interfaz propia. El filtro además conocía la excepción de jjwt.",
+m7 = bloque("m7", "M7. Adapter: UsuarioDetails y JwtUtil",
+    "<strong>Adapter</strong> (GoF, estructural): <strong>convertir la interfaz</strong> de algo que no podemos modificar en la que espera el cliente. jjwt es la librería de JWT (token firmado que se emite en el login y se valida en cada request).",
+    "Los clientes dependían de la clase concreta <code>security/JwtUtil.java</code>, <strong>atados a jjwt</strong>; el filtro conocía su excepción.",
     cb("v2", "service/impl/AuthServiceImpl.java", lines("v2", "service/impl/AuthServiceImpl.java", r"private final JwtUtil", 1), "", method("v2", "service/impl/AuthServiceImpl.java", r"public AuthResponse login"))
     + cb("v2", "security/JwtAuthFilter.java", lines("v2", "security/JwtAuthFilter.java", r"private final JwtUtil", 1), "// ...", lines("v2", "security/JwtAuthFilter.java", r"extraerUsername", 4, 1)),
-    "Target propio <code>TokenService</code>; <code>JwtUtil</code> lo implementa y es la única clase que importa jjwt. Los clientes dependen de <code>TokenService</code>.",
+    "Target propio <code>service/TokenService.java</code>. <code>JwtUtil</code> lo implementa y <strong>contiene</strong> <code>SecretKey</code> y <code>JwtParser</code>: única clase que importa jjwt.",
     cb("main", "service/TokenService.java", body("main", "service/TokenService.java"))
     + cb("main", "security/JwtUtil.java", body("main", "security/JwtUtil.java"))
     + cb("main", "security/JwtAuthFilter.java", lines("main", "security/JwtAuthFilter.java", r"private final TokenService", 1), "// ...", lines("main", "security/JwtAuthFilter.java", r"tokenService.extraerUsername", 4), "// ...", lines("main", "security/JwtAuthFilter.java", r"tokenService.esValido", 3))
     + cb("main", "service/impl/AuthServiceImpl.java", lines("main", "service/impl/AuthServiceImpl.java", r"private final TokenService", 1)),
-    "Los clientes de autenticación estaban atados a una librería externa: cambiar de proveedor de tokens o mockearlo en un test obligaba a tocar el servicio y el filtro. Con <code>TokenService</code> la dependencia apunta a una abstracción propia y jjwt queda encerrada en un solo Adapter, como el dominio ya quedaba aislado de Spring Security con <code>UsuarioDetails</code>.",
-    "<ul><li>Gana: los clientes no conocen jjwt; otra implementación de tokens (u otra librería) es tocar una sola clase.</li><li>Cuesta: una interfaz más con una única implementación hoy, y mantener <code>JwtUtil</code> al día si jjwt cambia.</li><li>Un token mal formado o vencido sigue dando 401 (smoke, caso token inválido).</li></ul>",
-    "Commits <code>aa76375</code> y <code>de78c07</code> (O2). Archivos: <code>service/TokenService.java</code>, <code>security/JwtUtil.java</code>, <code>security/JwtAuthFilter.java</code>, <code>service/impl/AuthServiceImpl.java</code>, <code>security/UsuarioDetails.java</code>.",
-    extra=extra7)
+    "<strong>DIP + Protected Variations</strong>: la dependencia apunta a una abstracción propia; jjwt queda encerrada en un Adapter.",
+    "<ul><li>Gana: cambiar de librería toca una clase; la clave se arma una vez, no por request.</li><li>Cuesta: una interfaz con una sola implementación.</li></ul>",
+    "Commits <code>aa76375</code>, <code>de78c07</code> (O2), <code>2ef8410</code> (composición). Archivos: <code>service/TokenService.java</code>, <code>security/JwtUtil.java</code>, <code>security/JwtAuthFilter.java</code>, <code>service/impl/AuthServiceImpl.java</code>, <code>security/UsuarioDetails.java</code>.",
+    extra=extra7,
+    intro='<h4>Primero, el ejemplo de manual: <code>UsuarioDetails</code></h4><p>Implementa el Target de Spring (<code>UserDetails</code>) y <strong>contiene</strong> un <code>IUsuario</code>. El dominio no depende de Spring Security.</p>'
+      + cb("main", "security/UsuarioDetails.java", body("main", "security/UsuarioDetails.java"))
+      + '<h4>Después, <code>JwtUtil</code> sobre jjwt</h4>')
 
 m8 = bloque("m8", "M8. EstadoCredito y Credito como agregado de sus cuotas",
     "Information Expert y Creator (GRASP): el crédito crea sus cuotas y las conoce, así que es quien responde su estado, su saldo y si puede anularse. Absorbe M2.",
@@ -238,10 +237,10 @@ m8 = bloque("m8", "M8. EstadoCredito y Credito como agregado de sus cuotas",
 
 # ---- M9 Strategy (foco) ----
 roles9 = '''<table><thead><tr><th>Rol (apunte clase 10)</th><th>Clase</th></tr></thead><tbody>
-<tr><td><strong>Contexto</strong>: usa la estrategia y delega</td><td><code>model/Credito.java</code>: guarda <code>tipoPlan</code> y delega el cálculo en el constructor, al otorgar</td></tr>
-<tr><td><strong>Estrategia</strong>: interfaz común</td><td><code>model/interfaces/CalculoDeCuota.java</code> (<code>importeCuota</code>)</td></tr>
-<tr><td><strong>Estrategias concretas</strong></td><td><code>model/plan/InteresSimple.java</code>, <code>model/plan/SistemaFrances.java</code></td></tr>
-<tr><td><strong>Selección</strong></td><td><code>model/TipoPlan.java</code> (enum persistido, asocia cada valor con su estrategia); lo elige quien otorga, vía <code>dto/request/CreditoRequest.java</code> (<code>tipoPlan</code>) y el <code>&lt;select&gt;</code> de <code>frontend/src/pages/Creditos.jsx</code></td></tr>
+<tr><td><strong>Context</strong>: tiene referencia a la Strategy y delega</td><td><code>model/Credito.java</code>: <code>private CalculoDeCuota calculo()</code> devuelve la estrategia; el constructor llama <code>calculo().importeCuota(...)</code></td></tr>
+<tr><td><strong>Strategy</strong>: interfaz común</td><td><code>model/interfaces/CalculoDeCuota.java</code> (<code>importeCuota</code>)</td></tr>
+<tr><td><strong>ConcreteStrategies</strong>: no se conocen entre sí</td><td><code>model/plan/InteresSimple.java</code>, <code>model/plan/SistemaFrances.java</code></td></tr>
+<tr><td><strong>Cliente que elige</strong></td><td>quien otorga: <code>&lt;select&gt;</code> de <code>frontend/src/pages/Creditos.jsx</code> → <code>dto/request/CreditoRequest.java</code> (<code>tipoPlan</code>) → <code>model/TipoPlan.java</code> (enum persistido que enumera las estrategias)</td></tr>
 </tbody></table>'''
 
 
@@ -283,21 +282,38 @@ def _grafico():
 filas_fr = "".join(f"<tr><td>{m}</td><td>{fmt(q)}</td><td>{fmt(it)}</td><td>{fmt(k)}</td><td>{fmt(s)}</td></tr>" for m, q, k, it, s in FFILAS)
 int_fr = sum(f[3] for f in FFILAS)
 explica9 = f"""<h4 style="margin-top:22px">Los dos planes, en criollo</h4>
-<p>Un préstamo se devuelve en cuotas. Cada cuota tiene dos partes: <strong>capital</strong> (un pedazo de lo que te prestaron) e <strong>interés</strong> (lo que cobra el que presta por haberte dado la plata). Lo que cambia entre un sistema y otro es <em>sobre qué</em> se calcula el interés.</p>
-<p><strong>Interés simple (como lo modelamos).</strong> Se calcula una sola vez sobre todo lo prestado y se reparte en partes iguales. “30 %” quiere decir: devolvés lo prestado más un 30 % de eso, en total, sin importar en cuántas cuotas. El interés no baja aunque ya hayas devuelto la mitad.</p>
-<p><strong>Sistema francés.</strong> Es el que usan los bancos para préstamos personales. La cuota es siempre la misma, pero el interés de cada mes se calcula sobre lo que <em>todavía debés</em> (el saldo). Al principio debés mucho, así que la cuota es casi todo interés; a medida que devolvés, el interés baja y la cuota se va en capital. “5 %” quiere decir: 5 % <em>por mes</em> sobre el saldo. La fórmula <code>cuota = C·i / (1 − (1+i)^−n)</code> es la que hace que esa cuota fija deje el saldo justo en cero en la última.</p>
+<p>Cuota = <strong>capital</strong> (lo prestado) + <strong>interés</strong> (lo que cobra el que presta). Los sistemas difieren en <em>sobre qué</em> se calcula el interés.</p>
+<ul>
+<li><strong>Interés simple</strong>: una vez, sobre todo lo prestado, repartido en partes iguales. “30 %” = 30 % del total.</li>
+<li><strong>Sistema francés</strong> (el de los bancos): cuota fija, interés mensual <strong>sobre el saldo</strong>. “5 %” = 5 % por mes. Fórmula: <code>cuota = C·i / (1 − (1+i)^−n)</code>.</li>
+</ul>
 <p><strong>Ejemplo: $12.000 en 6 cuotas.</strong></p>
 <div class="cuadro">
 <div><h4>Interés simple, tasa 30 % total</h4><p>Total = 12.000 × 1,30 = <strong>15.600</strong>. Cuota = 15.600 / 6 = <strong>2.600</strong> todos los meses: 2.000 de capital y 600 de interés. Interés total: <strong>3.600</strong>.</p></div>
 <div><h4>Sistema francés, tasa 5 % mensual</h4><p>Cuota fija = <strong>{fmt(FQ)}</strong>. Mes 1: interés 5 % de 12.000 = 600. Mes 6: interés 5 % de lo poco que queda = 112,58. Total = <strong>{fmt(FQ*6)}</strong>; interés total: <strong>{fmt(int_fr)}</strong>.</p></div>
 </div>
-<p>Las dos tasas arrancan cobrando lo mismo el primer mes (600). La diferencia es que el simple sigue cobrando 600 sobre los 12.000 originales hasta el final, y el francés cobra sobre lo que falta. Por eso el francés sale más barato con “el mismo” 5 % por mes.</p>
+<p>Mes 1 cobran lo mismo (600). Después el simple sigue sobre 12.000 y el francés <strong>sobre lo que falta</strong>: sale más barato.</p>
 <div class="mvcsvg">{_grafico()}</div>
 <table><thead><tr><th>Mes</th><th>Cuota francés</th><th>Interés</th><th>Capital</th><th>Saldo después</th></tr></thead><tbody>{filas_fr}</tbody></table>
-<p><strong>Por qué la tasa significa cosas distintas.</strong> Cada sistema define su tasa de la forma en que se usa en la práctica: el interés simple, como un recargo único sobre el total; el francés, como tasa por período sobre saldo, porque así se calcula mes a mes. Mismo campo <code>tasaInteres</code> en <code>model/Credito.java</code>, dos significados; por eso <code>frontend/src/pages/Creditos.jsx</code> rotula la tasa según el plan elegido (“% total” o “% mensual”).</p>
-<h4>¿Está bien modelado con Strategy?</h4>
-<p>Sí, en lo que pide el apunte. El <strong>Context</strong> es <code>Credito</code>: no conoce ninguna fórmula y delega en <code>tipoPlan.calculo().importeCuota(...)</code>. La <strong>Strategy</strong> es <code>CalculoDeCuota</code>, con una sola operación. Las <strong>ConcreteStrategies</strong> son <code>InteresSimple</code> y <code>SistemaFrances</code>, que no se conocen entre sí. <strong>Elige</strong> quien otorga el crédito (el <code>&lt;select&gt;</code> del front → <code>CreditoRequest.tipoPlan</code>), y <code>TipoPlan</code> traduce esa elección a la estrategia sin <code>if</code> en el Context. <strong>No hay <code>setEstrategia</code></strong> porque el plan es parte del contrato: se fija al otorgar y cambiarlo después alteraría cuotas ya emitidas.</p>
-<p><strong>Lo que no es ideal.</strong> (1) El Context guarda el enum y no la estrategia, porque JPA no persiste una interfaz: la selección vive en <code>TipoPlan</code>, así que un plan nuevo obliga a tocar el enum además de agregar la clase (OCP se cumple para <code>Credito</code>, no para el enum). (2) El mismo campo <code>tasaInteres</code> cambia de significado según la estrategia; lo ideal sería que cada plan declare su unidad de tasa en vez de depender del rótulo de la vista. (3) La estrategia solo devuelve el importe de la cuota: la cuota guardada no separa capital e interés, así que la tabla de arriba no se puede reconstruir desde la base. (4) Nuestro “interés simple” es un recargo plano sobre el total, una simplificación que no es la forma en que se cobra un préstamo real.</p>
+<p>Mismo campo <code>tasaInteres</code> (<code>model/Credito.java</code>), <strong>dos unidades</strong>: <code>frontend/src/pages/Creditos.jsx</code> rotula “% total” o “% mensual” según el plan.</p>
+<h4>Por qué el francés: la segunda ConcreteStrategy</h4>
+<ul>
+<li><strong>“Misma acción, distintos algoritmos”</strong> (clase 9): calcular la cuota, dos fórmulas reales.</li>
+<li>Con <strong>una sola</strong> estrategia el patrón sería sobre-ingeniería (slide 38). El francés lo hace real.</li>
+<li><strong>OCP</strong>: el sistema alemán sería una clase en <code>model/plan/</code> + una constante en <code>TipoPlan</code>. <code>Credito</code> no se toca.</li>
+<li><strong>Revierte el descarte del 15/09 (V2).</strong> En V2 el objetivo era la convención interfaz + clase, y un solo algoritmo alcanzaba. En V3 el tema es Strategy: necesita dos algoritmos que de verdad varíen.</li>
+</ul>
+<h4>Quién elige y por qué no hay <code>setEstrategia</code></h4>
+<ul>
+<li><strong>Elige quien otorga</strong>, en ejecución: <code>&lt;select&gt;</code> → <code>CreditoRequest.tipoPlan</code> → <code>TipoPlan.calculo()</code>.</li>
+<li><strong>Sin <code>setEstrategia</code></strong>: el plan es parte del contrato. Cambiarlo alteraría cuotas ya emitidas.</li>
+<li><strong>Enum y no campo de interfaz</strong>: JPA persiste un <code>@Enumerated</code>, no una interfaz. <code>TipoPlan</code> es el registro de estrategias; <code>Credito</code> no tiene <code>if</code> por tipo.</li>
+</ul>
+<h4>Límites conocidos</h4>
+<ul>
+<li>Un plan nuevo toca el enum (registro): OCP se cumple para <code>Credito</code> y las estrategias.</li>
+<li>La cuota no separa capital e interés; el “interés simple” es un recargo plano (P-M9).</li>
+</ul>
 """
 
 extra9 = explica9 + f'''<h4 style="margin-top:22px">Roles</h4>{roles9}
@@ -311,36 +327,31 @@ extra9 = explica9 + f'''<h4 style="margin-top:22px">Roles</h4>{roles9}
 <li><strong>DIP</strong>: <code>Credito</code> depende de <code>CalculoDeCuota</code>, no de <code>InteresSimple</code> ni de <code>SistemaFrances</code>.</li>
 <li><strong>SRP</strong>: cada estrategia tiene una sola fórmula y se testea aislada (<code>InteresSimpleTest</code>, <code>SistemaFrancesTest</code>).</li></ul></div>
 </div>
-<h4>Cuándo usarlo (y por qué acá sí)</h4>
-<p>El apunte: una misma tarea con varios algoritmos intercambiables; la señal de alarma es un <code>switch(tipoDeAlgoritmo)</code> que crece con cada caso. Advierte que aplicarlo con algoritmos que casi nunca cambian es sobre-ingeniería. Acá hay dos algoritmos reales y distintos: el interés simple (tasa única sobre el total) y el sistema francés (cuota fija con tasa mensual sobre saldo, el habitual en préstamos). Sin el patrón, el segundo entraba como un <code>if</code> dentro de <code>Credito</code>.</p>
-<p><strong>Revierte una decisión anterior.</strong> El 15/09 (V2) se descartó el sistema francés y <code>Credito</code> justificaba el interés simple porque “no se modela amortización”. V3 reabre esa decisión: el francés entra como segunda estrategia real, así el patrón no queda con una sola implementación.</p>
+<h4>Cuándo usarlo (apunte)</h4>
+<p>Varios algoritmos <strong>intercambiables</strong> para la misma tarea; la alarma es un <code>switch(tipo)</code> que crece. Acá, sin el patrón, el francés era un <code>if</code> dentro de <code>Credito</code>.</p>
 <h4>Preguntas incómodas</h4>
 <dl class="qa">
-<dt>“¿Quién elige la estrategia y dónde está el <code>setEstrategia</code>?”</dt>
-<dd>La elige quien otorga el crédito: <code>&lt;select&gt;</code> en <code>frontend/src/pages/Creditos.jsx</code> → <code>CreditoRequest.tipoPlan</code> → <code>TipoPlan.calculo()</code>. No hay <code>setEstrategia</code> a propósito: el plan queda fijo al otorgar, porque cambiarlo después alteraría cuotas ya emitidas. El cliente sabe qué estrategias existen porque <code>TipoPlan</code> las enumera (otro error típico del apunte que queda cubierto).</dd>
-<dt>“¿Por qué el Contexto guarda un enum y no la estrategia?”</dt>
-<dd>Porque <code>Credito</code> es una entidad JPA (Java Persistence API, el mapeo de objetos a tablas que hace Hibernate) y una interfaz no se persiste. El enum se guarda en la columna <code>tipo_plan</code> y es el único punto de registro de las estrategias. <code>Credito</code> no tiene <code>if</code> ni <code>switch</code>: llama <code>tipoPlan.calculo().importeCuota(...)</code>.</dd>
 <dt>“¿Dos algoritmos no es sobre-ingeniería?”</dt>
-<dd>No, porque los dos se usan: se otorgan créditos de ambos tipos (smoke: simple 1200 al 10 % en 3 → 440; francés → 482,54). El francés tapa un hueco: en V2 un plan con tasa mensual sobre saldo no se podía expresar.</dd>
-<dt>“Si cambian la fórmula, ¿qué pasa con los créditos ya otorgados?”</dt>
-<dd>Nada. La cuota se calcula y se guarda al otorgar (<code>Credito.importeCuota</code>) y el total sale de las cuotas emitidas (revisión O3). La estrategia solo corre al crear.</dd>
+<dd>No: <strong>los dos se usan</strong> (simple 1200 al 10 % en 3 → 440; francés → 482,54).</dd>
+<dt>“Si cambia la fórmula, ¿qué pasa con los créditos otorgados?”</dt>
+<dd>Nada: la cuota <strong>se guarda al otorgar</strong> y el total sale de las cuotas emitidas (O3).</dd>
 <dt>“¿<code>EstadoCredito</code> no es un State?”</dt>
-<dd>No. Es un valor derivado de <code>anulado</code> y de las cuotas pagas, no cambia el comportamiento del crédito y hay una sola transición con regla (<code>anular()</code>). Clases por estado serían sobre-ingeniería, y el apunte advierte contra confundir Strategy con State: en Strategy las estrategias no se conocen entre sí.</dd>
+<dd>No: es un <strong>valor derivado</strong>, no cambia el comportamiento (O9).</dd>
 </dl>'''
 
 m9 = bloque("m9", "M9. Strategy del cálculo de cuota",
     "<strong>Strategy</strong> (GoF, comportamiento): la misma acción (calcular la cuota) con algoritmos intercambiables, encapsulados detrás de una interfaz común.",
-    "El algoritmo estaba cableado en la entidad. Agregar otro sistema obligaba a meter un <code>if</code> por tipo dentro de <code>Credito</code>.",
+    "Fórmula <strong>cableada</strong> en <code>model/Credito.java</code>: otro sistema era un <code>if</code> por tipo.",
     cb("v2", "model/Credito.java", method("v2", "model/Credito.java", r"public BigDecimal totalADevolver"), "", method("v2", "model/Credito.java", r"private BigDecimal calcularImporteCuota")),
-    "<code>Credito</code> delega en la estrategia que corresponde a su <code>TipoPlan</code>, solo al otorgar. El total sale de las cuotas emitidas.",
-    cb("main", "model/Credito.java", lines("main", "model/Credito.java", r"this.importeCuota = tipoPlan", 1), "", method("main", "model/Credito.java", r"public BigDecimal totalADevolver"))
+    "<code>Credito</code> tiene referencia a la Strategy (<code>calculo()</code>) y <strong>delega</strong> al otorgar. El total sale de las cuotas emitidas.",
+    cb("main", "model/Credito.java", lines("main", "model/Credito.java", r"this.importeCuota = calculo", 1), "", method("main", "model/Credito.java", r"private CalculoDeCuota calculo"), "", method("main", "model/Credito.java", r"public BigDecimal totalADevolver"))
     + cb("main", "model/interfaces/CalculoDeCuota.java", body("main", "model/interfaces/CalculoDeCuota.java"))
     + cb("main", "model/plan/InteresSimple.java", body("main", "model/plan/InteresSimple.java"))
     + cb("main", "model/plan/SistemaFrances.java", body("main", "model/plan/SistemaFrances.java"))
     + cb("main", "model/TipoPlan.java", body("main", "model/TipoPlan.java")),
-    "El cálculo del plan es “la misma acción con distintos algoritmos”, el caso típico de Strategy. En V2 el sistema solo sabía otorgar a interés simple fijo; un plan francés no se podía expresar. Ahora <code>Credito</code> no conoce ninguna fórmula: delega.",
-    "<ul><li>Gana: un sistema nuevo es una clase y un valor del enum, sin tocar <code>Credito</code>. Cada fórmula se testea aislada.</li><li>Cuesta: la tasa cambia de significado según el plan (% total en simple, % mensual en francés) y la UI lo rotula; una columna más en <code>creditos</code> (default <code>INTERES_SIMPLE</code> para los existentes).</li><li>Redondeo: 10.000 al 45 % en 6 cuotas da 6 × 2.416,67 = 14.500,02. Se muestra eso, que es lo que se cobra.</li><li>La cuota no se descompone en capital e interés: el francés define el importe, no la tabla de amortización.</li></ul>",
-    "Commits <code>065eb37</code>, <code>9ea428d</code> y <code>1f9fc50</code> (O3).",
+    "<strong>Misma acción, distintos algoritmos.</strong> <code>Credito</code> no conoce ninguna fórmula.",
+    "<ul><li>Gana: <strong>OCP</strong>, un sistema nuevo no toca <code>Credito</code>; cada fórmula se testea aislada.</li><li>Cuesta: la tasa cambia de unidad según el plan; columna <code>tipo_plan</code> nueva.</li></ul>",
+    "Commits <code>065eb37</code>, <code>9ea428d</code>, <code>1f9fc50</code> (O3), <code>fa0c180</code> (<code>calculo()</code>).",
     extra=extra9)
 
 m10 = bloque("m10", "M10. Dashboard también para ADMIN",
@@ -371,6 +382,12 @@ tabla_indice = "".join(f'<tr><td><a href="#{k}">{k.upper()}</a></td><td>{a}</td>
 
 # ---------------- revisión ----------------
 rev = [
+ ("API", "f551cbc, 1ea0375, 1737bd9, 940958e", "Sin token la API respondía 403; <code>RolRequest</code> y <code>PermisosRequest</code> sin <code>@Valid</code>; no había listado general de créditos.",
+  "<code>config/SecurityConfig.java</code> responde 401 con <code>HttpStatusEntryPoint</code>; <code>@Valid</code> en <code>controller/AdminController.java</code> y <code>controller/SupervisorController.java</code>; <code>GET /api/creditos</code> (<code>service/impl/CreditoServiceImpl.java</code> <code>listarTodos</code>).",
+  "<strong>MVC</strong>: el controlador valida la forma y traduce a HTTP."),
+ ("H1", "fcc9bf6", "Una cobranza ya anulada se podía <strong>anular otra vez</strong>.",
+  "<code>model/Cobranza.java</code> <code>anular</code> rechaza con 400, igual que el crédito.",
+  "<strong>Information Expert</strong>."),
  ("O1", "444031f, 64cee96", "La vista decidía si un crédito se podía anular (<code>!cr.anulado</code>, sin mirar cobranzas) y, tras anular, solo marcaba <code>anulado = true</code> en el store: el listado seguía en VIGENTE con el saldo viejo.",
   "<code>dto/response/CreditoResponse.java</code> expone <code>puedeAnularse</code> (de <code>Credito.puedeAnularse()</code>); <code>frontend/src/pages/Creditos.jsx</code> lo usa y vuelve a pedir los créditos tras anular; <code>frontend/src/store/slices/creditosSlice.js</code> deja de recalcular.",
   "MVC: la vista representa, el modelo decide. Information Expert."),
@@ -411,24 +428,9 @@ rev = [
  ("F2", "06fc842", "JSON roto, <code>tipoPlan</code> inválido o <code>GET /api/creditos/abc</code> caían en el handler general y respondían 500.",
   "<code>exception/GlobalExceptionHandler.java</code> <code>handleRequestInvalida</code> mapea <code>HttpMessageNotReadableException</code> y <code>MethodArgumentTypeMismatchException</code> a 400 con el mismo <code>ErrorResponse</code>, sin detalles internos.",
   "Un error del cliente es 4xx; el 500 queda para fallas del servidor (M5, S4)."),
- ("UI", "01fabb9, 08c8fda, 1ec4ccb, f0d2372, 058496a", "Importes como <code>$55081.29</code>, fechas ISO, el crédito en una sola línea con guiones, la fecha de cobro sin mostrar, solo el primer mensaje de validación y la tabla de clientes apretada.",
-  "Formato es-AR de moneda y fecha en una sola util (<code>frontend/src/utils/formato.js</code>); <code>frontend/src/pages/Creditos.jsx</code> con badge de estado, datos rotulados, “x de n cuotas pagadas” e importe por cuota; columna Fecha en <code>frontend/src/pages/Cobranzas.jsx</code>; <code>frontend/src/api/apiClient.js</code> une todos los <code>mensajes</code> del <code>ErrorResponse</code>. Solo se muestran campos que el backend ya devolvía.",
-  "MVC: la vista solo presenta; ningún cambio de API ni de modelo."),
- ("DT", "979ab37", "Colores escritos a mano en los estilos inline de cada página: cambiar la paleta era tocar todos los <code>.jsx</code>.",
-  "La paleta vive en <code>frontend/src/index.css</code> como variables CSS (custom properties: valores con nombre que el resto del CSS lee con <code>var(--...)</code>) con nombre semántico (<code>--color-surface</code>, <code>--color-danger</code>). Oscuro por defecto y <code>@media (prefers-color-scheme: light)</code> (consulta del navegador por el tema del sistema operativo) redefine las mismas variables. Contraste WCAG AA (≥ 4,5:1) en todo texto.",
-  "Protected Variations aplicado al estilo: la paleta cambia en un solo lugar. Sin botón, sin estado en React y sin librerías."),
- ("COM", "ddbdebb, 3478af6", "Javadoc largo, comentarios que repetían el código y ninguna marca de dónde estaba cada patrón.",
-  "Una a tres líneas por clase, una línea por patrón aplicado (<code>// Adapter: adapta jjwt a TokenService</code> en <code>security/JwtUtil.java</code>, <code>// Strategy: ...</code> en <code>model/TipoPlan.java</code>) y una línea por componente del front.",
-  "Bad smell: comentarios. Los que quedan explican el porqué y sirven de índice de patrones para la defensa."),
- ("LIM", "c36658f, 6a1c363, 4713828, e7162eb, 045ffd0", "<code>backend/.factorypath</code> trackeado, documentos de proceso y capturas viejas en el repo, links rotos y un <code>docs/README.md</code> duplicado.",
-  "Se deja de trackear <code>.factorypath</code>, <code>docs/trabajo</code> sale del <code>git archive</code> (<code>.gitattributes</code>, <code>export-ignore</code>), se borran los documentos de proceso, se arreglan los links y el <code>README.md</code> queda corto, con links.",
-  "El zip de entrega lleva solo código y documentación vigente."),
  ("BSF1", "c19e707", "Comentarios de copy-paste (<code>[cite: 4]</code>, “Asumiendo que…”) en <code>frontend/src/store/slices/permisosSlice.js</code>, <code>cobranzasSlice.js</code> y <code>frontend/src/pages/GestorPermisos.jsx</code>.", "Borrados.", "Bad smell: comentarios que no explican el código."),
- ("T33", "0e7a1ad, 1210424, 4f42ebd, 86b7083", "Recorriendo los casos de uso por la UI: un permiso otorgado no se veía hasta reloguear (H4), UC06 y UC09 no tenían pantalla, crear un crédito o una cobranza no avisaba nada y los errores de validación traían el nombre técnico del campo.",
-  "<code>GET /api/auth/me</code> (<code>controller/AuthController.java</code> <code>me</code>, <code>service/impl/AuthServiceImpl.java</code> <code>actual</code>) y <code>frontend/src/components/PrivateRoute.jsx</code> lo pide al entrar a cada pantalla. Búsqueda por DNI en <code>frontend/src/pages/Clientes.jsx</code> y por número en <code>frontend/src/pages/Creditos.jsx</code>; avisos con <code>frontend/src/components/Aviso.jsx</code>; <code>GlobalExceptionHandler.handleValidation</code> devuelve solo el mensaje.",
-  "MVC: el modelo sigue mandando (M4); la vista deja de mostrar datos viejos."),
  ("T34", "8eb2106", "No había diagrama de la base y nadie había revisado el modelo contra el esquema.",
-  "DER en <code>docs/diagramas/der-v3.puml</code> (más abajo). La revisión encontró I-1 (dos cobranzas vigentes en la misma cuota con requests simultáneas, reproducido), I-2 (DTO sin largo ni escala) e I-3 (diagrama de clases desactualizado). I-2 e I-3 se arreglaron; I-1 va al 27/10 con el arreglo ya probado.",
+  "DER en <code>docs/diagramas/der-v3.puml</code> (más abajo). La revisión encontró I-1 (dos cobranzas vigentes en la misma cuota con requests simultáneas, reproducido), I-2 (DTO sin largo ni escala) e I-3 (diagrama de clases desactualizado). Las tres se arreglaron (I-1 en T40).",
   "El esquema protege identidad y unicidad; las reglas con estado viven en las entidades."),
  ("T35", "013c07a, 0df40d1", "<code>config/SecurityConfig.java</code> armaba a mano un <code>DaoAuthenticationProvider</code> (y Spring avisaba al arrancar) y <code>GlobalExceptionHandler</code> repetía nueve veces el armado de <code>ErrorResponse</code> con el número escrito a mano.",
   "S5: se borra el bean y Spring arma el provider con <code>UserDetailsService</code> y <code>PasswordEncoder</code>. BS2: método privado <code>error(HttpStatus, String, List&lt;String&gt;)</code> en <code>exception/GlobalExceptionHandler.java</code>. S6 no se hizo a propósito: reglas de URL y <code>@PreAuthorize</code> quedan las dos como defensa en profundidad.",
@@ -436,20 +438,70 @@ rev = [
  ("T36", "d89d62d, 6cc5e17", "El servicio tenía que acordarse de pedirle el plan al crédito y guardarlo: un crédito sin plan quedaba VIGENTE con saldo 0. El dashboard no mostraba cuánto se debe ni cuánto está en mora.",
   "O6: el constructor de <code>model/Credito.java</code> genera las cuotas (<code>generarPlanDeCuotas</code> privado, fuera de <code>ICredito</code>) y <code>cascade = PERSIST</code> las guarda. O7: <code>service/impl/DashboardServiceImpl.java</code> suma <code>Credito.saldo()</code> y las cuotas con <code>estaVencida()</code>; dos tarjetas nuevas en <code>frontend/src/pages/Dashboard.jsx</code>.",
   "Creator (O6) e Information Expert (O7)."),
- ("T37", "90d0e5e, 4d35266, 77dec02", "Un DNI de 16 caracteres o una deuda enorme daban 500, y una tasa con 3 decimales se redondeaba sin aviso (I-2). Los códigos HTTP y el rechazo de anular una cobranza de otro día no tenían test.",
-  "<code>@Size</code> y <code>@Digits</code> en los <code>dto/request/</code>. <code>CodigosHttpTest</code> (<code>@WebMvcTest</code>, 8 tests de 400 a 405 con la seguridad JWT real). <code>Cobranza.anular(LocalDate)</code> y <code>Cuota.estaVencida(LocalDate)</code> reciben la fecha de hoy. Total: 36 tests.",
-  "El controlador valida la forma; el modelo, la regla. Tests sin depender del reloj."),
  ("T40", "8888df6, 5246f27, 7c6dd63, f96f53a", "Dos cobros simultáneos de la misma cuota dejaban dos cobranzas vigentes (I-1): <code>service/impl/CobranzaServiceImpl.java</code> <code>registrar</code> leía la cuota, la veía impaga y recién después insertaba. Los servicios navegaban <code>usuario.getPermisos()</code> para decidir si se podía anular (BS3), el rol viajaba como <code>String</code> en las respuestas (BS4) y <code>SupervisorController</code> usaba <code>obtenerUsuarios</code> donde <code>AdminController</code> dice <code>listarUsuarios</code> (BS6).",
   "I-1: <code>@Lock(PESSIMISTIC_WRITE)</code> en <code>repository/CuotaRepository.java</code> <code>buscarPorCreditoYNumero</code> y fuera su <code>JOIN FETCH</code> de cobranzas (con el join, H2 leía las cobranzas de antes del bloqueo). <code>backend/src/test/java/com/uade/tpejemplo/service/CobranzaConcurrenteTest.java</code> lanza 20 hilos sobre la misma cuota y espera 1 vigente; sin el arreglo da 10. BS3: <code>model/Usuario.java</code> <code>puedeAnularCredito</code> y <code>puedeAnularCobranza</code>. BS4: <code>Rol</code> en <code>dto/response/UsuarioResponse.java</code> y <code>AuthResponse.java</code> (el JSON no cambia). BS6: <code>controller/SupervisorController.java</code> <code>listarUsuarios</code>.",
   "Concurrencia con bloqueo pesimista; Information Expert / Tell, don't ask (BS3); primitive obsession (BS4)."),
- ("T41", "e744600", "<code>application.properties</code> mezclaba lo de desarrollo con lo único, <code>.cors(Customizer.withDefaults())</code> no tenía ningún <code>CorsConfigurationSource</code> detrás y <code>/h2-console/**</code> estaba en <code>permitAll</code>: acceso total a la base sin login (TPO-008).",
-  "Perfil <code>dev</code> por defecto (consola H2, SQL en logs, <code>create-drop</code>, CORS para <code>http://localhost:5173</code>) y <code>prod</code> (sin consola, sin SQL, <code>update</code>, CORS solo para la variable <code>CORS_ORIGIN</code>, obligatoria). <code>config/SecurityConfig.java</code> <code>corsConfigurationSource</code> con un único origen y la consola fuera del <code>permitAll</code>. S6 no se hizo: el doble control de roles queda a propósito.",
-  "Configuración por entorno: lo cómodo para la demo no llega a prod."),
  ("T42", "dfa2c12, d9b0b8f, a085f66, f5c8d05, 0e3284e", "En el front: <code>AdminRoute</code> y <code>SupervisorRoute</code> iguales salvo el rol, <code>'ADMIN'</code>/<code>'SUPERVISOR'</code> escritos a mano en cinco lugares, dos slices llamando <code>api.get</code> directo, dos ternarios anidados para el estado de la cuota y restos del template de Vite (TPO-012).",
   "<code>frontend/src/components/RoleRoute.jsx</code> único, <code>ROLES</code> en <code>frontend/src/utils/roles.js</code>, <code>frontend/src/api/dashboard.js</code> para que toda llamada pase por <code>src/api</code>, <code>ESTADO_CUOTA</code> y <code>estadoCuota</code> en <code>frontend/src/pages/Creditos.jsx</code>; se borran <code>App.css</code>, <code>assets/react.svg</code> y los <code>clearError</code> sin uso.",
   "Bad smells: código duplicado, strings mágicos, condicional anidado y código muerto."),
 ]
 rev_html = "".join(f'<div class="rev" id="{i.lower()}"><h4>{i} <span class="ref">· commit <code>{c}</code></span></h4><p><strong>Problema.</strong> {p}</p><p><strong>Cambio.</strong> {s}</p><p><strong>Concepto.</strong> {k}</p></div>' for i, c, p, s, k in rev)
+
+evol = [
+ ("Swagger (contrato de la API)", "f551cbc, a4b2077",
+  "<strong>No había contrato</strong>: el front adivinaba endpoints y códigos.",
+  "springdoc publica <code>/swagger-ui.html</code> con las 20 operaciones, esquema Bearer JWT y los códigos reales (<code>config/OpenApiConfig.java</code>, <code>@Operation</code> en <code>controller/*</code>).",
+  "<strong>MVC</strong>: contrato vista-controlador explícito, vía DTO."),
+ ("Perfiles dev/prod y CORS", "e744600, 45a35c9",
+  "Una sola config mezclaba demo y producción; <strong>consola H2 abierta sin login</strong>; CORS sin origen (TPO-008).",
+  "<code>backend/src/main/resources/application-dev.properties</code> (H2, SQL en logs, CORS a <code>localhost:5173</code>) y <code>application-prod.properties</code> (sin consola, <code>CORS_ORIGIN</code> obligatoria). <code>config/SecurityConfig.java</code> <code>corsConfigurationSource</code>; <code>jwt.secret</code> desde <code>JWT_SECRET</code> (S3).",
+  "<strong>Configuración externalizada</strong>: lo cómodo para la demo no llega a prod."),
+ ("UI: moneda, fechas, badges, avisos", "01fabb9, 08c8fda, 1ec4ccb, f0d2372, 4f42ebd, 86b7083",
+  "Importes <code>55081.29</code>, fechas ISO, crédito en una línea, <strong>sin aviso</strong> al crear, mensajes con el nombre técnico del campo.",
+  "Formato es-AR en <code>frontend/src/utils/formato.js</code>; badge de estado y progreso en <code>frontend/src/pages/Creditos.jsx</code>; <code>frontend/src/components/Aviso.jsx</code>; todos los mensajes en <code>frontend/src/api/apiClient.js</code>; <code>exception/GlobalExceptionHandler.java</code> <code>handleValidation</code> sin prefijo.",
+  "<strong>MVC</strong>: la vista solo presenta; sin cambios de modelo."),
+ ("Dark theme", "979ab37",
+  "Colores <strong>escritos a mano</strong> en cada <code>.jsx</code>.",
+  "Paleta como variables CSS semánticas en <code>frontend/src/index.css</code> (<code>--color-surface</code>, <code>--color-danger</code>); <code>prefers-color-scheme</code> (tema del sistema operativo) cambia los valores. Contraste WCAG AA.",
+  "<strong>Protected Variations</strong> aplicado al estilo: la paleta cambia en un lugar."),
+ ("Casos de uso y pantallas nuevas", "0e7a1ad, 1210424, 28840ac",
+  "UC06 y UC09 <strong>sin pantalla</strong>; un permiso otorgado no se veía hasta reloguear (H4).",
+  "Búsqueda por DNI en <code>frontend/src/pages/Clientes.jsx</code> y por número en <code>frontend/src/pages/Creditos.jsx</code> (<code>fichaCredito</code>). <code>GET /api/auth/me</code> (<code>controller/AuthController.java</code> <code>me</code>) lo pide <code>frontend/src/components/PrivateRoute.jsx</code> en cada pantalla. Fichas en <code>docs/casos-de-uso/</code>.",
+  "<strong>MVC</strong>: el modelo es la autoridad (M4); la vista deja de mostrar datos viejos."),
+ ("Tests (37) y validación", "6f552e0..82fc486, 4d35266, 77dec02, 90d0e5e, 8888df6",
+  "<strong>Cero tests</strong> en V2; un DNI largo o una deuda enorme daban 500 (I-2).",
+  "27 de dominio (<code>backend/src/test/java/com/uade/tpejemplo/model/</code>), 8 de códigos HTTP (<code>controller/CodigosHttpTest.java</code>, <code>@WebMvcTest</code>), 1 de concurrencia (<code>service/CobranzaConcurrenteTest.java</code>), <code>contextLoads</code>. <code>@Size</code>/<code>@Digits</code> en <code>dto/request/</code>. La fecha de hoy entra por parámetro (<code>model/Cuota.java</code> <code>estaVencida(LocalDate)</code>).",
+  "<strong>Testeabilidad</strong>: el dominio se prueba sin Spring ni reloj."),
+ ("Limpieza", "ddbdebb, 3478af6, c36658f, 6a1c363, 4713828",
+  "Javadoc que repetía el código, <code>.factorypath</code> trackeado, docs de proceso en el zip.",
+  "1-3 líneas por clase y <strong>una línea por patrón</strong> (<code>// Adapter: ...</code> en <code>security/JwtUtil.java</code>); <code>export-ignore</code> en <code>.gitattributes</code>; README corto.",
+  "<strong>Bad smell: comentarios</strong>. El zip lleva solo código vigente."),
+]
+evol_html = "".join(f'<div class="rev"><h4>{t} <span class="ref">· commit <code>{c}</code></span></h4><p><strong>Problema.</strong> {p}</p><p><strong>Solución.</strong> {s}</p><p><strong>Buena práctica.</strong> {k}</p></div>' for t, c, p, s, k in evol)
+
+convenciones = """<p>Convención: <strong>una <code>I&lt;Clase&gt;</code> por clase de modelo</strong> en <code>model/interfaces/</code> y <strong><code>XService</code> + <code>service/impl/XServiceImpl</code></strong>. Excepciones, a propósito:</p>
+<table><thead><tr><th>Clase</th><th>Excepción</th><th>Motivo</th></tr></thead><tbody>
+<tr><td><code>model/EstadoCredito.java</code></td><td>sin <code>IEstadoCredito</code></td><td>Enum de <strong>valores sin comportamiento</strong>: la interfaz quedaría vacía.</td></tr>
+<tr><td><code>model/TipoPlan.java</code></td><td>sin <code>ITipoPlan</code></td><td>Enum <strong>registro de estrategias</strong>; su única operación devuelve la Strategy.</td></tr>
+<tr><td><code>model/interfaces/CalculoDeCuota.java</code></td><td>sin prefijo <code>I</code></td><td>Es la <strong>interfaz Strategy</strong>, no la de una clase: nombre de rol, como <code>EstrategiaDescuento</code> en la slide.</td></tr>
+<tr><td><code>service/TokenService.java</code> → <code>security/JwtUtil.java</code></td><td>no es <code>TokenServiceImpl</code> en <code>service/impl/</code></td><td>Es el <strong>Adapter</strong>: pesa el nombre de rol, y es infraestructura, no caso de uso.</td></tr>
+<tr><td><code>model/interfaces/IRol.java</code></td><td>sin consumidor como tipo</td><td>Existe <strong>por la convención</strong>; ningún cliente depende de ella (ISP en la matriz).</td></tr>
+</tbody></table>"""
+
+matriz = [
+ ("Information Expert", "<code>model/Credito.java</code> <code>estado</code>, <code>saldo</code>, <code>puedeAnularse</code>; <code>model/Cuota.java</code> <code>estaVencida</code>", "Cumple"),
+ ("Creator", "<code>model/Credito.java</code> genera sus cuotas (O6); <code>Cuota.registrarCobranza</code> crea la <code>Cobranza</code>", "Cumple"),
+ ("Controller", "<code>controller/*Controller</code> por caso de uso, delegan en <code>XService</code>", "Cumple"),
+ ("Bajo acoplamiento / Alta cohesión", "controllers → interfaces de servicio; clientes → <code>service/TokenService.java</code>", "Cumple"),
+ ("Polymorphism", "<code>model/interfaces/CalculoDeCuota.java</code>, sin <code>if</code> por plan", "Cumple"),
+ ("Pure Fabrication / Indirection", "repositorios, <code>security/JwtUtil.java</code>, <code>security/UsuarioDetails.java</code>", "Cumple"),
+ ("Protected Variations", "<code>CalculoDeCuota</code> (fórmula), <code>TokenService</code> (librería)", "Cumple"),
+ ("SRP / OCP / LSP", "una fórmula por estrategia; plan nuevo sin tocar <code>Credito</code>; estrategias intercambiables", "Cumple"),
+ ("ISP", "<code>TokenService</code> (3 métodos, todos usados); <code>model/interfaces/IRol.java</code> sin consumidor", "Parcial"),
+ ("DIP", "servicios inyectados por interfaz; <code>TokenService</code> implementado en <code>security/</code>", "Parcial"),
+]
+matriz_html = "<table><thead><tr><th>Principio</th><th>Dónde</th><th>Veredicto</th></tr></thead><tbody>" + "".join(f"<tr><td><strong>{a}</strong></td><td>{b}</td><td>{c}</td></tr>" for a, b, c in matriz) + "</tbody></table>"
+
 
 def cap(sub, nom, alt):
     return f'<figure><figcaption>{alt}</figcaption><a href="capturas/{sub}/{nom}.png"><img src="capturas/{sub}/{nom}.png" alt="{alt}" style="width:100%;border:1px solid var(--linea);border-radius:4px"></a></figure>'
@@ -471,7 +523,7 @@ timeline = f'''<div class="timeline">
 <div class="hito"><div class="punto"></div><h4>V2</h4><p class="tema">Iteración 2: GRASP + interfaces</p><p class="meta">Mergeada 15/09 · <code>main@45e228c</code> (tag <code>v2</code>) · 5 commits</p>
 <ul><li>Information Expert: <code>Cobranza.anular()</code>, <code>Credito.anular()</code></li><li>Creator: <code>Usuario.nuevo</code></li><li>Interfaz por cada clase del modelo y de servicio</li><li>Revierte §3.7 del informe 1 (Lazy class): interfaces de servicio restituidas</li></ul></div>
 <div class="hito actual"><div class="punto"></div><h4>V3</h4><p class="tema">Iteración 3: MVC + Strategy + Adapter</p><p class="meta">Entrega 13/10/2026 · repo V3, <code>main</code> · {n_v3} commits sin merges</p>
-<ul><li><strong>Strategy</strong>: cálculo de cuota, interés simple y sistema francés (M9)</li><li><strong>Adapter</strong>: <code>TokenService</code> sobre jjwt (M7)</li><li><code>EstadoCredito</code>, saldo, mora (M6, M8)</li><li>Permisos y errores HTTP en el backend (M4, M5), Swagger</li><li>Dashboard corregido y con saldo y vencido (M3, M10, O7); el crédito crea sus cuotas (O6); 37 tests</li><li>Revierte V2: sistema francés descartado el 15/09</li></ul></div>
+<ul><li><strong>Strategy</strong>: cálculo de cuota, interés simple y sistema francés (M9)</li><li><strong>Adapter</strong>: <code>TokenService</code> sobre jjwt (M7)</li><li><code>EstadoCredito</code>, saldo, mora (M6, M8)</li><li>Permisos y errores HTTP en el backend (M4, M5), Swagger</li><li>Dashboard corregido y con saldo y vencido (M3, M10, O7); el crédito crea sus cuotas (O6); 37 tests</li><li>Revierte V2: sistema francés descartado el 15/09</li><li>Swagger, perfiles dev/prod, UI, dark theme, UC06/UC09</li></ul></div>
 </div>
 <details><summary>Commits V2 → V3 (git log v2..main)</summary><pre><code>{e(log_v3)}</code></pre></details>'''
 
@@ -530,7 +582,7 @@ doc = f'''<!doctype html>
 <title>Reporte V3 — TPO Grupo 7</title><style>{CSS}</style></head>
 <body>
 <div id="barra"><strong style="color:var(--navy)">Reporte V3</strong>
-<nav><a href="#portada">Portada</a><a href="#timeline">Timeline</a><a href="#mvc">MVC</a><a href="#mejoras">Mejoras</a><a href="#m7">Adapter</a><a href="#m9">Strategy</a><a href="#revision">Revisión</a><a href="#verificacion">Verificación</a><a href="#clases">Diagramas</a><a href="#pendientes">Pendientes</a><a href="../casos-de-uso/README.md">Casos de uso</a></nav>
+<nav><a href="#portada">Portada</a><a href="#timeline">Timeline</a><a href="#mvc">MVC</a><a href="#mejoras">Mejoras</a><a href="#m7">Adapter</a><a href="#m9">Strategy</a><a href="#convenciones">Convenciones</a><a href="#matriz">GRASP/SOLID</a><a href="#evolucion">Evolución</a><a href="#revision">Revisión</a><a href="#verificacion">Verificación</a><a href="#clases">Diagramas</a><a href="#pendientes">Pendientes</a><a href="../casos-de-uso/README.md">Casos de uso</a></nav>
 <button class="sec" onclick="window.print()">Exportar PDF</button></div>
 <main>
 
@@ -566,15 +618,33 @@ doc = f'''<!doctype html>
 </section>
 
 <section id="mejoras"><h2>Mejoras al dominio</h2>
-<p>Cada mejora tapa un hueco real del dashboard de préstamos. Estructura: Patrón → Problema (código antes, <code>git show v2:&lt;ruta&gt;</code>) → Solución (código después, <code>main</code>) → Por qué → Consecuencias, con diagrama antes/después. M9 (Strategy) y M7 (Adapter) son el foco de la consigna, van primero y llevan además roles, GRASP/SOLID de fondo, cuándo usarlo y preguntas de defensa.</p>
+<p>Cada mejora tapa <strong>un hueco real</strong>. Formato: <strong>Patrón → Problema (código <code>v2</code>) → Solución (código <code>main</code>) → Por qué → Consecuencias</strong>. Primero el foco de la consigna: <strong>Strategy (M9)</strong> y <strong>Adapter (M7)</strong>.</p>
 <table><thead><tr><th>ID</th><th>Mejora</th><th>Patrón / concepto</th><th>Hueco</th></tr></thead><tbody>{tabla_indice}</tbody></table>
 {"".join(mejoras)}
 </section>
 
-<section id="revision"><h2>Mejoras de la revisión</h2>
-<p>Después de las diez mejoras, una revisión de solo lectura (oportunidades, prácticas de Spring, bad smells; lo que quedó abierto está en el <a href="../backlog.md">backlog</a>) encontró usos flojos de los conceptos y código muerto. Entraron las que tapaban un hueco visible y eran chicas. Después de la versión del 06/10 (<code>c8ddb94</code>) entraron los arreglos de la verificación final (F1, F2), la presentación del front (UI, DT) y la limpieza de comentarios y del repo (COM, LIM). Al final, un recorrido de los casos de uso por la UI y una revisión del modelo dejaron T33 a T37, y la última pasada sobre los pendientes del backend, la configuración y el front dejó T40 a T42.</p>
-{rev_html}
+<section id="convenciones"><h2>Convenciones de la cátedra</h2>
+{convenciones}
+</section>
+
+<section id="matriz"><h2>GRASP y SOLID</h2>
+{matriz_html}
+<p><strong>Los dos parciales, defendibles:</strong></p>
+<ul>
+<li><strong>ISP</strong>: <code>IRol</code> la exige la convención; no rompe nada.</li>
+<li><strong>DIP</strong>: el Target vive en <code>service/</code> y el Adapter en <code>security/</code>: <strong>el detalle depende de la abstracción</strong>. Es DIP bien aplicado; solo se aparta de la convención de paquetes.</li>
+</ul>
+</section>
+
+<section id="evolucion"><h2>Evolución del sistema: mejoras propuestas e implementadas</h2>
+<p>Problemas del sistema que <strong>supimos resolver</strong>, más allá del patrón de la iteración.</p>
+{evol_html}
 {capturas_ui}
+</section>
+
+<section id="revision"><h2>Mejoras de la revisión</h2>
+<p>Revisión de solo lectura después de M1-M10: <strong>usos flojos de los conceptos, código muerto y bad smells</strong>. Entró lo chico que tapaba un hueco visible; lo abierto va al <a href="../backlog.md">backlog</a>.</p>
+{rev_html}
 </section>
 
 <section id="verificacion"><h2>Verificación</h2>
