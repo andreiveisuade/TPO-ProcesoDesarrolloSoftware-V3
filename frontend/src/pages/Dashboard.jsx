@@ -8,17 +8,16 @@ const Dashboard = () => {
   const { data: estadisticas, loading, error } = useSelector((state) => state.dashboard);
   const { user } = useSelector((state) => state.auth);
   
-  // Validamos el rol de SUPERVISOR en lugar de ADMIN
-  const isSupervisor = user?.rol === 'SUPERVISOR';
+  const puedeVerDashboard = user?.rol === 'SUPERVISOR' || user?.rol === 'ADMIN';
 
   useEffect(() => {
     // Solo disparamos la petición si el usuario es supervisor
-    if (isSupervisor) {
+    if (puedeVerDashboard) {
       dispatch(fetchEstadisticas());
     }
-  }, [dispatch, isSupervisor]);
+  }, [dispatch, puedeVerDashboard]);
 
-  if (!isSupervisor) return <div style={styles.center}>No tienes permisos para ver el dashboard.</div>;
+  if (!puedeVerDashboard) return <div style={styles.center}>No tienes permisos para ver el dashboard.</div>;
   if (loading) return <div style={styles.center}>Cargando métricas del sistema...</div>;
   if (error) return <div style={styles.center}>Error: {error}</div>;
 
