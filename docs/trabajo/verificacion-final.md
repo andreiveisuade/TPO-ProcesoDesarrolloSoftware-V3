@@ -144,3 +144,22 @@ Sobre main `6c470a9`, backend 8080 y front 5173 con base vacía al inicio. Códi
 
 - Con una sesión guardada en localStorage, abrir una ruta inexistente o `/login` muestra el navbar de la sesión sobre el formulario de login (capturas/final2/01-login.png). Menor, no bloquea.
 - Las fallas de la verificación anterior (403 devuelto como 401, 400 devuelto como 500) están resueltas.
+
+## Cierre
+
+Testeo final sobre el código definitivo (2026-10-06).
+
+| Paso | Resultado |
+|---|---|
+| `mvn -q clean test` | 37 tests, exit 0 |
+| `npm run build` | exit 0 |
+| API (12 casos contra 8080) | 12/12 OK: login de `admin`, `supervisor` y `user`; `/api/auth/me` 200; sin token 401; `user` en `/api/admin` 403; `admin` en `/api/supervisor` 403; tasa 1000 en el DTO 400 con mensajes de validación; crédito francés de 3 cuotas (550,63 c/u); cobro de la cuota 1; anulación de la cobranza 204; segunda anulación 400 "ya está anulada"; dashboard con saldo 1101,26 tras el cobro y vencido 1651,89 con un crédito de junio |
+| Visual (9 pantallas, dark theme) | 9/9 OK: login de los 3 roles, clientes, créditos, cobranzas, dashboard, gestor de permisos (supervisor) y panel admin (roles). Navbar según rol correcta |
+| Arranque prod (puerto 8099) | OK: arranca con perfil `prod`, `/h2-console` 404, `/api/auth/login` 200. Proceso terminado |
+| Entrega (`git archive HEAD`) | `mvn -q test` exit 0 dentro de la copia extraída |
+| Links relativos del README en la copia | 77 links, 6 rotos: `docs/trabajo/` y 5 archivos adentro (`smoke.md`, `visual.md`, `recorrido-cu.md`, `api.md`, `guia-de-lectura.md`). Es por `.gitattributes` (`docs/trabajo export-ignore`); en el árbol de git existen |
+| `git log v2..main` con claude, co-authored o anthropic | 0 |
+
+Falla menor de T38: sigue. Con sesión guardada, una ruta inexistente redirige a `/login` y muestra el navbar de la sesión sobre el formulario.
+
+Los datos de prueba (cliente `T45001`, créditos 1 y 2) quedaron en la base en memoria del 8080.
