@@ -1,0 +1,27 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Calibri
+skinparam defaultFontSize 12
+skinparam ClassBackgroundColor #FFFFFF
+skinparam ClassBorderColor #1D2B4F
+skinparam ClassHeaderBackgroundColor #FFFFFF
+skinparam ArrowColor #2E75B6
+skinparam NoteBackgroundColor #FFF8E1
+skinparam NoteBorderColor #B38600
+skinparam SequenceLifeLineBorderColor #1D2B4F
+skinparam ParticipantBackgroundColor #FFFFFF
+skinparam ParticipantBorderColor #1D2B4F
+skinparam SequenceGroupBackgroundColor #F4F8FC
+hide empty members
+class GlobalExceptionHandler {
+  +handleNotFound(ResourceNotFoundException) : 404
+  +handleBusiness(BusinessException) : 400
+  +handleValidation(MethodArgumentNotValidException) : 400
+  +handleAuth(AuthenticationException) : 401
+  +handleDenied(AccessDeniedException) : 403
+  +handleNoResource(NoResourceFoundException) : 404
+  +handleMetodo(HttpRequestMethodNotSupportedException) : 405
+  +handleGeneral(Exception) : 500
+}
+hide GlobalExceptionHandler fields
+@enduml
