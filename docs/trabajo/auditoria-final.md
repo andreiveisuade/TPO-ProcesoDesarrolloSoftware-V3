@@ -297,3 +297,58 @@ De reserva:
 - **"¿Por qué 14.500,02 y no 14.500?"** Por el redondeo por cuota: el total sale de las cuotas emitidas (O3) y el ajuste de la última cuota está pendiente (`InteresSimpleTest`).
 - **"¿Y si dos cajeros cobran la misma cuota?"** Bloqueo pesimista y test de 20 hilos (`repository/CuotaRepository.java:32-39`, `service/CobranzaConcurrenteTest.java`). Ojo: anular el crédito y cobrar al mismo tiempo todavía no está cubierto (I1).
 - **"¿Por qué la tasa significa otra cosa según el plan?"** En interés simple es % total y en el francés % mensual; la vista lo rotula (`pages/Creditos.jsx:15-17,180-181`).
+
+## Re-verificación — 06/10/2026, `main@fd5529d`
+
+Solo lectura. Las corridas se hicieron sobre copias de `git archive main` en el scratchpad y en el puerto 8099; la app de 8080 y 5173 no se tocó.
+
+### Veredicto
+
+**NO listo para push, por una línea.** El arreglo de I4 rompió `npm run lint`. Todo lo demás está resuelto y verificado, y lo pendiente es MENOR.
+
+### Estado de cada hallazgo
+
+| # | Estado | Evidencia |
+|---|---|---|
+| B1 | **Resuelto** | `docs/diagramas/clases-v3.puml:102-111,169-170`: `JwtUtil` con `key: SecretKey`, `parser: JwtParser` y composición (`*--`) hacia los dos Adaptee. `Credito` con `- calculo()` (`:255`). SVG y PNG re-renderizados, verificados en la imagen |
+| I1 | **Resuelto** | 30 carreras HTTP anular/cobrar en paralelo: 0 créditos corruptos. Ganó anular 24 veces (204/400) y cobrar 6 (400/201), así que los dos órdenes ocurren y nunca salen exitosos ambos. `AnulacionConcurrenteTest` **falla contra `f7cd7f9`** ("credito ANULADO con cobranza vigente") y pasa en `main`: el test detecta el bug |
+| I2 | **Resuelto** | Prod sin `JWT_SECRET`: no arranca (exit 1, `Could not resolve placeholder 'JWT_SECRET'`). Con secrets: `admin/admin` y `supervisor/supervisor` dan 401 (no hay semillas), un token forjado con el secret viejo del repo da 401, el token real da 200 y `/h2-console` da 404. README, manual, reporte (S3, Perfiles, Pendientes) y backlog (DB-1) dicen lo mismo |
+| I3 | **Resuelto** | `text/plain`, `xml` o sin `Content-Type` dan **415** JSON, también en `/api/auth/login`. `Accept: xml` o `text/html` dan **406** JSON. El `Accept` de un browser da 200. 0 ERROR nuevos en el log. Dos tests nuevos en `CodigosHttpTest` |
+| I4 | **Resuelto, pero rompe el lint** | Test de reducers (bundle con esbuild): después de `addCredito.fulfilled` o `addCobranza.fulfilled` de otro DNI o crédito, la lista buscada no cambia. La recarga del mismo id sigue en `pages/Creditos.jsx:62` y `pages/Cobranzas.jsx:40`. **`npm run lint`: 2 errores** `'action' is defined but never used` en `store/slices/creditosSlice.js:46` y `store/slices/cobranzasSlice.js:46` |
+| I5 | **Resuelto** | En el reporte: M3 "Por qué" dice "financiado incluye cancelados"; ISP y DIP en "Cumple"; títulos por concepto; "22 casos" reemplazado. Manual R18 sin `contarVigentes`. Lista de mejoras: "una interfaz sin clientes no viola ISP" |
+| I6 | **Resuelto** | `// Strategy:` en `CalculoDeCuota`, `InteresSimple` y `SistemaFrances`; `// Adapter: Target` en `TokenService`; DTO con "% total / % mensual"; las 4 precargas explicadas como "2 consultas en vez de N+1" |
+
+### Que los arreglos no hayan roto nada
+
+- **Tests**: `mvn -q clean test` da **40 tests, 0 fallas** (10 HTTP, 27 de dominio, 2 de concurrencia, `contextLoads`).
+- **Build**: `npm ci && npm run build` OK. **El lint falla** (I4).
+- **Regresión en dev, 8099**:
+  - Altas: cliente 201; crédito francés 12.000 al 5 % en 6 cuotas con cuota de 2.364,21.
+  - Cobro: 201, y 400 al repetirlo.
+  - Anular cobranza: `user` 403, `supervisor` 204, 400 al repetir.
+  - Anular crédito: 403, 204 y 400 en el mismo orden.
+  - Cobrar un crédito anulado da 400; un crédito inexistente, 404.
+  - Dashboard: `user` 403; `supervisor` 200 con saldo 14.185,26 = 6 × 2.364,21.
+  - Sin token 401, método no soportado 405, ruta inexistente 404.
+  - 0 ERROR en el log.
+- **Locks**: `registrar` toma crédito → cuota y `anularCredito` toma crédito → (lectura). Comparten el orden, sin riesgo de deadlock. `anularCobranza` no bloquea, que es M2 y sigue abierto.
+
+### Reporte completo en Firefox headless
+
+Captura de página completa: 1280 × 40.668 px, revisada en 17 tramos. El render está limpio: diagramas, tablas, gráfico del francés y capturas.
+
+**Coherencia con el código**: OK en M1-M10, M7 (composición), M9 (`calculo()`), matriz GRASP/SOLID, S3 e I1-I4. **Slop**: los cortes de §4 están aplicados y no hay ids de workers.
+
+Residuos MENORES encontrados en la pasada:
+- **Nota vieja en el DER**: `docs/diagramas/der-v3.puml:74` dice que "con requests concurrentes se duplica" la cobranza. Ya no es así desde I-1. Aparece en el SVG del DER inline del reporte y en el README.
+- **Nombre de método desfasado**: `docs/diagramas/clases-v3.puml:48` pone `obtenerUsuarios()` en `SupervisorController`; el código dice `listarUsuarios()` (`SupervisorController.java:33`).
+- **Ids que chocan**: en "Mejoras de la revisión", `I1`/`I3`/`I4` son ids de esta auditoría y chocan con `I-1` (cobro doble) en la misma sección. Mejor nombrarlos por concepto ("Anular y cobrar en paralelo", "415/406", "Lista del cliente buscado"). En M9 "Límites" sigue un id interno, `(P-M9)`.
+- **Rombos inconsistentes**: `puml/adapter-despues.puml` dibuja `UsuarioDetails o--> IUsuario` (agregación, rombo vacío) mientras el texto dice "composición 1 a 1" y `JwtUtil` usa rombo lleno.
+- **Contador viejo**: "143 commits sin merges" (`reporte-v3.html:114`); hoy son 144, y 145 con este commit. Conviene sacar el número o ponerlo sin cifra exacta.
+- **Captura vieja**: "Créditos, después" es anterior a UC09 y no muestra la tarjeta "Consultar crédito por número".
+- **Swagger en prod**: sigue abierto (`/v3/api-docs` da 200) y el reporte no lo dice como decisión.
+- **Borde de I3**: con `Accept` no JSON, los otros errores (por ejemplo `GET /api/creditos/abc` con `Accept: text/html`) siguen dando 401 vacío. Un browser real manda `*/*`, así que no le pasa.
+
+### Qué falta para push
+
+1. `store/slices/creditosSlice.js:46` y `store/slices/cobranzasSlice.js:46`: `(state) => { state.loading = false; }`, sin el `action`. Volver a correr `npm run lint`.
