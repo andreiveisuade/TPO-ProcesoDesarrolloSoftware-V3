@@ -4,12 +4,13 @@ Rama `api-swagger`. Swagger UI en `/swagger-ui.html`, especificación en `/v3/ap
 
 ## Mapa de endpoints
 
-"auth" = cualquier usuario con token válido. Sin token: 401 en todo salvo `/api/auth/**` y Swagger.
+"auth" = cualquier usuario con token válido. Sin token: 401 en todo salvo `/api/auth/**` (menos `/api/auth/me`) y Swagger.
 
 | Método | Ruta | Controller#método | Request | Response | Roles / permisos | Códigos |
 |---|---|---|---|---|---|---|
 | POST | /api/auth/register | AuthController#register | RegisterRequest | AuthResponse | público | 201, 400 |
 | POST | /api/auth/login | AuthController#login | LoginRequest | AuthResponse | público | 200, 400, 401 |
+| GET | /api/auth/me | AuthController#me | — | AuthResponse (`token` en null) | auth | 200, 401 |
 | POST | /api/clientes | ClienteController#crear | ClienteRequest | ClienteResponse | auth | 201, 400, 401 |
 | GET | /api/clientes/{dni} | ClienteController#buscarPorDni | — | ClienteResponse | auth | 200, 401, 404 |
 | GET | /api/clientes | ClienteController#listarTodos | — | List\<ClienteResponse> | auth | 200, 401 |
