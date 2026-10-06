@@ -1,0 +1,35 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Calibri
+skinparam defaultFontSize 12
+skinparam ClassBackgroundColor #FFFFFF
+skinparam ClassBorderColor #1D2B4F
+skinparam ClassHeaderBackgroundColor #FFFFFF
+skinparam ArrowColor #2E75B6
+skinparam NoteBackgroundColor #FFF8E1
+skinparam NoteBorderColor #B38600
+skinparam SequenceLifeLineBorderColor #1D2B4F
+skinparam ParticipantBackgroundColor #FFFFFF
+skinparam ParticipantBorderColor #1D2B4F
+skinparam SequenceGroupBackgroundColor #F4F8FC
+hide empty members
+class DashboardServiceImpl {
+  +obtenerEstadisticasGenerales()
+}
+interface CreditoRepository #DDEBF7 {
+  +contarVigentes()
+  +sumarDeudaOriginalVigente()
+}
+interface CobranzaRepository #DDEBF7 {
+  +sumarImporteVigente()
+}
+DashboardServiceImpl --> CreditoRepository
+DashboardServiceImpl --> CobranzaRepository
+note bottom of CreditoRepository #DDEBF7
+  WHERE anulado = false
+  SUM(deudaOriginal)
+end note
+note bottom of CobranzaRepository #DDEBF7
+  WHERE anulada = false
+end note
+@enduml
