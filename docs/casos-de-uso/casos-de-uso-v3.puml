@@ -1,0 +1,72 @@
+@startuml casos-de-uso-v3
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+
+title Dashboard de préstamos - Casos de uso V3
+
+actor "Visitante" as Vis
+actor "Usuario\n(USER)" as User
+actor "Supervisor\n(SUPERVISOR)" as Sup
+actor "Administrador\n(ADMIN)" as Adm
+
+User <|-- Sup
+User <|-- Adm
+
+rectangle "Dashboard de préstamos" {
+  usecase "UC01 Registrarse" as UC01
+  usecase "UC02 Iniciar sesión" as UC02
+
+  usecase "UC04 Registrar cliente" as UC04
+  usecase "UC05 Listar clientes" as UC05
+  usecase "UC06 Buscar cliente por DNI" as UC06
+
+  usecase "UC07 Otorgar crédito" as UC07
+  usecase "UC08 Generar plan de cuotas" as UC08
+  usecase "UC09 Consultar crédito" as UC09
+  usecase "UC10 Listar créditos del cliente" as UC10
+  usecase "UC11 Anular crédito" as UC11
+
+  usecase "UC13 Registrar cobranza" as UC13
+  usecase "UC14 Listar cobranzas del crédito" as UC14
+  usecase "UC15 Anular cobranza" as UC15
+
+  usecase "UC16 Ver estadísticas" as UC16
+  usecase "UC18 Listar usuarios" as UC18
+  usecase "UC19 Asignar permisos de anulación" as UC19
+  usecase "UC20 Cambiar rol de usuario" as UC20
+}
+
+Vis --> UC01
+Vis --> UC02
+
+User --> UC04
+User --> UC05
+User --> UC06
+User --> UC07
+User --> UC09
+User --> UC10
+User --> UC11
+User --> UC13
+User --> UC14
+User --> UC15
+
+Sup --> UC16
+Sup --> UC18
+Sup --> UC19
+Adm --> UC16
+Adm --> UC18
+Adm --> UC20
+
+UC07 ..> UC08 : <<include>>
+
+note right of UC11
+  Requiere el permiso
+  puedeAnularCredito
+  (no el rol)
+end note
+note right of UC15
+  Requiere el permiso
+  puedeAnularCobranza
+end note
+@enduml
