@@ -19,20 +19,20 @@ interface TokenService <<Target>> #DDEBF7 {
   +esValido(token, username)
 }
 class JwtUtil <<Adapter>> #DDEBF7 {
-  -secret
+  -key : SecretKey
+  -parser : JwtParser
   -expirationMs
   +generarToken(username)
   +extraerUsername(token) : Optional<String>
   +esValido(token, username)
 }
-class "Jwts (jjwt)" as Jwts <<Adaptee>> {
-  +builder()
-  +parser()
-}
+class "JwtParser (jjwt)" as JwtParser <<Adaptee>>
+class "SecretKey (jjwt)" as SecretKey <<Adaptee>>
 class AuthServiceImpl <<Client>>
 class JwtAuthFilter <<Client>>
 TokenService <|.. JwtUtil
-JwtUtil ..> Jwts
+JwtUtil *--> JwtParser
+JwtUtil *--> SecretKey
 AuthServiceImpl --> TokenService
 JwtAuthFilter --> TokenService
 

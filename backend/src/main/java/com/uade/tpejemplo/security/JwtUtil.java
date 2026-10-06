@@ -2,6 +2,7 @@ package com.uade.tpejemplo.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import com.uade.tpejemplo.service.TokenService;
@@ -14,18 +15,19 @@ import java.util.Optional;
 import java.util.function.Function;
 
 // Genera y valida los JWT de la sesion.
-// Adapter: adapta jjwt a TokenService
+// Adapter: implementa TokenService (Target) y delega en JwtParser/SecretKey de jjwt (Adaptee, por composicion)
 @Component
 public class JwtUtil implements TokenService {
 
-    @Value("${jwt.secret}")
-    private String secret;
+    private final SecretKey key;
+    private final JwtParser parser;
+    private final long expirationMs;
 
-    @Value("${jwt.expiration-ms}")
-    private long expirationMs;
-
-    private SecretKey getKey() {
-        return Keys.hmacShaKeyFor(secret.getBytes());
+    public JwtUtil(@Value("${jwt.secret}") String secret,
+                   @Value("${jwt.expiration-ms}") long expirationMs) {
+        this.key = Keys.hmacShaKeyFor(secret.getBytes());
+        this.parser = Jwts.parser().verifyWith(key).build();
+        this.expirationMs = expirationMs;
     }
 
     @Override
@@ -34,7 +36,7 @@ public class JwtUtil implements TokenService {
             .subject(username)
             .issuedAt(new Date())
             .expiration(new Date(System.currentTimeMillis() + expirationMs))
-            .signWith(getKey())
+            .signWith(key)
             .compact();
     }
 
@@ -53,9 +55,7 @@ public class JwtUtil implements TokenService {
     }
 
     private <T> T extraerClaim(String token, Function<Claims, T> resolver) {
-        Claims claims = Jwts.parser()
-            .verifyWith(getKey())
-            .build()
+        Claims claims = parser
             .parseSignedClaims(token)
             .getPayload();
         return resolver.apply(claims);
