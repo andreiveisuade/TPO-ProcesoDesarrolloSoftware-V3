@@ -29,15 +29,52 @@ Fuentes: grabación clase 10 (06/10, min 0-25, whisper con mucho ruido hasta ~08
 - Sugirió armar un documento tipo "SharePoint del proyecto" siguiendo el esquema del apunte, **patrón por patrón**: qué problema resuelve, qué reglas se aplican, qué consecuencias tiene [22:32-22:51]. Encaja con nuestro formato Patrón → Problema → Solución → Por qué; conviene agregar **Consecuencias**.
 - No mencionó la bitácora explícitamente en este tramo (min 0-25).
 
-## 4. Análisis del apunte (resumen de patrones subido a Teams, clase 10)
+## 4. Análisis del apunte (ADOO, Repaso Integrador GRASP · SOLID · Adapter · Strategy, clase 10)
 
-**Pendiente: el PDF no está en ~/Downloads (06/10).** Cuando Andrei lo baje: moverlo a `01_Material_de_Clase/CLASE_10_<nombre>.pdf` y completar esta sección.
+Archivo: `01_Material_de_Clase/CLASE_10_ADOO_Repaso_GRASP_SOLID_Adapter_Strategy.pdf` (40 láminas).
 
-Lo que se sabe por la grabación:
-- Resumen de "todos los patrones que por lo menos vimos hasta ahora" [21:58-22:05]: GRASP primero, después SOLID [22:52-23:02], y anticipa los "patroncitos" de MVC para la próxima iteración [23:36-23:44].
-- Estructura fija por patrón: problema que resuelve, reglas que se aplican, consecuencias [22:24-22:28].
-- Ubicación: Teams, carpeta clase 10 [23:55].
-- Aplicación al dashboard (a confirmar con el texto): usar ese esquema como plantilla de cada mejora del reporte V3.
+**Qué dice.** Tres bloques: GRASP (9 patrones, láminas 4-14), SOLID (5 principios, 15-22) y dos patrones GoF, Adapter (24-31) y Strategy (32-38), con una comparación (39) y un mapa integrador (40). Tesis: GRASP es micro-decisión (a qué clase va cada responsabilidad), SOLID es criterio de auditoría del resultado, y los patrones de diseño nacen de aplicar ambos, no son una teoría aparte. Advierte que SOLID aplicado sin criterio es sobre-ingeniería.
+
+**Estructura con la que documenta.**
+- GRASP: una lámina por patrón con tres bloques fijos, *¿Qué problema resuelve?* / *Regla de asignación* / *Consecuencia*. Es el esquema que el profe pidió replicar.
+- SOLID: enunciado + antes (violación) / después (corrección) + GRASP relacionado.
+- Adapter y Strategy (más larga): problema, intención + analogía, diagrama de clases, código Java, fundamentos (qué GRASP y qué SOLID hay detrás), ventajas / desventajas / cuándo usarlo, casos reales.
+
+**Adapter.**
+- Roles: Cliente, Target (`ITarget`, la interfaz que el cliente espera), Adapter (implementa Target y contiene al Adaptado), Adaptado (clase existente que no se puede tocar). El Cliente solo conoce el Target; el Adaptado no sabe que el Adapter existe.
+- Variante: Object Adapter (composición). Class Adapter necesita herencia múltiple y en Java no es viable.
+- Cuándo: hay que integrar código de terceros o legacy **que no podés modificar**. Si se puede tocar la clase origen, es más simple modificarla.
+- Errores típicos: usarlo cuando se puede cambiar la clase; acumular decenas de Adapters sobre un mismo subsistema (la pregunta real es si falta una Facade); olvidar mantenerlo sincronizado si el Adaptado cambia seguido; que el Target siga exponiendo tipos del Adaptado.
+- Fundamentos: GRASP Indirection, Pure Fabrication, Protected Variations; SOLID SRP, OCP.
+
+**Strategy.**
+- Roles: Contexto (guarda la estrategia y delega), Estrategia (interfaz), EstrategiaConcreta A/B/C. Se cambia en runtime (`setEstrategia`); es composición, no herencia. Las estrategias no se conocen entre sí (a diferencia de State, donde sí conocen la transición).
+- Cuándo: una misma tarea con varios algoritmos intercambiables; señal de alarma, un `switch(tipoDeAlgoritmo)` que crece con cada caso. Se diseña desde el inicio junto al Contexto.
+- Errores típicos: aplicarlo con dos algoritmos que casi nunca cambian (sobre-ingeniería); que el Contexto siga decidiendo el algoritmo con `if/switch`; que el cliente no sepa qué estrategias existen para elegir; confundirlo con State.
+- Fundamentos: GRASP Polymorphism, Protected Variations; SOLID OCP, DIP.
+
+**Qué GRASP/SOLID repasa.** GRASP completo: Information Expert, Creator, Controller, Low Coupling, High Cohesion, Polymorphism, Pure Fabrication, Indirection, Protected Variations. SOLID completo, con su correlato: SRP-High Cohesion, OCP-Protected Variations, LSP-Polymorphism, ISP-Low Coupling, DIP-Indirection/Protected Variations.
+
+**Cómo se aplica al dashboard.**
+- Cada mejora del reporte V3 se documenta con la plantilla problema / regla / consecuencia, sumando antes/después de código y los GRASP/SOLID de fondo (el apunte los pone explícitos).
+- Strategy: cálculo de cuota (`CalculoDeCuota`, `InteresSimple`, `SistemaFrances`, Contexto `Credito`), M9. Es el caso del apunte: el `if` por plan habría crecido con cada sistema nuevo.
+- Adapter: `JwtUtil` detrás de `TokenService` (jjwt como Adaptado) y `UsuarioDetails` sobre `UserDetails` (Spring Security), M7.
+- Alerta de defensa: el apunte dice "usalo cuando NO podés tocar la clase origen". `JwtUtil` es código nuestro; lo adaptado de verdad es jjwt. Hay que defenderlo así (protegemos al cliente de la librería, DIP), no como "adaptamos JwtUtil".
+
+**Contraste de M7 y M9 con la estructura del apunte** (no se editaron).
+
+| | M7 (Adapter) | M9 (Strategy) |
+|---|---|---|
+| Problema / solución / por qué / consecuencias | Cumple | Cumple |
+| Roles | Cumple, tabla Target/Adapter/Adaptee/Client para las dos instancias | Cumple, tabla Context/Strategy/Concrete |
+| Código antes/después | Cumple | Cumple |
+| GRASP/SOLID de fondo | Falta: solo menciona DIP. Faltan Indirection, Protected Variations, Pure Fabrication, SRP, OCP | Falta: solo menciona OCP. Faltan Polymorphism, Protected Variations, DIP |
+| Diagrama de clases | Falta | Falta |
+| Cuándo usarlo / sobre-ingeniería | Falta: no justifica por qué Adapter si `JwtUtil` es propio; indicar variante Object Adapter | Falta: no dice por qué hay dos estrategias reales ni el riesgo de sobre-ingeniería; solo vale la pena porque el francés es real |
+| Desventajas del apunte | Cumple casi todo: ya anota la interfaz con una sola implementación y el `UserDetails` en `esValido`; falta el costo de mantener el Adapter si jjwt cambia | Parcial: falta que el cliente debe conocer los planes (resuelto con el `select` y el enum, mencionarlo) |
+| Cambio en runtime | n/a | Aclarar que `tipoPlan` queda fijo al otorgar (no hay `setEstrategia` en caliente) |
+
+Veredicto: M7 y M9 tienen que cambiar, solo para agregar los fundamentos GRASP/SOLID, el diagrama de clases y la justificación de "cuándo usarlo". La estructura base ya cumple.
 
 ## 5. Contraste con M1..M10 (dominio.md §6)
 
