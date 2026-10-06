@@ -54,3 +54,7 @@ Junta lo que quedó abierto en la iteración 3 (dominio, prácticas de Spring, b
 | A-6 | `GET /api/cobranzas/{id}` | DUDOSA: nadie la consume |
 | A-7 | Desactivar o borrar usuarios | DUDOSA: no hay caso de uso ni campo `activo`; requiere cambio de modelo |
 | A-8 | `DELETE /api/clientes/{dni}`, `PUT` o `DELETE` real de crédito y de cobranza, CRUD de cuota, `GET /api/creditos/{id}/cuotas` | Romperían el historial o las cuotas ya generadas, o son redundantes con `CreditoResponse.cuotas` |
+
+## Del code review V2 → V3 (06/10)
+
+Pendientes del code review (`docs/trabajo/code-review-v2-v3.md`, en GitHub): **A3** (alta de cliente o usuario con el mismo DNI o username en simultáneo; resolver con unique + manejo de la violación), **5 medias** y **4 bajas**. A1 y A2 ya están resueltos.
