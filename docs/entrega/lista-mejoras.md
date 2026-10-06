@@ -7,7 +7,7 @@ Rutas Java relativas a `backend/src/main/java/com/uade/tpejemplo/`. Reporte comp
 | ID | Qué | Clase y método | Patrón / concepto |
 |---|---|---|---|
 | M9 | Cálculo de cuota intercambiable: interés simple y sistema francés | `model/interfaces/CalculoDeCuota.java`; `model/plan/InteresSimple.java`, `model/plan/SistemaFrances.java`; `model/TipoPlan.java`; `model/Credito.java` (constructor, `totalADevolver`) | **Strategy** (+ OCP, Polymorphism) |
-| M7 | JwtUtil detrás de TokenService; UsuarioDetails documentado | `service/TokenService.java`; `security/JwtUtil.java`; clientes `security/JwtAuthFilter.java`, `service/impl/AuthServiceImpl.java`; `security/UsuarioDetails.java` | **Adapter** (+ DIP, Protected Variations) |
+| M7 | Target `TokenService`, Adapter `JwtUtil`, Adaptee jjwt (librería que no controlamos); además `UsuarioDetails` adapta `IUsuario` a `UserDetails` | `service/TokenService.java`; `security/JwtUtil.java`; clientes `security/JwtAuthFilter.java`, `service/impl/AuthServiceImpl.java`; `security/UsuarioDetails.java` | **Adapter** (+ DIP, Protected Variations) |
 
 ## Hechos
 
