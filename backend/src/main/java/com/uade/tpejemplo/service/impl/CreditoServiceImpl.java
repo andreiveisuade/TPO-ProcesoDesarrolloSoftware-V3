@@ -38,7 +38,8 @@ public class CreditoServiceImpl implements CreditoService {
             request.getDeudaOriginal(),
             request.getFecha(),
             request.getTasaInteres(),
-            request.getCantidadCuotas()
+            request.getCantidadCuotas(),
+            request.getTipoPlan()
         ));
         List<Cuota> cuotas = cuotaRepository.saveAll(credito.generarPlanDeCuotas());
 
