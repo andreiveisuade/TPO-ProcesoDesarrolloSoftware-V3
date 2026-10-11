@@ -427,7 +427,7 @@ evol = [
   "el modelo es la autoridad sobre permisos (MVC, M4)."),
  ("Tests y validación", "6f552e0..82fc486, 4d35266, 77dec02, 90d0e5e, 8888df6",
   "<strong>Cero tests</strong> en V2; un DNI largo o una deuda enorme daban 500 (I-2).",
-  "42 tests; <code>@Size</code>/<code>@Digits</code> en los DTO; <code>Cuota.estaVencida(LocalDate)</code> recibe la fecha.",
+  "43 tests; <code>@Size</code>/<code>@Digits</code> en los DTO; <code>Cuota.estaVencida(LocalDate)</code> recibe la fecha.",
   "el dominio se prueba sin Spring ni reloj."),
  ("Limpieza", "ddbdebb, 3478af6, c36658f, 6a1c363, 4713828",
   "Javadoc redundante; archivos de IDE y de proceso en el zip.",
@@ -480,7 +480,7 @@ timeline = f'''<div class="timeline">
 <div class="hito"><div class="punto"></div><h4>V2</h4><p class="tema">Iteración 2: GRASP + interfaces</p><p class="meta">Mergeada 15/09 · <code>main@45e228c</code> (tag <code>v2</code>) · 5 commits</p>
 <ul><li>Information Expert: <code>Cobranza.anular()</code>, <code>Credito.anular()</code></li><li>Creator: <code>Usuario.nuevo</code></li><li>Interfaz por cada clase del modelo y de servicio</li><li>Revierte §3.7 de V1 (Lazy class): restituye las interfaces de servicio</li></ul></div>
 <div class="hito actual"><div class="punto"></div><h4>V3</h4><p class="tema">Iteración 3: MVC + Strategy + Adapter</p><p class="meta">Entrega 13/10/2026 · repo V3, <code>main</code> · {n_v3} commits sin merges</p>
-<ul><li><strong>Strategy</strong>: cálculo de cuota, interés simple y sistema francés (M9)</li><li><strong>Adapter</strong>: <code>TokenService</code> sobre jjwt (M7)</li><li><code>EstadoCredito</code>, saldo, mora (M6, M8)</li><li>Permisos y errores HTTP en el backend (M4, M5)</li><li>Dashboard con saldo y vencido (M3, M10, O7); 42 tests</li><li>Revierte V2: el sistema francés, descartado el 15/09, vuelve como segunda estrategia</li><li>Swagger, perfiles dev/prod, UI, dark theme, UC06/UC09</li></ul></div>
+<ul><li><strong>Strategy</strong>: cálculo de cuota, interés simple y sistema francés (M9)</li><li><strong>Adapter</strong>: <code>TokenService</code> sobre jjwt (M7)</li><li><code>EstadoCredito</code>, saldo, mora (M6, M8)</li><li>Permisos y errores HTTP en el backend (M4, M5)</li><li>Dashboard con saldo y vencido (M3, M10, O7); 43 tests</li><li>Revierte V2: el sistema francés, descartado el 15/09, vuelve como segunda estrategia</li><li>Swagger, perfiles dev/prod, UI, dark theme, UC06/UC09</li></ul></div>
 </div>
 <details><summary>Commits V2 → V3 (git log v2..main)</summary><pre><code>{e(log_v3)}</code></pre></details>'''
 
@@ -669,7 +669,7 @@ doc = f'''<!doctype html>
 
 <section id="verificacion"><h2>Verificación</h2>
 <ul>
-<li><strong>42 tests, 0 fallas</strong> (<code>mvn test</code>): 29 de dominio, 10 HTTP (<code>@WebMvcTest</code>), 2 de concurrencia, <code>contextLoads</code>.</li>
+<li><strong>43 tests, 0 fallas</strong> (<code>mvn test</code>): 29 de dominio, 11 HTTP (<code>@WebMvcTest</code>), 2 de concurrencia, <code>contextLoads</code>.</li>
 <li><strong>Smoke</strong>: API 12/12, recorrido visual 9/9; auditoría de API: 304 casos con 4 roles.</li>
 <li><strong>Fallas halladas y corregidas</strong>: 401/403 y 500 mal mapeados (F1, F2); 2 visuales (O1, <code>d35fc0e</code>).</li>
 </ul>

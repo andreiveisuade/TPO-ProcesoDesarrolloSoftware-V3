@@ -64,16 +64,16 @@ Rutas Java relativas a `backend/src/main/java/com/uade/tpejemplo/`. Reporte comp
 | T-1 | Tests de los códigos HTTP 400/401/403/404/405 con la seguridad JWT real y los servicios simulados | `backend/src/test/java/com/uade/tpejemplo/controller/CodigosHttpTest.java` (`@WebMvcTest`) | Tests |
 | T-5 | La fecha de hoy entra por parámetro: se testea anular una cobranza de otro día y el vencimiento sin depender del reloj | `model/Cobranza.java` `anular(LocalDate)`; `model/Cuota.java` `estaVencida(LocalDate)` | Tests |
 | DER | Diagrama entidad-relación de la base, con claves y restricciones | `docs/diagramas/der-v3.py` (genera `.svg` y `.png`) | Documentación |
-| Tests | 42 tests, 0 fallas | `backend/src/test/java/com/uade/tpejemplo/` | JUnit 5 + AssertJ, `@WebMvcTest` |
+| Tests | 43 tests, 0 fallas | `backend/src/test/java/com/uade/tpejemplo/` | JUnit 5 + AssertJ, `@WebMvcTest` |
 
-Desglose de los 42 tests:
+Desglose de los 43 tests:
 
 - `model/CreditoTest`: 9
 - `model/CuotaTest`: 9
 - `model/plan/InteresSimpleTest`: 4
 - `model/plan/SistemaFrancesTest`: 4
 - `model/CobranzaTest`: 3
-- `controller/CodigosHttpTest`: 10
+- `controller/CodigosHttpTest`: 11
 - `service/CobranzaConcurrenteTest`: 1 (I-1)
 - `service/AnulacionConcurrenteTest`: 1 (I1)
 - `TpEjemploApplicationTests` (`contextLoads`): 1
@@ -88,6 +88,7 @@ Decisión S6: el control de roles queda doble a propósito, reglas de URL en `co
 | BS3 | El usuario responde si puede anular | `model/interfaces/IUsuario.java`, `model/Usuario.java` `puedeAnularCredito`, `puedeAnularCobranza`; usados en `service/impl/CreditoServiceImpl.java` `anularCredito` y `service/impl/CobranzaServiceImpl.java` `anularCobranza` | Information Expert / Tell, don't ask |
 | BS4 | `rol` tipado como `Rol` en las respuestas | `dto/response/UsuarioResponse.java`, `dto/response/AuthResponse.java` | Primitive obsession |
 | BS6 | Mismo verbo para el mismo caso | `controller/SupervisorController.java` `listarUsuarios` | Nombres consistentes |
+| BS8 | Los permisos son `Boolean` con `@NotNull`: un body `{}` da 400 en vez de borrar los dos permisos con 200 | `dto/request/PermisosRequest.java`; `service/impl/AdminServiceImpl.java` `actualizarPermisos`; test `backend/src/test/java/com/uade/tpejemplo/controller/CodigosHttpTest.java` | Primitive obsession |
 | I1 | Anular y cobrar en paralelo ya no deja un crédito ANULADO con cobranza vigente: los dos caminos bloquean primero el crédito; cobrar además bloquea la cuota | `repository/CreditoRepository.java` (`@Lock(PESSIMISTIC_WRITE)`), `service/impl/CreditoServiceImpl.java` `anularCredito`, `service/impl/CobranzaServiceImpl.java` `registrar`; test `backend/src/test/java/com/uade/tpejemplo/service/AnulacionConcurrenteTest.java` | Concurrencia (bloqueo pesimista) |
 | I3 | `Content-Type` no JSON → 415; `Accept` no JSON → 406, con `ErrorResponse` (antes 500) | `exception/GlobalExceptionHandler.java`; test `backend/src/test/java/com/uade/tpejemplo/controller/CodigosHttpTest.java` | Error del cliente = 4xx |
 | I4 | Un alta ya no aparece en la lista de otro cliente o crédito buscado | `frontend/src/store/slices/creditosSlice.js`, `frontend/src/store/slices/cobranzasSlice.js` | MVC: la vista muestra lo que dice el modelo |

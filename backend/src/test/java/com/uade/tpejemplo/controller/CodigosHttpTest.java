@@ -69,6 +69,13 @@ class CodigosHttpTest {
     }
 
     @Test
+    @WithMockUser(roles = "SUPERVISOR")
+    void permisosSinCamposDa400() throws Exception {
+        mvc.perform(put("/api/supervisor/usuarios/1/permisos-anulacion").contentType(MediaType.APPLICATION_JSON).content("{}"))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void sinTokenDa401() throws Exception {
         mvc.perform(get("/api/clientes")).andExpect(status().isUnauthorized());
     }

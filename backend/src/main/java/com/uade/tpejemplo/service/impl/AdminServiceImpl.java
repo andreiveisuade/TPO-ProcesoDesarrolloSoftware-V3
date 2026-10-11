@@ -38,8 +38,8 @@ public class AdminServiceImpl implements AdminService {
         Usuario usuario = buscar(id);
 
         usuario.otorgarPermisos(Permisos.de(
-                request.isPuedeAnularCredito(),
-                request.isPuedeAnularCobranza()
+                request.getPuedeAnularCredito(),
+                request.getPuedeAnularCobranza()
         ));
 
         usuarioRepository.save(usuario);

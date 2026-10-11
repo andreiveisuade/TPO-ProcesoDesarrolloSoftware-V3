@@ -5,7 +5,7 @@ Casos de uso del dashboard de préstamos tal como funcionan en V3 (main), con la
 Convenciones:
 
 - Rutas del backend relativas a `backend/src/main/java/com/uade/tpejemplo/`; tests relativos a `backend/src/test/java/com/uade/tpejemplo/`; front relativo a `frontend/src/`. `archivo:línea` apunta al método.
-- **Verificación**: *Test* = test automático (`mvn test`, 42 tests, todos pasan al 2026-10-06): de dominio en `model/` y `model/plan/`, y de códigos HTTP en `controller/CodigosHttpTest` (`@WebMvcTest` con la seguridad JWT real). *Smoke* = smoke test manual del equipo. *Final* = verificación final manual del equipo, con capturas. Smoke y Final son notas de trabajo internas que no van en la entrega. *API* = `verificar-cu.sh` de esta carpeta, corrido sobre una base limpia (resultados en la sección 6).
+- **Verificación**: *Test* = test automático (`mvn test`, 43 tests, todos pasan al 2026-10-11): de dominio en `model/` y `model/plan/`, y de códigos HTTP en `controller/CodigosHttpTest` (`@WebMvcTest` con la seguridad JWT real). *Smoke* = smoke test manual del equipo. *Final* = verificación final manual del equipo, con capturas. Smoke y Final son notas de trabajo internas que no van en la entrega. *API* = `verificar-cu.sh` de esta carpeta, corrido sobre una base limpia (resultados en la sección 6).
 - Errores: todos salen por `exception/GlobalExceptionHandler.java` con cuerpo `{status, error, mensajes[]}`: 400 regla de negocio (`handleNegocio`:36), 400 validación del DTO (`handleValidacion`:41), 400 body o parámetro mal formado (`handleSolicitudInvalida`:49), 401 credenciales (`handleNoAutenticado`:54), 403 sin permiso (`handleAccesoDenegado`:59), 404 no encontrado (`handleNoEncontrado`:31). Sin token, o con token inválido, la cadena de seguridad responde 401 sin cuerpo; con token y sin el rol, 403 sin cuerpo (`config/SecurityConfig.java:64-65`). Los dos casos y el 400/404/405 los cubre `controller/CodigosHttpTest`.
 
 ## 1. Actores
@@ -65,7 +65,7 @@ Fuente: `casos-de-uso-v3.puml` (renderizado con `plantuml -tsvg` y `-tpng`). Sup
 - **Reglas**: unicidad del DNI (es la clave primaria) en `service/impl/ClienteServiceImpl.java:25` `crear`; alta por `model/Cliente.java:30` `nuevo`.
 - **Endpoint**: `POST /api/clientes` → `controller/ClienteController.java:32` `crear`.
 - **Pantalla**: `pages/Clientes.jsx` (formulario).
-- **Verificación**: Smoke "Crear cliente 111"; Final "Crear cliente"; API (UC04 x4); Test `controller/CodigosHttpTest.java:49` `dniDeMasDe15CaracteresDa400`, `:72` `sinTokenDa401`.
+- **Verificación**: Smoke "Crear cliente 111"; Final "Crear cliente"; API (UC04 x4); Test `controller/CodigosHttpTest.java:49` `dniDeMasDe15CaracteresDa400`, `:79` `sinTokenDa401`.
 - **Hueco**: el DNI tiene largo máximo (15, I-2) pero no formato; `"abc"` se acepta con 201 (API). No hay modificación ni baja de clientes (A-09 de V0, ver P3).
 
 ### UC05 Listar clientes
@@ -86,7 +86,7 @@ Fuente: `casos-de-uso-v3.puml` (renderizado con `plantuml -tsvg` y `-tpng`). Sup
 - **Reglas**: `service/impl/ClienteServiceImpl.java:36` `buscarPorDni`.
 - **Endpoint**: `GET /api/clientes/{dni}` → `controller/ClienteController.java:41` `buscarPorDni`.
 - **Pantalla**: `pages/Clientes.jsx` (bloque "Buscar cliente por DNI"): muestra nombre y DNI, o el 404 del back en el mismo bloque. Usa `api/clientes.js` `getCliente`.
-- **Verificación**: API (UC06 x2); Test `controller/CodigosHttpTest.java:90` `clienteInexistenteDa404`; captura de la pantalla en la verificación del equipo.
+- **Verificación**: API (UC06 x2); Test `controller/CodigosHttpTest.java:97` `clienteInexistenteDa404`; captura de la pantalla en la verificación del equipo.
 
 ### UC07 Otorgar crédito
 
@@ -184,7 +184,7 @@ Fuente: `casos-de-uso-v3.puml` (renderizado con `plantuml -tsvg` y `-tpng`). Sup
 
 - **Actor**: Supervisor, Administrador. **RF V0**: RF-DA-01.
 - **Flujo principal**: 1. El actor entra a Dashboard (el link solo aparece para esos roles, `components/Navbar.jsx:30`). 2. El sistema responde **200** con: cantidad de clientes, cantidad de créditos VIGENTES, monto total financiado (suma de la deuda original de los créditos no anulados) monto total cobrado (suma de las cobranzas no anuladas), saldo pendiente (suma de `Credito.saldo()`) y monto vencido (suma de `Credito.montoVencido()`: cuotas vencidas impagas de créditos no anulados, `Cuota.estaVencida`, O7). 3. La pantalla muestra las seis tarjetas y el rol en el título.
-- **Errores**: USER → **403** (`config/SecurityConfig.java:60`; test `controller/CodigosHttpTest.java:84` `rolIncorrectoDa403`); el front además oculta el link y muestra "No tienes permisos…" (`pages/Dashboard.jsx:14,22`).
+- **Errores**: USER → **403** (`config/SecurityConfig.java:60`; test `controller/CodigosHttpTest.java:91` `rolIncorrectoDa403`); el front además oculta el link y muestra "No tienes permisos…" (`pages/Dashboard.jsx:14,22`).
 - **Reglas**: `service/impl/DashboardServiceImpl.java:30` `obtenerEstadisticasGenerales` (activos con `Credito.estado()`, O4); `repository/CreditoRepository.java:41` `sumarDeudaOriginalNoAnulada`; `repository/CobranzaRepository.java:19` `sumarImporteNoAnulado`.
 - **Endpoint**: `GET /api/dashboard/stats` → `controller/DashboardController.java:29` `obtenerEstadisticas`.
 - **Pantalla**: `pages/Dashboard.jsx` (`/estadisticas`).
@@ -297,7 +297,7 @@ Los tests de dominio están en `model/` y `model/plan/` del árbol de tests; los
 | UC20 `op1` a SUPERVISOR / dar ADMIN / cambiar al admin / rol `JEFE` / `op1` ve el dashboard con el token de antes | 200 / 400 / 400 / 400 / **200** | H4 (resuelto después en el front) |
 | Cobrar las 2 cuotas del crédito de 2025 → CANCELADO; dashboard | 201 x2; 200 | **Activos 2 → 1, financiado 1700 → 1700** (H3) |
 
-Además: `mvn test` → 42 tests, 0 fallas (contando los agregados después de esta corrida).
+Además: `mvn test` → 43 tests, 0 fallas (contando los agregados después de esta corrida).
 
 ### Hallazgos
 
