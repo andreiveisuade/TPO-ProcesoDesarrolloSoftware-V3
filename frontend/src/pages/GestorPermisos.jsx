@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchUsuariosSupervisor, actualizarPermisos } from '../store/slices/permisosSlice';
 
@@ -44,33 +44,31 @@ const GestorPermisos = () => {
               </tr>
             </thead>
             <tbody>
-              {usuarios.map(u => {
-                return (
-                  <tr key={u.id} style={styles.tr}>
-                    <td style={styles.td}>
-                      {u.username}
-                    </td>
-                    <td style={styles.tdCenter}>
-                      <input 
-                        type="checkbox" 
-                        checked={u.puedeAnularCredito} 
-                        onChange={() => handleCheckboxChange(u, 'puedeAnularCredito')}
-                        disabled={loading}
-                        style={styles.checkbox}
-                      />
-                    </td>
-                    <td style={styles.tdCenter}>
-                      <input 
-                        type="checkbox" 
-                        checked={u.puedeAnularCobranza}
-                        onChange={() => handleCheckboxChange(u, 'puedeAnularCobranza')}
-                        disabled={loading}
-                        style={styles.checkbox}
-                      />
-                    </td>
-                  </tr>
-                );
-              })}
+              {usuarios.map(u => (
+                <tr key={u.id} style={styles.tr}>
+                  <td style={styles.td}>
+                    {u.username}
+                  </td>
+                  <td style={styles.tdCenter}>
+                    <input 
+                      type="checkbox" 
+                      checked={u.puedeAnularCredito} 
+                      onChange={() => handleCheckboxChange(u, 'puedeAnularCredito')}
+                      disabled={loading}
+                      style={styles.checkbox}
+                    />
+                  </td>
+                  <td style={styles.tdCenter}>
+                    <input 
+                      type="checkbox" 
+                      checked={u.puedeAnularCobranza}
+                      onChange={() => handleCheckboxChange(u, 'puedeAnularCobranza')}
+                      disabled={loading}
+                      style={styles.checkbox}
+                    />
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         )}

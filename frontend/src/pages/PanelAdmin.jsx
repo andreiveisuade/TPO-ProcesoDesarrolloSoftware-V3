@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchUsuariosAdmin, cambiarRol } from '../store/slices/permisosSlice'; 
 import { ROLES } from '../utils/roles';
