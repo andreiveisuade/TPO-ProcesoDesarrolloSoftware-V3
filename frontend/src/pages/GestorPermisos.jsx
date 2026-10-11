@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchUsuariosSupervisor, togglePermiso } from '../store/slices/permisosSlice';
+import { fetchUsuariosSupervisor, actualizarPermisos } from '../store/slices/permisosSlice';
 
 // Tabla del SUPERVISOR para otorgar o quitar permisos de anulacion.
 const GestorPermisos = () => {
@@ -18,7 +18,7 @@ const GestorPermisos = () => {
       [campoPermiso]: !usuario[campoPermiso]
     };
     
-    dispatch(togglePermiso({ id: usuario.id, permisos: nuevosPermisos }));
+    dispatch(actualizarPermisos({ id: usuario.id, permisos: nuevosPermisos }));
   };
 
   return (

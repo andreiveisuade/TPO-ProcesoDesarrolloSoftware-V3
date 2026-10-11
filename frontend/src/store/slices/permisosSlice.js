@@ -18,7 +18,7 @@ export const fetchUsuariosSupervisor = createAsyncThunk('permisos/fetchSuperviso
   }
 });
 
-export const togglePermiso = createAsyncThunk('permisos/toggle', async ({ id, permisos }, { rejectWithValue }) => {
+export const actualizarPermisos = createAsyncThunk('permisos/actualizar', async ({ id, permisos }, { rejectWithValue }) => {
   try {
     return await updatePermisosSupervisor(id, permisos);
   } catch (err) {
@@ -46,6 +46,10 @@ const permisosSlice = createSlice({
     const handlePending = (state) => { state.loading = true; state.error = null; };
     const handleFulfilled = (state, action) => { state.loading = false; state.lista = action.payload; };
     const handleRejected = (state, action) => { state.loading = false; state.error = action.payload; };
+    const reemplazarUsuario = (state, action) => {
+      const index = state.lista.findIndex(u => u.id === action.payload.id);
+      if (index !== -1) state.lista[index] = action.payload;
+    };
 
     builder
       .addCase(fetchUsuariosAdmin.pending, handlePending)
@@ -56,21 +60,8 @@ const permisosSlice = createSlice({
       .addCase(fetchUsuariosSupervisor.fulfilled, handleFulfilled)
       .addCase(fetchUsuariosSupervisor.rejected, handleRejected)
       
-      .addCase(togglePermiso.fulfilled, (state, action) => {
-        const usuarioActualizado = action.payload;
-        const index = state.lista.findIndex(u => u.id === usuarioActualizado.id);
-        if (index !== -1) {
-          state.lista[index] = usuarioActualizado;
-        }
-      })
-      
-      .addCase(cambiarRol.fulfilled, (state, action) => {
-        const usuarioActualizado = action.payload;
-        const index = state.lista.findIndex(u => u.id === usuarioActualizado.id);
-        if (index !== -1) {
-          state.lista[index] = usuarioActualizado;
-        }
-      });
+      .addCase(actualizarPermisos.fulfilled, reemplazarUsuario)
+      .addCase(cambiarRol.fulfilled, reemplazarUsuario);
   },
 });
 
