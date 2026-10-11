@@ -43,8 +43,8 @@ public class DashboardServiceImpl implements DashboardService {
         cuotaRepository.buscarTodasConCobranzas();
         long creditos = todos.stream().filter(credito -> credito.estado() == EstadoCredito.VIGENTE).count();
 
-        BigDecimal totalFinanciado = creditoRepository.sumarDeudaOriginalVigente();
-        BigDecimal totalCobrado = cobranzaRepository.sumarImporteVigente();
+        BigDecimal totalFinanciado = creditoRepository.sumarDeudaOriginalNoAnulada();
+        BigDecimal totalCobrado = cobranzaRepository.sumarImporteNoAnulado();
 
         // Information Expert: el saldo lo sabe el credito y el vencimiento la cuota
         BigDecimal saldoPendiente = todos.stream()

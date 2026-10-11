@@ -16,5 +16,5 @@ public interface CobranzaRepository extends JpaRepository<Cobranza, Long> {
     List<Cobranza> buscarPorCredito(@Param("idCredito") Long idCredito);
 
     @Query("SELECT COALESCE(SUM(c.importe), 0) FROM Cobranza c WHERE c.anulada = false")
-    BigDecimal sumarImporteVigente();
+    BigDecimal sumarImporteNoAnulado();
 }
