@@ -111,7 +111,7 @@ public class Credito implements ICredito {
         return Collections.unmodifiableList(cuotas);
     }
 
-    // Information Expert: el credito calcula su estado y su saldo
+    // Information Expert: el credito calcula su estado, su saldo y su monto vencido
     public EstadoCredito estado() {
         if (anulado) {
             return EstadoCredito.ANULADO;
@@ -125,6 +125,14 @@ public class Credito implements ICredito {
         }
         return cuotas.stream()
             .filter(cuota -> !cuota.estaPagada())
+            .map(Cuota::getImporte)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    // Information Expert: suma lo que la cuota sabe que esta vencido
+    public BigDecimal montoVencido() {
+        return cuotas.stream()
+            .filter(Cuota::estaVencida)
             .map(Cuota::getImporte)
             .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
