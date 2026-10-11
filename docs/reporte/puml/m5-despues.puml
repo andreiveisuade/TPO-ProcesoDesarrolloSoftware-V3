@@ -14,14 +14,14 @@ skinparam ParticipantBorderColor #1D2B4F
 skinparam SequenceGroupBackgroundColor #F4F8FC
 hide empty members
 class GlobalExceptionHandler {
-  +handleNotFound(ResourceNotFoundException) : 404
-  +handleBusiness(BusinessException) : 400
-  +handleValidation(MethodArgumentNotValidException) : 400
-  +handleRequestInvalida(Exception) : 400
-  +handleAuth(AuthenticationException) : 401
-  +handleDenied(AccessDeniedException) : 403
-  +handleNoResource(NoResourceFoundException) : 404
-  +handleMetodo(HttpRequestMethodNotSupportedException) : 405
+  +handleNoEncontrado(ResourceNotFoundException) : 404
+  +handleNegocio(BusinessException) : 400
+  +handleValidacion(MethodArgumentNotValidException) : 400
+  +handleSolicitudInvalida(Exception) : 400
+  +handleNoAutenticado(AuthenticationException) : 401
+  +handleAccesoDenegado(AccessDeniedException) : 403
+  +handleRutaNoEncontrada(NoResourceFoundException) : 404
+  +handleMetodoNoPermitido(HttpRequestMethodNotSupportedException) : 405
   +handleNoAceptable(HttpMediaTypeNotAcceptableException) : 406
   +handleTipoNoSoportado(HttpMediaTypeNotSupportedException) : 415
   +handleGeneral(Exception) : 500

@@ -128,10 +128,10 @@ m3 = bloque("m3", "M3. Dashboard con números verdaderos",
     cb("v2", "service/impl/DashboardServiceImpl.java", method("v2", "service/impl/DashboardServiceImpl.java", r"obtenerEstadisticasGenerales"))
     + cb("v2", "repository/CreditoRepository.java", lines("v2", "repository/CreditoRepository.java", "sumarImporteCuotaTotal", 1, 1))
     + cb("v2", "repository/CobranzaRepository.java", lines("v2", "repository/CobranzaRepository.java", "sumarImporteTotal", 1, 1)),
-    "Se excluye lo anulado; financiado = <code>deudaOriginal</code>; activos = <code>estado() == VIGENTE</code>.",
+    "Se excluye lo anulado; financiado = <code>deudaOriginal</code>; activos = <code>estado() == VIGENTE</code>. Saldo y vencido los suma cada crédito (<code>saldo()</code>, <code>montoVencido()</code>).",
     cb("main", "service/impl/DashboardServiceImpl.java", method("main", "service/impl/DashboardServiceImpl.java", r"obtenerEstadisticasGenerales"))
-    + cb("main", "repository/CreditoRepository.java", lines("main", "repository/CreditoRepository.java", "sumarDeudaOriginalVigente", 1, 1))
-    + cb("main", "repository/CobranzaRepository.java", lines("main", "repository/CobranzaRepository.java", "sumarImporteVigente", 1, 1)),
+    + cb("main", "repository/CreditoRepository.java", lines("main", "repository/CreditoRepository.java", "sumarDeudaOriginalNoAnulada", 1, 1))
+    + cb("main", "repository/CobranzaRepository.java", lines("main", "repository/CobranzaRepository.java", "sumarImporteNoAnulado", 1, 1)),
     "El <strong>estado lo decide el modelo</strong>; las sumas, la query. Por eso el financiado <strong>incluye cancelados</strong>.",
     "Gana: dashboard y listado coinciden. Cuesta: carga los créditos en memoria.",
     "Cierra TPO-003. Commits <code>8877f29</code>, <code>87f0631</code>.")
@@ -155,10 +155,10 @@ m5 = bloque("m5", "M5. Handlers HTTP específicos",
     cb("v2", "exception/GlobalExceptionHandler.java", method("v2", "exception/GlobalExceptionHandler.java", r"handleGeneral")),
     "Handlers 401, 403, 404, 405, entre otros; el 500 no expone detalles (S4).",
     cb("main", "exception/GlobalExceptionHandler.java",
-       method("main", "exception/GlobalExceptionHandler.java", r"handleAuth"), "",
-       method("main", "exception/GlobalExceptionHandler.java", r"handleDenied"), "",
-       method("main", "exception/GlobalExceptionHandler.java", r"handleNoResource"), "",
-       method("main", "exception/GlobalExceptionHandler.java", r"handleMetodo"), "",
+       method("main", "exception/GlobalExceptionHandler.java", r"handleNoAutenticado"), "",
+       method("main", "exception/GlobalExceptionHandler.java", r"handleAccesoDenegado"), "",
+       method("main", "exception/GlobalExceptionHandler.java", r"handleRutaNoEncontrada"), "",
+       method("main", "exception/GlobalExceptionHandler.java", r"handleMetodoNoPermitido"), "",
        method("main", "exception/GlobalExceptionHandler.java", r"handleGeneral")),
     "<strong>Un error del cliente no es una falla del servidor.</strong>",
     "Swagger documenta los códigos reales. Sin token o sin rol responde el filtro (<code>SecurityConfig</code>); el resto de los errores, este handler.",
@@ -397,7 +397,7 @@ rev = [
  ("I1", "9c3d4ae", "Anular y cobrar en paralelo dejaba un crédito <strong>ANULADO con cobranza vigente</strong>.", "Bloqueo pesimista del crédito en ambos caminos, mismo orden."),
  ("I-1", "8888df6", "Dos cobros simultáneos <strong>duplicaban la cobranza</strong>.", "Bloqueo pesimista de la cuota; test de 20 hilos."),
  ("I4", "3eae70f", "Un alta <strong>aparecía en la lista filtrada</strong> de otro cliente.", "La página recarga la lista en vez de agregar."),
- ("O6, O7", "d89d62d, 6cc5e17", "Crédito <strong>sin cuotas</strong>; dashboard sin saldo ni mora.", "El constructor de <code>Credito</code> crea las cuotas; saldo y vencido en el dashboard."),
+ ("O6, O7", "d89d62d, 6cc5e17", "Crédito <strong>sin cuotas</strong>; dashboard sin saldo ni mora.", "El constructor de <code>Credito</code> crea las cuotas; saldo y vencido en el dashboard, calculados por el crédito (<code>saldo()</code>, <code>montoVencido()</code>)."),
  ("BS3, BS4", "5246f27, 7c6dd63, f96f53a", "El servicio consultaba permisos; rol como <code>String</code>.", "<code>Usuario.puedeAnularCredito</code>; enum <code>Rol</code> en los DTO."),
  ("Front", "dfa2c12, d9b0b8f, a085f66, f5c8d05, 0e3284e", "Rutas por rol <strong>duplicadas</strong>; roles como strings.", "<code>RoleRoute</code> y <code>utils/roles.js</code>."),
  ("DER", "8eb2106", "<strong>Sin DER</strong>.", "<code>der-v3</code>; detectó tres inconsistencias del modelo, resueltas."),
@@ -427,7 +427,7 @@ evol = [
   "el modelo es la autoridad sobre permisos (MVC, M4)."),
  ("Tests y validación", "6f552e0..82fc486, 4d35266, 77dec02, 90d0e5e, 8888df6",
   "<strong>Cero tests</strong> en V2; un DNI largo o una deuda enorme daban 500 (I-2).",
-  "41 tests; <code>@Size</code>/<code>@Digits</code> en los DTO; <code>Cuota.estaVencida(LocalDate)</code> recibe la fecha.",
+  "42 tests; <code>@Size</code>/<code>@Digits</code> en los DTO; <code>Cuota.estaVencida(LocalDate)</code> recibe la fecha.",
   "el dominio se prueba sin Spring ni reloj."),
  ("Limpieza", "ddbdebb, 3478af6, c36658f, 6a1c363, 4713828",
   "Javadoc redundante; archivos de IDE y de proceso en el zip.",
@@ -446,7 +446,7 @@ convenciones = """<p>Convención: <strong>una <code>I&lt;Clase&gt;</code> por cl
 </tbody></table>"""
 
 matriz = [
- ("Information Expert", "<code>model/Credito.java</code> <code>estado</code>, <code>saldo</code>, <code>puedeAnularse</code>; <code>model/Cuota.java</code> <code>estaVencida</code>", "Cumple"),
+ ("Information Expert", "<code>model/Credito.java</code> <code>estado</code>, <code>saldo</code>, <code>montoVencido</code>, <code>puedeAnularse</code>; <code>model/Cuota.java</code> <code>estaVencida</code>", "Cumple"),
  ("Creator", "<code>model/Credito.java</code> genera sus cuotas (O6); <code>Cuota.registrarCobranza</code> crea la <code>Cobranza</code>", "Cumple"),
  ("Controller", "<code>controller/*Controller</code> por caso de uso, delegan en <code>XService</code>", "Cumple"),
  ("Bajo acoplamiento / Alta cohesión", "controllers → interfaces de servicio; clientes → <code>service/TokenService.java</code>", "Cumple"),
@@ -669,7 +669,7 @@ doc = f'''<!doctype html>
 
 <section id="verificacion"><h2>Verificación</h2>
 <ul>
-<li><strong>41 tests, 0 fallas</strong> (<code>mvn test</code>): 28 de dominio, 10 HTTP (<code>@WebMvcTest</code>), 2 de concurrencia, <code>contextLoads</code>.</li>
+<li><strong>42 tests, 0 fallas</strong> (<code>mvn test</code>): 29 de dominio, 10 HTTP (<code>@WebMvcTest</code>), 2 de concurrencia, <code>contextLoads</code>.</li>
 <li><strong>Smoke</strong>: API 12/12, recorrido visual 9/9; auditoría de API: 304 casos con 4 roles.</li>
 <li><strong>Fallas halladas y corregidas</strong>: 401/403 y 500 mal mapeados (F1, F2); 2 visuales (O1, <code>d35fc0e</code>).</li>
 </ul>

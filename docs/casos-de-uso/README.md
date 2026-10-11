@@ -6,7 +6,7 @@ Convenciones:
 
 - Rutas del backend relativas a `backend/src/main/java/com/uade/tpejemplo/`; tests relativos a `backend/src/test/java/com/uade/tpejemplo/`; front relativo a `frontend/src/`. `archivo:línea` apunta al método.
 - **Verificación**: *Test* = test automático (`mvn test`, 36 tests, todos pasan al 2026-10-06): de dominio en `model/` y `model/plan/`, y de códigos HTTP en `controller/CodigosHttpTest` (`@WebMvcTest` con la seguridad JWT real). *Smoke* = smoke test manual del equipo. *Final* = verificación final manual del equipo, con capturas. Smoke y Final son notas de trabajo internas que no van en la entrega. *API* = `verificar-cu.sh` de esta carpeta, corrido sobre una base limpia (resultados en la sección 6).
-- Errores: todos salen por `exception/GlobalExceptionHandler.java` con cuerpo `{status, error, mensajes[]}`: 400 regla de negocio (`handleBusiness`:32), 400 validación del DTO (`handleValidation`:37), 400 body o parámetro mal formado (`handleRequestInvalida`:45), 401 credenciales (`handleAuth`:50), 403 sin permiso (`handleDenied`:55), 404 no encontrado (`handleNotFound`:27). Sin token, o con token inválido, la cadena de seguridad responde 401 sin cuerpo; con token y sin el rol, 403 sin cuerpo (`config/SecurityConfig.java:56-57`). Los dos casos y el 400/404/405 los cubre `controller/CodigosHttpTest`.
+- Errores: todos salen por `exception/GlobalExceptionHandler.java` con cuerpo `{status, error, mensajes[]}`: 400 regla de negocio (`handleNegocio`:36), 400 validación del DTO (`handleValidacion`:41), 400 body o parámetro mal formado (`handleSolicitudInvalida`:49), 401 credenciales (`handleNoAutenticado`:54), 403 sin permiso (`handleAccesoDenegado`:59), 404 no encontrado (`handleNoEncontrado`:31). Sin token, o con token inválido, la cadena de seguridad responde 401 sin cuerpo; con token y sin el rol, 403 sin cuerpo (`config/SecurityConfig.java:56-57`). Los dos casos y el 400/404/405 los cubre `controller/CodigosHttpTest`.
 
 ## 1. Actores
 
@@ -38,7 +38,7 @@ Fuente: `casos-de-uso-v3.puml` (renderizado con `plantuml -tsvg` y `-tpng`). Sup
 - **Errores**: usuario repetido → **400** "El usuario 'x' ya existe". Usuario vacío o contraseña de menos de 6 caracteres → **400** de validación (`dto/request/RegisterRequest.java`).
 - **Postcondición**: existe un USER con `Permisos.ninguno()` y tiene sesión iniciada.
 - **Reglas**: unicidad del username y rol fijo USER en `service/impl/AuthServiceImpl.java:33` `registrar`; alta solo por `model/Usuario.java:43` `nuevo`. Nadie puede registrarse como SUPERVISOR o ADMIN.
-- **Endpoint**: `POST /api/auth/register` → `controller/AuthController.java:35` `register`.
+- **Endpoint**: `POST /api/auth/register` → `controller/AuthController.java:35` `registrar`.
 - **Pantalla**: `pages/Register.jsx` (`/register`).
 - **Verificación**: API (UC01 x3). Sin test unitario.
 
@@ -48,9 +48,9 @@ Fuente: `casos-de-uso-v3.puml` (renderizado con `plantuml -tsvg` y `-tpng`). Sup
 - **Precondición**: el usuario existe.
 - **Flujo principal**: 1. Carga usuario y contraseña. 2. El sistema autentica contra la contraseña hasheada (BCrypt: `AuthenticationManager` de Spring con el `passwordEncoder` de `config/SecurityConfig.java:69`). 3. Emite un token JWT de 24 h (`service/TokenService.java`, adaptado por `security/JwtUtil.java`, M7). 4. Responde **200** con token, rol y permisos. 5. El front guarda token y usuario en `localStorage` y navega a `/clientes`.
 - **Errores**: contraseña incorrecta o usuario inexistente → **401** "Bad credentials" (el mismo mensaje para los dos: no revela qué usuarios existen). Campos vacíos → **400** de validación.
-- **Postcondición**: cada request siguiente lleva el token; `security/JwtAuthFilter.java:69` vuelve a cargar el usuario de la base en cada request, así que rol y permisos se leen siempre actualizados. El front los refresca con `GET /api/auth/me` (`controller/AuthController.java:53` `me`, `service/impl/AuthServiceImpl.java:63` `actual`) cada vez que se navega a una pantalla (`components/PrivateRoute.jsx`).
+- **Postcondición**: cada request siguiente lleva el token; `security/JwtAuthFilter.java:69` vuelve a cargar el usuario de la base en cada request, así que rol y permisos se leen siempre actualizados. El front los refresca con `GET /api/auth/me` (`controller/AuthController.java:53` `actual`, `service/impl/AuthServiceImpl.java:63` `actual`) cada vez que se navega a una pantalla (`components/PrivateRoute.jsx`).
 - **Reglas**: `service/impl/AuthServiceImpl.java:51` `login`.
-- **Endpoint**: `POST /api/auth/login` → `controller/AuthController.java:44` `login`; `GET /api/auth/me` → `controller/AuthController.java:53` `me`.
+- **Endpoint**: `POST /api/auth/login` → `controller/AuthController.java:44` `login`; `GET /api/auth/me` → `controller/AuthController.java:53` `actual`.
 - **Pantalla**: `pages/Login.jsx` (`/login`).
 - **Verificación**: Smoke "Login con password incorrecta (M5)"; Final "Login", "Token basura / alterado / vencido", capturas `01-login.png`, `02-login-error.png`, `03-login-ok.png`; API (UC02 x4).
 - **Evolución**: en V0-V2 la contraseña incorrecta daba 500 (TPO-001); V3 lo mapea a 401 (M5).
@@ -95,7 +95,7 @@ Fuente: `casos-de-uso-v3.puml` (renderizado con `plantuml -tsvg` y `-tpng`). Sup
 - **Flujo principal**: 1. El usuario carga DNI del cliente, deuda original, fecha, tasa, cantidad de cuotas y tipo de plan (interés simple o sistema francés). 2. El sistema valida los datos. 3. Busca el cliente. 4. Crea el crédito: el importe de cuota lo calcula la estrategia del plan elegido (`model/Credito.java:80`, `model/TipoPlan.java:19` `calculo`, `model/plan/InteresSimple.java`, `model/plan/SistemaFrances.java`; M9 Strategy). 5. Genera el plan de cuotas (UC08). 6. Responde **201** con cuotas, total a devolver, estado VIGENTE y saldo igual al total.
 - **Errores**: cliente inexistente → **404**. Deuda ≤ 0, cuotas < 1, tasa negativa o > 999,99, algún campo vacío → **400** de validación (`dto/request/CreditoRequest.java`). Tipo de plan inexistente o JSON mal formado → **400** "Solicitud inválida".
 - **Postcondición**: crédito VIGENTE con su plan de cuotas.
-- **Reglas**: `service/impl/CreditoServiceImpl.java:32` `crear`; `model/Credito.java:94` `totalADevolver` (cuota × cantidad, O3).
+- **Reglas**: `service/impl/CreditoServiceImpl.java:32` `crear`; `model/Credito.java:98` `totalADevolver` (cuota × cantidad, O3).
 - **Endpoint**: `POST /api/creditos` → `controller/CreditoController.java:35` `crear`.
 - **Pantalla**: `pages/Creditos.jsx` (formulario de alta).
 - **Verificación**: Test `model/plan/InteresSimpleTest` (4), `model/plan/SistemaFrancesTest` (4), `model/CreditoTest.java:34` `nuevoEstaVigenteConSaldoIgualAlTotal`; Smoke "Crédito INTERES_SIMPLE… (M9)", "Crédito SISTEMA_FRANCES…"; Final captura `04-creditos.png`; API (UC07 x8).
@@ -106,7 +106,7 @@ Fuente: `casos-de-uso-v3.puml` (renderizado con `plantuml -tsvg` y `-tpng`). Sup
 
 - **Actor**: lo dispara UC07, no tiene actor propio.
 - **Flujo**: el crédito crea N cuotas numeradas 1..N, todas con el importe de cuota, y vencimiento mensual: cuota i vence en fecha + i meses.
-- **Reglas**: `model/Credito.java:100` `generarPlanDeCuotas`, privado y llamado desde el constructor (`model/Credito.java:72`, O6): el crédito nace con su plan, no hay forma de tener uno sin cuotas. El servicio solo persiste y las cuotas se guardan en cascada (`service/impl/CreditoServiceImpl.java:32`).
+- **Reglas**: `model/Credito.java:104` `generarPlanDeCuotas`, privado y llamado desde el constructor (`model/Credito.java:72`, O6): el crédito nace con su plan, no hay forma de tener uno sin cuotas. El servicio solo persiste y las cuotas se guardan en cascada (`service/impl/CreditoServiceImpl.java:32`).
 - **Verificación**: Test `model/CreditoTest.java:25` `generaUnaCuotaPorMesDesdeLaFecha`; las diferencias de centavos por redondeo las fijan los tests de `model/plan/`.
 
 ### UC09 Consultar crédito
@@ -114,7 +114,7 @@ Fuente: `casos-de-uso-v3.puml` (renderizado con `plantuml -tsvg` y `-tpng`). Sup
 - **Actor**: Usuario. **RF V0**: RF-CR-03.
 - **Flujo principal**: 1. Se pide un crédito por id. 2. El sistema devuelve el crédito con sus cuotas (cada una con `pagada` y `vencida`), estado (VIGENTE, CANCELADO o ANULADO), saldo y si puede anularse (**200**).
 - **Errores**: id inexistente → **404**. Id no numérico → **400**.
-- **Reglas**: `service/impl/CreditoServiceImpl.java:49` `buscarPorId`; estado, saldo y anulabilidad los calcula el crédito: `model/Credito.java:111` `estado`, `:118` `saldo`, `:137` `puedeAnularse` (M8); mora en `model/Cuota.java:66` `estaVencida`, que delega en `:70` `estaVencida(LocalDate)` (M6).
+- **Reglas**: `service/impl/CreditoServiceImpl.java:49` `buscarPorId`; estado, saldo y anulabilidad los calcula el crédito: `model/Credito.java:115` `estado`, `:122` `saldo`, `:149` `puedeAnularse` (M8); mora en `model/Cuota.java:66` `estaVencida`, que delega en `:70` `estaVencida(LocalDate)` (M6).
 - **Endpoint**: `GET /api/creditos/{id}` → `controller/CreditoController.java:52` `buscarPorId`.
 - **Pantalla**: `pages/Creditos.jsx` (bloque "Consultar crédito por número"): muestra la misma ficha que el listado de UC10 (estado, plan, saldo, cuotas y Anular si corresponde). Usa `api/creditos.js` `getCredito`.
 - **Verificación**: Smoke "Respuesta del crédito recién creado", "Saldo tras pagar 1 de 3 cuotas"; API (UC09 x4); captura de la pantalla en la verificación del equipo.
@@ -136,10 +136,10 @@ Fuente: `casos-de-uso-v3.puml` (renderizado con `plantuml -tsvg` y `-tpng`). Sup
 - **Flujo principal**: 1. En el listado de UC10 el usuario aprieta Anular; el botón solo aparece si el crédito puede anularse y el usuario tiene el permiso (`pages/Creditos.jsx:98`). 2. Confirma. 3. El sistema verifica el permiso. 4. Busca el crédito. 5. El crédito se anula. 6. Responde **204** y la pantalla recarga el listado (O1).
 - **Errores**: sin permiso → **403** "El usuario no tiene permiso para anular creditos". Crédito inexistente → **404**. Ya anulado → **400** "El crédito x ya está anulado.". Con cobranzas vigentes (incluido un crédito cancelado) → **400** "No se puede anular el crédito x porque tiene cobranzas registradas.".
 - **Postcondición**: estado ANULADO, saldo 0, no admite cobranzas y sale del dashboard. Es una baja lógica.
-- **Reglas**: permiso en `service/impl/CreditoServiceImpl.java:78` `anularCredito` (M4); doble anulación y cobranzas vigentes en `model/Credito.java:141` `anular` (M8).
+- **Reglas**: permiso en `service/impl/CreditoServiceImpl.java:78` `anularCredito` (M4); doble anulación y cobranzas vigentes en `model/Credito.java:153` `anular` (M8).
 - **Endpoint**: `DELETE /api/creditos/anular/{id}` → `controller/CreditoController.java:72` `anularCredito`.
 - **Pantalla**: `pages/Creditos.jsx` (botón Anular por crédito).
-- **Verificación**: Test `model/CreditoTest.java:61` `anuladoQuedaConSaldoCero`, `:71` `rechazaDobleAnulacion`, `:81` `rechazaAnularConCobranzasVigentes`, `:92` `permiteAnularSiLaUnicaCobranzaEstaAnulada`; Smoke "Anular crédito con `user` sin permiso (M4)", "Anular un crédito ya anulado"; Final capturas `06-anular-refresca.png`, `09-user-sin-anular.png`; API (UC11 x6).
+- **Verificación**: Test `model/CreditoTest.java:71` `anuladoQuedaConSaldoCero`, `:81` `rechazaDobleAnulacion`, `:91` `rechazaAnularConCobranzasVigentes`, `:102` `permiteAnularSiLaUnicaCobranzaEstaAnulada`; Smoke "Anular crédito con `user` sin permiso (M4)", "Anular un crédito ya anulado"; Final capturas `06-anular-refresca.png`, `09-user-sin-anular.png`; API (UC11 x6).
 - **Evolución**: en V0-V2 el permiso solo lo miraba el front (TPO-007): por API anulaba cualquiera. V3 lo valida en el backend (M4). V0 tenía además UC12, retirado.
 
 ### UC13 Registrar cobranza
@@ -173,19 +173,19 @@ Fuente: `casos-de-uso-v3.puml` (renderizado con `plantuml -tsvg` y `-tpng`). Sup
 - **Flujo principal**: 1. En el listado de UC14 el usuario aprieta Anular; el botón solo aparece si la cobranza no está anulada y el usuario tiene el permiso (`pages/Cobranzas.jsx:111`). 2. Confirma. 3. El sistema verifica el permiso. 4. Busca la cobranza. 5. La cobranza se anula. 6. Responde **204**.
 - **Errores**: sin permiso → **403** "El usuario no tiene permiso para anular cobranzas". Inexistente → **404**. De otro día → **400** "Solo se pueden anular cobranzas del día de hoy.". Ya anulada → **400** (H1).
 - **Postcondición**: la cuota vuelve a estar impaga y se puede volver a cobrar (`model/Cuota.java:62` `estaPagada` ignora las anuladas); si el crédito estaba CANCELADO vuelve a VIGENTE, y si no le quedan cobranzas vigentes se puede anular.
-- **Reglas**: permiso en `service/impl/CobranzaServiceImpl.java:50` `anularCobranza` (M4); regla del día y doble anulación en `model/Cobranza.java:64` `anular(LocalDate)`; `:59` `anular()` le pasa la fecha de hoy.
+- **Reglas**: permiso en `service/impl/CobranzaServiceImpl.java:50` `anularCobranza` (M4); regla del día y doble anulación en `model/Cobranza.java:63` `anular(LocalDate)`; `:58` `anular()` le pasa la fecha de hoy.
 - **Endpoint**: `DELETE /api/cobranzas/{id}` → `controller/CobranzaController.java:54` `anularCobranza`.
 - **Pantalla**: `pages/Cobranzas.jsx` (botón Anular por cobranza).
-- **Verificación**: Test `model/CobranzaTest.java:15` `seRegistraConFechaDeHoyYSePuedeAnularElMismoDia`, `:26` `noSePuedeAnularDosVeces`, `:36` `noSePuedeAnularUnaCobranzaDeOtroDia`, `model/CuotaTest.java:47` `cobranzaAnuladaDejaLaCuotaImpaga`, `model/CreditoTest.java:92`; Smoke "M2: anular cobranza (admin) y luego el crédito…", "M2: anular cobranza con `user` sin permiso"; API (UC15 x4 y "recobrar cuota liberada").
+- **Verificación**: Test `model/CobranzaTest.java:15` `seRegistraConFechaDeHoyYSePuedeAnularElMismoDia`, `:26` `noSePuedeAnularDosVeces`, `:36` `noSePuedeAnularUnaCobranzaDeOtroDia`, `model/CuotaTest.java:47` `cobranzaAnuladaDejaLaCuotaImpaga`, `model/CreditoTest.java:102`; Smoke "M2: anular cobranza (admin) y luego el crédito…", "M2: anular cobranza con `user` sin permiso"; API (UC15 x4 y "recobrar cuota liberada").
 - **Evolución**: TPO-005 (la cuota quedaba trabada como pagada) cerrado en V1; permiso validado en el backend desde V3 (M4).
 - **Huecos**: anular una cobranza ya anulada respondía **204** (H1); corregido, ahora 400. El rechazo "de otro día" tenía la fecha fija en `LocalDate.now()` y no se podía probar; resuelto con `Cobranza.anular(LocalDate)`, que recibe la fecha y lo testea `noSePuedeAnularUnaCobranzaDeOtroDia`. Por API sigue sin poder provocarse.
 
 ### UC16 Ver estadísticas
 
 - **Actor**: Supervisor, Administrador. **RF V0**: RF-DA-01.
-- **Flujo principal**: 1. El actor entra a Dashboard (el link solo aparece para esos roles, `components/Navbar.jsx:30`). 2. El sistema responde **200** con: cantidad de clientes, cantidad de créditos VIGENTES, monto total financiado (suma de la deuda original de los créditos no anulados) monto total cobrado (suma de las cobranzas no anuladas), saldo pendiente (suma de `Credito.saldo()`) y monto vencido (cuotas vencidas impagas de créditos no anulados, `Cuota.estaVencida`, O7). 3. La pantalla muestra las seis tarjetas y el rol en el título.
+- **Flujo principal**: 1. El actor entra a Dashboard (el link solo aparece para esos roles, `components/Navbar.jsx:30`). 2. El sistema responde **200** con: cantidad de clientes, cantidad de créditos VIGENTES, monto total financiado (suma de la deuda original de los créditos no anulados) monto total cobrado (suma de las cobranzas no anuladas), saldo pendiente (suma de `Credito.saldo()`) y monto vencido (suma de `Credito.montoVencido()`: cuotas vencidas impagas de créditos no anulados, `Cuota.estaVencida`, O7). 3. La pantalla muestra las seis tarjetas y el rol en el título.
 - **Errores**: USER → **403** (`config/SecurityConfig.java:52`; test `controller/CodigosHttpTest.java:84` `rolIncorrectoDa403`); el front además oculta el link y muestra "No tienes permisos…" (`pages/Dashboard.jsx:13,21`).
-- **Reglas**: `service/impl/DashboardServiceImpl.java:39` `obtenerEstadisticasGenerales` (activos con `Credito.estado()`, O4); `repository/CreditoRepository.java:34` `sumarDeudaOriginalVigente`; `repository/CobranzaRepository.java:19` `sumarImporteVigente`.
+- **Reglas**: `service/impl/DashboardServiceImpl.java:30` `obtenerEstadisticasGenerales` (activos con `Credito.estado()`, O4); `repository/CreditoRepository.java:41` `sumarDeudaOriginalNoAnulada`; `repository/CobranzaRepository.java:19` `sumarImporteNoAnulado`.
 - **Endpoint**: `GET /api/dashboard/stats` → `controller/DashboardController.java:29` `obtenerEstadisticas`.
 - **Pantalla**: `pages/Dashboard.jsx` (`/estadisticas`).
 - **Verificación**: Smoke "Dashboard excluye anulados y financiado = deuda original (M3)", "Dashboard con ADMIN (M10)", "Dashboard con `user`"; Final capturas `07-dashboard-admin.png`, `08-dashboard-supervisor.png`; API (UC16 x4).
@@ -301,7 +301,7 @@ Además: `mvn test` → 36 tests, 0 fallas (contando los agregados después de e
 
 ### Hallazgos
 
-- **H1 (UC15)**: anular dos veces la misma cobranza responde 204. `model/Cobranza.java:59` `anular` no mira si ya está anulada, mientras que `model/Credito.java:141` `anular` sí rechaza la doble anulación. No rompe datos, pero las dos anulaciones del sistema se comportan distinto. **Resuelto en** `model/Cobranza.java:64` `anular(LocalDate)`: rechaza la segunda con `BusinessException` (400), test `model/CobranzaTest.java:26` `noSePuedeAnularDosVeces`.
+- **H1 (UC15)**: anular dos veces la misma cobranza responde 204. `model/Cobranza.java:58` `anular` no mira si ya está anulada, mientras que `model/Credito.java:153` `anular` sí rechaza la doble anulación. No rompe datos, pero las dos anulaciones del sistema se comportan distinto. **Resuelto en** `model/Cobranza.java:63` `anular(LocalDate)`: rechaza la segunda con `BusinessException` (400), test `model/CobranzaTest.java:26` `noSePuedeAnularDosVeces`.
 - **H2 (UC14)**: `GET /api/cobranzas/credito/999` responde 200 con lista vacía; `service/impl/CobranzaServiceImpl.java:42` no verifica que el crédito exista. UC10, en el mismo caso, responde 404.
 - **H3 (UC16)**: "Créditos activos" y "Monto total financiado" miden cosas distintas (cartera vigente vs. todo lo prestado y no anulado). Ver la observación de UC16.
 - **H4 (UC19, UC20)**: backend y front no ven los permisos y el rol al mismo tiempo. El backend usa el valor nuevo desde la request siguiente (`security/JwtAuthFilter.java:69`); el front sigue mostrando el que tenía al loguear. Del lado de la seguridad está bien (manda el backend); el costo es de usabilidad: el botón o el link aparece recién al volver a iniciar sesión. **Resuelto en** `GET /api/auth/me` (`controller/AuthController.java:53`): `components/PrivateRoute.jsx` lo llama al navegar y actualiza el usuario del front (`store/slices/authSlice.js:20` `refrescarUsuario`).

@@ -19,9 +19,9 @@ package "Vista (React)" {
 package "Controlador" {
   class AuthController <<RestController>> {
     - authService : AuthService
-    + register(RegisterRequest) : AuthResponse
+    + registrar(RegisterRequest) : AuthResponse
     + login(LoginRequest) : AuthResponse
-    + me(UserDetails) : AuthResponse
+    + actual(UserDetails) : AuthResponse
   }
   class ClienteController <<RestController>> {
     - clienteService : ClienteService
@@ -178,7 +178,7 @@ package "Modelo" {
       + buscarPorClienteConCuotas(String) : List<Credito>
       + buscarTodosConCuotas() : List<Credito>
       + bloquearPorId(Long) : Optional<Credito>
-      + sumarDeudaOriginalVigente() : BigDecimal
+      + sumarDeudaOriginalNoAnulada() : BigDecimal
     }
     interface CuotaRepository <<JpaRepository<Cuota, Long>>> {
       + buscarPorCredito(Long) : List<Cuota>
@@ -188,7 +188,7 @@ package "Modelo" {
     }
     interface CobranzaRepository <<JpaRepository<Cobranza, Long>>> {
       + buscarPorCredito(Long) : List<Cobranza>
-      + sumarImporteVigente() : BigDecimal
+      + sumarImporteNoAnulado() : BigDecimal
     }
     interface UsuarioRepository <<JpaRepository<Usuario, Long>>> {
       + findByUsername(String) : Optional<Usuario>
@@ -236,7 +236,7 @@ CreditoServiceImpl ..> Credito : crea / anula
 CobranzaServiceImpl ..> Cuota : registrarCobranza
 CobranzaServiceImpl ..> Cobranza : anula
 AdminServiceImpl ..> Usuario : permisos / rol
-DashboardServiceImpl ..> Credito : saldo() y cuotas vencidas
+DashboardServiceImpl ..> Credito : saldo() y montoVencido()
 
 AuthServiceImpl --> "1" UsuarioRepository
 ClienteServiceImpl --> "1" ClienteRepository
@@ -297,6 +297,7 @@ package "model.interfaces" {
     + totalADevolver() : BigDecimal
     + estado() : EstadoCredito
     + saldo() : BigDecimal
+    + montoVencido() : BigDecimal
     + estaCancelado() : boolean
     + tieneCobranzas() : boolean
     + puedeAnularse() : boolean
@@ -347,11 +348,12 @@ package "model" {
     - tipoPlan : TipoPlan
     - anulado : boolean
     + {static} nuevo(Cliente, BigDecimal, LocalDate, BigDecimal, Integer, TipoPlan) : Credito
-    + totalADevolver() : BigDecimal
     - calculo() : CalculoDeCuota
+    + totalADevolver() : BigDecimal
     - generarPlanDeCuotas() : void
     + estado() : EstadoCredito
     + saldo() : BigDecimal
+    + montoVencido() : BigDecimal
     + estaCancelado() : boolean
     + tieneCobranzas() : boolean
     + puedeAnularse() : boolean

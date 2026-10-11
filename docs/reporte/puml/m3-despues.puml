@@ -22,10 +22,10 @@ class Credito {
 DashboardServiceImpl ..> Credito : cuenta estado() == VIGENTE
 interface CreditoRepository #DDEBF7 {
   +buscarTodosConCuotas()
-  +sumarDeudaOriginalVigente()
+  +sumarDeudaOriginalNoAnulada()
 }
 interface CobranzaRepository #DDEBF7 {
-  +sumarImporteVigente()
+  +sumarImporteNoAnulado()
 }
 interface CuotaRepository #DDEBF7 {
   +buscarTodasConCobranzas()
