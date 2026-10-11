@@ -1,13 +1,13 @@
 # Lista de mejoras — Iteración 3 (TPO Grupo 7, Dashboard de préstamos)
 
-Rutas Java relativas a `backend/src/main/java/com/uade/tpejemplo/`. Reporte completo: `docs/reporte/reporte-v3.html`. Casos de uso: `docs/casos-de-uso/README.md`.
+Rutas Java relativas a `backend/src/main/java/com/uade/tpejemplo/`. Reporte completo: `docs/reporte/reporte-v3.html`. Casos de uso: `docs/casos-de-uso/README.md`. Diagrama de clases: `docs/diagramas/clases-v3-general.svg` y `docs/diagramas/clases-v3-modelo.svg` (fuente `clases-v3.puml`).
 
 ## Foco de la consigna: Strategy y Adapter
 
 | ID | Qué | Clase y método | Patrón / concepto |
 |---|---|---|---|
-| M9 | Cálculo de cuota intercambiable: interés simple y sistema francés. Context `Credito` con referencia a la Strategy (`calculo()`); elige quien otorga (`TipoPlan`); sin `setEstrategia` (cambiaría cuotas emitidas). Revierte el descarte del 15/09: Strategy necesita dos algoritmos reales | `model/interfaces/CalculoDeCuota.java`; `model/plan/InteresSimple.java`, `model/plan/SistemaFrances.java`; `model/TipoPlan.java`; `model/Credito.java` (constructor, `calculo`, `totalADevolver`) | **Strategy** (+ OCP, Polymorphism) |
-| M7 | `UsuarioDetails` adapta `IUsuario` a `UserDetails` (ejemplo de manual). Target `TokenService`, Adapter `JwtUtil` que contiene `SecretKey` y `JwtParser` de jjwt como campos `final` (Object Adapter) | `service/TokenService.java`; `security/JwtUtil.java`; clientes `security/JwtAuthFilter.java`, `service/impl/AuthServiceImpl.java`; `security/UsuarioDetails.java` | **Adapter** (+ DIP, Protected Variations) |
+| M9 | Cálculo de cuota intercambiable: interés simple y sistema francés. Context `Credito`: guarda `tipoPlan`, que le entrega la Strategy (`TipoPlan.calculo()`); elige quien otorga (`TipoPlan`); sin `setEstrategia` (cambiaría cuotas emitidas). Revierte el descarte del 15/09: Strategy necesita dos algoritmos reales | `model/interfaces/CalculoDeCuota.java`; `model/plan/InteresSimple.java`, `model/plan/SistemaFrances.java`; `model/TipoPlan.java`; `model/Credito.java` (constructor, `calculo`, `totalADevolver`) | **Strategy** (+ OCP, Polymorphism) |
+| M7 | `UsuarioDetails` adapta `IUsuario` a `UserDetails` (ejemplo de manual). Target `TokenService`, Adapter `JwtUtil` que contiene el `JwtParser` de jjwt (y su `SecretKey`) como campos `final`; Adaptee: jjwt (`JwtParser`, `Jwts`) (Object Adapter) | `service/TokenService.java`; `security/JwtUtil.java`; clientes `security/JwtAuthFilter.java`, `service/impl/AuthServiceImpl.java`; `security/UsuarioDetails.java` | **Adapter** (+ DIP, Protected Variations) |
 
 ## Convenciones: excepciones a propósito
 
@@ -18,18 +18,6 @@ Rutas Java relativas a `backend/src/main/java/com/uade/tpejemplo/`. Reporte comp
 | `model/interfaces/CalculoDeCuota.java` | sin prefijo `I` | Interfaz Strategy: nombre de rol |
 | `service/TokenService.java` → `security/JwtUtil.java` | no es `TokenServiceImpl` | Es el Adapter; infraestructura, no caso de uso |
 | `model/interfaces/IRol.java` | sin consumidor | Existe por la convención; una interfaz sin clientes no viola ISP |
-
-## Evolución del sistema (Problema → Solución → Buena práctica)
-
-| Mejora | Problema | Solución | Buena práctica |
-|---|---|---|---|
-| Swagger | No había contrato de la API | `config/OpenApiConfig.java`, `/swagger-ui.html`, 20 operaciones | MVC: contrato vista-controlador |
-| Perfiles dev/prod y CORS | Consola H2 sin login, una sola config | `application-dev.properties`, `application-prod.properties`, `config/SecurityConfig.java` `corsConfigurationSource` | Configuración externalizada |
-| UI | Importes, fechas y errores crudos; sin avisos | `frontend/src/utils/formato.js`, `frontend/src/components/Aviso.jsx`, `frontend/src/pages/Creditos.jsx` | MVC: la vista solo presenta |
-| Dark theme | Colores a mano en cada `.jsx` | Variables CSS en `frontend/src/index.css` | Protected Variations (estilo) |
-| Casos de uso | UC06/UC09 sin pantalla; permisos viejos hasta reloguear | `frontend/src/pages/Clientes.jsx`, `Creditos.jsx`; `GET /api/auth/me` | MVC: el modelo es la autoridad |
-| Tests | Cero tests en V2 | 40 tests (dominio, HTTP, concurrencia) | Testeabilidad |
-| Limpieza | Javadoc ruidoso, basura en el zip | Comentarios por patrón, `.gitattributes` | Bad smell: comentarios |
 
 ## Hechos
 
@@ -53,6 +41,7 @@ Rutas Java relativas a `backend/src/main/java/com/uade/tpejemplo/`. Reporte comp
 | S2 | open-in-view apagado | `backend/src/main/resources/application.properties` | Spring JPA |
 | S3 | `jwt.secret` desde `JWT_SECRET` (TPO-009); prod la exige sin default | `backend/src/main/resources/application.properties`, `application-prod.properties` | Configuración fuera del código |
 | S4 | El 500 no filtra el mensaje interno y se loguea | `exception/GlobalExceptionHandler.java` `handleGeneral` | Seguridad / MVC |
+| S7-S9 | Perfiles dev/prod, CORS con `CORS_ORIGIN` y consola H2 solo en dev (TPO-008) | `application-dev.properties`, `application-prod.properties`; `config/SecurityConfig.java` `corsConfigurationSource` | Configuración externalizada |
 | D1 | Borrar `findByRol` sin uso | `repository/UsuarioRepository.java` | Código muerto |
 | D2 | Borrar `@Builder`/`@NoArgsConstructor` sin uso | `dto/response/AuthResponse.java` | Código muerto |
 | BS1 | Supervisor lista usuarios sin admins; se borra `listarTodos` | `controller/SupervisorController.java`; `service/AdminService.java`; `service/impl/AdminServiceImpl.java`; `frontend/src/pages/GestorPermisos.jsx` | Código duplicado |
@@ -100,7 +89,6 @@ Decisión S6: el control de roles queda doble a propósito, reglas de URL en `co
 | BS4 | `rol` tipado como `Rol` en las respuestas | `dto/response/UsuarioResponse.java`, `dto/response/AuthResponse.java` | Primitive obsession |
 | BS6 | Mismo verbo para el mismo caso | `controller/SupervisorController.java` `listarUsuarios` | Nombres consistentes |
 | I1 | Anular y cobrar en paralelo ya no deja un crédito ANULADO con cobranza vigente: los dos caminos bloquean el crédito y después la cuota | `repository/CreditoRepository.java` (`@Lock(PESSIMISTIC_WRITE)`), `service/impl/CreditoServiceImpl.java` `anularCredito`, `service/impl/CobranzaServiceImpl.java` `registrar`; test `service/AnulacionConcurrenteTest.java` | Concurrencia (bloqueo pesimista) |
-| I2 | Prod exige `JWT_SECRET` sin default; usuarios semilla solo en dev | `application-prod.properties`; `config/DataInitializer.java` `@Profile("dev")` | Config fuera del código |
 | I3 | `Content-Type` no JSON → 415; `Accept` no JSON → 406, con `ErrorResponse` (antes 500) | `exception/GlobalExceptionHandler.java`; `controller/CodigosHttpTest.java` | Error del cliente = 4xx |
 | I4 | Un alta ya no aparece en la lista de otro cliente o crédito buscado | `frontend/src/store/slices/creditosSlice.js`, `frontend/src/store/slices/cobranzasSlice.js` | MVC: la vista muestra lo que dice el modelo |
 | Front | `RoleRoute` y `ROLES`, toda la API por `src/api`, `ESTADO_CUOTA`, sin restos de Vite (TPO-012) | `frontend/src/components/RoleRoute.jsx`, `frontend/src/utils/roles.js`, `frontend/src/api/dashboard.js`, `frontend/src/pages/Creditos.jsx` `estadoCuota` | Duplicated code, strings mágicos |

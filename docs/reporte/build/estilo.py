@@ -80,8 +80,23 @@ CSS += '''
 .rev{border-left:3px solid var(--linea);padding:4px 0 4px 16px;margin:0 0 16px}
 .rev h4{font-size:18px;font-weight:600}
 .rev p{margin:2px 0;font-size:15.5px}
-.clases{overflow:auto;max-height:80vh;border:1px solid var(--linea);border-radius:6px;background:#fff}
-.clases svg{display:block}
+.clases{border:1px solid var(--linea);border-radius:6px;background:#fff;padding:8px;margin:8px 0 18px}
+.clases svg{display:block;width:100%!important;height:auto!important;max-width:100%}
 .tec dt{font-weight:600;color:var(--navy)}.tec dd{margin:0 0 8px 0}
 @media (max-width:820px){.cuadro{grid-template-columns:1fr}}
+/* Diagramas clickeables: click abre el visor con zoom (rueda, +/-, 0) y arrastre; Esc cierra. */
+.zoomable{cursor:zoom-in;position:relative}
+.zoomable::after{content:"click para ampliar";position:absolute;top:6px;right:8px;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--gris);background:#fff;border:1px solid var(--linea);border-radius:3px;padding:1px 6px;opacity:.6;pointer-events:none}
+.zoomable:hover::after{opacity:1;color:var(--azul);border-color:var(--azul)}
+body.lb-locked{overflow:hidden}
+.lightbox{display:none;position:fixed;inset:0;z-index:50;flex-direction:column;background:rgba(15,20,35,.88)}
+.lightbox.open{display:flex}
+.lb-bar{display:flex;align-items:center;gap:8px;padding:8px 16px;background:var(--fondo);border-bottom:1px solid var(--linea)}
+.lb-title{margin-right:auto;font-weight:600;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lb-zoom{font-size:13px;color:var(--gris);min-width:3.6em;text-align:center}
+.lb-scroll{flex:1;overflow:auto;padding:28px;cursor:grab}
+.lb-scroll.grabbing{cursor:grabbing}
+.lb-canvas{background:#fff;border-radius:4px;margin:0 auto}
+.lb-canvas svg{display:block;width:100%!important;height:100%!important;max-width:none}
+@media print{.zoomable::after{display:none}.lightbox{display:none!important}}
 '''

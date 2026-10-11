@@ -12,7 +12,7 @@ import java.util.List;
 
 // Expone el Usuario del dominio como UserDetails; implementa solo lo que el
 // dominio sabe contestar y el resto queda con el default de la interfaz.
-// Adapter: adapta Usuario a UserDetails de Spring Security
+// Adapter: adapta IUsuario a UserDetails de Spring Security
 @Getter
 @RequiredArgsConstructor
 public class UsuarioDetails implements UserDetails {

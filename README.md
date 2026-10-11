@@ -87,7 +87,7 @@ Detalle completo, con clase y método de cada una: [lista de mejoras](docs/entre
 
 ## Modelo de dominio y DER
 
-![Modelo de dominio](docs/diagramas/d2/dominio.svg)
+![Diagrama de clases del modelo](docs/diagramas/clases-v3-modelo.svg)
 
 - Diagrama de clases entregable: [`clases-v3.puml`](docs/diagramas/clases-v3.puml) ([general](docs/diagramas/clases-v3-general.svg), [modelo](docs/diagramas/clases-v3-modelo.svg)).
 - Ciclo de vida del crédito: [`credito-estados.svg`](docs/diagramas/archify/credito-estados.svg); secuencia de anular: [`anular-credito.svg`](docs/diagramas/archify/anular-credito.svg).

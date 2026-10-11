@@ -15,7 +15,7 @@ import java.util.Optional;
 import java.util.function.Function;
 
 // Genera y valida los JWT de la sesion.
-// Adapter: implementa TokenService (Target) y delega en JwtParser/SecretKey de jjwt (Adaptee, por composicion)
+// Adapter: implementa TokenService (Target) y delega en JwtParser/Jwts de jjwt (Adaptee, por composicion)
 @Component
 public class JwtUtil implements TokenService {
 

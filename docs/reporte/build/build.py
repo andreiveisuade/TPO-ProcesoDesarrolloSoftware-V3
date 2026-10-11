@@ -170,7 +170,7 @@ m6 = bloque("m6", "M6. Cuota.estaVencida()",
     cb("v2", "model/Cuota.java", method("v2", "model/Cuota.java", r"public boolean estaPagada")),
     "<code>Cuota.estaVencida()</code>; la vista muestra Pagada / Vencida / Pendiente.",
     cb("main", "model/Cuota.java", method("main", "model/Cuota.java", r"public boolean estaPagada"), "", method("main", "model/Cuota.java", r"public boolean estaVencida")),
-    "La mora es <strong>la consulta central</strong> de cobranzas (H3).",
+    "La mora es <strong>la consulta central</strong> de cobranzas.",
     "Reutilizable (dashboard). La fecha entra por parámetro: <strong>testeable sin reloj</strong>.",
     "Archivos: <code>model/Cuota.java</code>, <code>dto/response/CuotaResponse.java</code>.")
 
@@ -179,7 +179,7 @@ roles7 = """<table><thead><tr><th>Rol (slides 26 y 28, clase 10)</th><th>Usuario
 <tr><td><strong>Client</strong>: solo conoce el Target</td><td>Spring Security (<code>DaoAuthenticationProvider</code>, vía <code>UserDetailsServiceImpl</code>)</td><td><code>AuthServiceImpl</code>, <code>JwtAuthFilter</code></td></tr>
 <tr><td><strong>Target</strong>: interfaz que espera el cliente</td><td><code>UserDetails</code> (Spring, no modificable)</td><td><code>TokenService</code> (propia)</td></tr>
 <tr><td><strong>Adapter</strong>: implementa el Target y <strong>contiene</strong> al Adaptee</td><td><code>UsuarioDetails</code>: <code>private final IUsuario usuario</code></td><td><code>JwtUtil</code>: <code>private final SecretKey key</code>, <code>private final JwtParser parser</code></td></tr>
-<tr><td><strong>Adaptee</strong>: componente con otra interfaz</td><td><code>IUsuario</code></td><td>jjwt: <code>JwtParser</code>, <code>SecretKey</code></td></tr>
+<tr><td><strong>Adaptee</strong>: componente con otra interfaz</td><td><code>IUsuario</code></td><td>jjwt: <code>JwtParser</code>, <code>Jwts</code></td></tr>
 </tbody></table>"""
 
 extra7 = figura("adapter-jwt", "Secuencia: cada request valida el token sin conocer jjwt") + f"""<h4 style="margin-top:22px">Roles</h4>{roles7}
@@ -216,7 +216,7 @@ m7 = bloque("m7", "M7. Adapter: UsuarioDetails y JwtUtil",
     "Los clientes dependían de la clase concreta <code>JwtUtil</code> y, por ella, <strong>de jjwt</strong>: el filtro capturaba su excepción.",
     cb("v2", "service/impl/AuthServiceImpl.java", lines("v2", "service/impl/AuthServiceImpl.java", r"private final JwtUtil", 1), "", method("v2", "service/impl/AuthServiceImpl.java", r"public AuthResponse login"))
     + cb("v2", "security/JwtAuthFilter.java", lines("v2", "security/JwtAuthFilter.java", r"private final JwtUtil", 1), "// ...", lines("v2", "security/JwtAuthFilter.java", r"extraerUsername", 4, 1)),
-    "Target propio <code>TokenService</code>; <code>JwtUtil</code> lo implementa, <strong>contiene</strong> <code>SecretKey</code> y <code>JwtParser</code> y es la única clase que importa jjwt.",
+    "Target propio <code>TokenService</code>; <code>JwtUtil</code> lo implementa, <strong>contiene</strong> el <code>JwtParser</code> de jjwt (y su <code>SecretKey</code>) y es la única clase que importa jjwt.",
     cb("main", "service/TokenService.java", body("main", "service/TokenService.java"))
     + cb("main", "security/JwtUtil.java", body("main", "security/JwtUtil.java"))
     + cb("main", "security/JwtAuthFilter.java", lines("main", "security/JwtAuthFilter.java", r"private final TokenService", 1), "// ...", lines("main", "security/JwtAuthFilter.java", r"tokenService.extraerUsername", 4), "// ...", lines("main", "security/JwtAuthFilter.java", r"tokenService.esValido", 3))
@@ -231,7 +231,7 @@ m7 = bloque("m7", "M7. Adapter: UsuarioDetails y JwtUtil",
 
 m8 = bloque("m8", "M8. EstadoCredito y Credito como agregado de sus cuotas",
     "<strong>Information Expert</strong> + <strong>Creator</strong>: el crédito crea y conoce sus cuotas.",
-    "El estado era un boolean <code>anulado</code>: <strong>sin “cancelado” ni saldo</strong> (H1, H2).",
+    "El estado era un boolean <code>anulado</code>: <strong>sin “cancelado” ni saldo</strong>.",
     cb("v2", "model/Credito.java", lines("v2", "model/Credito.java", r"private boolean anulado", 1, 1), "", method("v2", "model/Credito.java", r"public void anular"))
     + cb("v2", "service/impl/CreditoServiceImpl.java", method("v2", "service/impl/CreditoServiceImpl.java", r"public void anularCredito")),
     "<code>EstadoCredito</code> <strong>derivado</strong>, no persistido. <code>Credito</code> calcula estado, saldo y si puede anularse.",
@@ -251,7 +251,7 @@ m8 = bloque("m8", "M8. EstadoCredito y Credito como agregado de sus cuotas",
 
 # ---- M9 Strategy (foco) ----
 roles9 = '''<table><thead><tr><th>Rol (apunte clase 10)</th><th>Clase</th></tr></thead><tbody>
-<tr><td><strong>Context</strong>: referencia a la Strategy y delega</td><td><code>Credito</code>: obtiene la estrategia con <code>calculo()</code> y le delega <code>importeCuota</code> en el constructor</td></tr>
+<tr><td><strong>Context</strong>: obtiene la Strategy y delega</td><td><code>Credito</code> guarda <code>tipoPlan</code>, que le entrega la Strategy (<code>TipoPlan.calculo()</code>); le delega <code>importeCuota</code> en el constructor</td></tr>
 <tr><td><strong>Strategy</strong>: interfaz común</td><td><code>model/interfaces/CalculoDeCuota.java</code></td></tr>
 <tr><td><strong>ConcreteStrategies</strong>: no se conocen entre sí</td><td><code>model/plan/InteresSimple.java</code>, <code>model/plan/SistemaFrances.java</code></td></tr>
 <tr><td><strong>Cliente que elige</strong></td><td>quien otorga: <code>&lt;select&gt;</code> de <code>Creditos.jsx</code> → <code>CreditoRequest.tipoPlan</code> → <code>TipoPlan</code> (enum persistido, registro de estrategias)</td></tr>
@@ -368,12 +368,12 @@ indice = [
  ("m9", "Cálculo de cuota", "<strong>Strategy</strong>", "foco"),
  ("m7", "TokenService / JwtUtil + UsuarioDetails", "<strong>Adapter</strong>", "foco"),
  ("m1", "Cobro sobre crédito anulado", "Information Expert", "TPO-004"),
- ("m2", "“Tiene cobranzas” ignora anuladas (absorbida por M8)", "Information Expert", "H5"),
+ ("m2", "“Tiene cobranzas” ignora anuladas (absorbida por M8)", "Information Expert", "revisión del dominio"),
  ("m3", "Dashboard con números verdaderos", "Corrección + Expert", "TPO-003"),
  ("m4", "Permisos de anulación en el backend", "MVC + Expert", "TPO-007"),
  ("m5", "Handlers HTTP 401/403/404/405", "MVC", "TPO-001, 002"),
- ("m6", "Cuota.estaVencida()", "Information Expert", "H3"),
- ("m8", "EstadoCredito + Credito agregado", "Expert + Creator", "H1, H2"),
+ ("m6", "Cuota.estaVencida()", "Information Expert", "revisión del dominio"),
+ ("m8", "EstadoCredito + Credito agregado", "Expert + Creator", "revisión del dominio"),
  ("m10", "Dashboard para ADMIN", "Control de acceso", "TPO-010"),
 ]
 tabla_indice = "".join(f'<tr><td><a href="#{k}">{k.upper()}</a></td><td>{a}</td><td>{b}</td><td>{c}</td></tr>' for k, a, b, c in indice)
@@ -400,7 +400,7 @@ rev = [
  ("O6, O7", "d89d62d, 6cc5e17", "Crédito <strong>sin cuotas</strong>; dashboard sin saldo ni mora.", "El constructor de <code>Credito</code> crea las cuotas; saldo y vencido en el dashboard."),
  ("BS3, BS4", "5246f27, 7c6dd63, f96f53a", "El servicio consultaba permisos; rol como <code>String</code>.", "<code>Usuario.puedeAnularCredito</code>; enum <code>Rol</code> en los DTO."),
  ("Front", "dfa2c12, d9b0b8f, a085f66, f5c8d05, 0e3284e", "Rutas por rol <strong>duplicadas</strong>; roles como strings.", "<code>RoleRoute</code> y <code>utils/roles.js</code>."),
- ("DER", "8eb2106", "<strong>Sin DER</strong>.", "<code>der-v3.puml</code>; detectó I-1, I-2 e I-3, resueltas."),
+ ("DER", "8eb2106", "<strong>Sin DER</strong>.", "<code>der-v3.puml</code>; detectó tres inconsistencias del modelo, resueltas."),
 ]
 rev_html = '<table><thead><tr><th>ID · commits</th><th>Problema</th><th>Cambio</th></tr></thead><tbody>' + "".join(f'<tr><td><strong>{i}</strong><br><span class="ref"><code>{c}</code></span></td><td>{p}</td><td>{s}</td></tr>' for i, c, p, s in rev) + '</tbody></table>'
 
@@ -531,6 +531,68 @@ pendientes = '''<ul>
 <li><strong>TPO-014</strong>: el paquete <code>com.uade.tpejemplo</code> no nombra el sistema. El renombre ocultaría los cambios reales en el diff; se evalúa para el 17/11.</li>
 </ul>'''
 
+LIGHTBOX = """<div class="lightbox" id="lb" role="dialog" aria-modal="true" aria-label="Diagrama ampliado">
+<div class="lb-bar"><span class="lb-title" id="lbTitle"></span>
+<button class="sec" id="lbOut" aria-label="Alejar">−</button><span class="lb-zoom" id="lbZoom">100%</span><button class="sec" id="lbIn" aria-label="Acercar">+</button>
+<button class="sec" id="lbFit">Ajustar</button><button id="lbClose" aria-label="Cerrar">✕</button></div>
+<div class="lb-scroll" id="lbScroll"><div class="lb-canvas" id="lbCanvas"></div></div></div>
+<script>
+(function () {
+  var lb = document.getElementById("lb"), canvas = document.getElementById("lbCanvas"), sc = document.getElementById("lbScroll");
+  var label = document.getElementById("lbZoom"), w = 800, h = 600, k = 1;
+  function size(svg) {
+    var vb = (svg.getAttribute("viewBox") || "").trim().split(/[\\s,]+/).map(Number);
+    if (vb.length === 4 && vb[2] > 0) return [vb[2], vb[3]];
+    var r = svg.getBoundingClientRect(); return [r.width || 800, r.height || 600];
+  }
+  function apply() { canvas.style.width = Math.round(w * k) + "px"; canvas.style.height = Math.round(h * k) + "px"; label.textContent = Math.round(k * 100) + "%"; }
+  function fit() { k = Math.min((sc.clientWidth - 60) / w, (sc.clientHeight - 60) / h, 1.5); apply(); sc.scrollLeft = sc.scrollTop = 0; }
+  function zoom(f, cx, cy) {
+    var r = sc.getBoundingClientRect(), ax = cx == null ? sc.clientWidth / 2 : cx - r.left, ay = cy == null ? sc.clientHeight / 2 : cy - r.top;
+    var x = sc.scrollLeft + ax, y = sc.scrollTop + ay, p = k;
+    k = Math.min(Math.max(k * f, 0.1), 8); apply();
+    sc.scrollLeft = x * k / p - ax; sc.scrollTop = y * k / p - ay;
+  }
+  function open(svg, title) {
+    var c = svg.cloneNode(true); c.removeAttribute("style"); c.removeAttribute("width"); c.removeAttribute("height");
+    var d = size(svg); w = d[0]; h = d[1];
+    canvas.innerHTML = ""; canvas.appendChild(c);
+    document.getElementById("lbTitle").textContent = title;
+    lb.classList.add("open"); document.body.classList.add("lb-locked"); fit();
+  }
+  function close() { lb.classList.remove("open"); document.body.classList.remove("lb-locked"); canvas.innerHTML = ""; }
+  function titulo(box) {
+    var fig = box.closest("figure"), cap = fig && fig.querySelector("figcaption");
+    if (cap) return cap.textContent.trim();
+    for (var n = box.previousElementSibling; n; n = n.previousElementSibling) if (/^H[2-4]$/.test(n.tagName)) return n.textContent.trim();
+    var art = box.closest("article"); return art ? art.querySelector("h3").textContent.replace("implementada", "").trim() : "Diagrama";
+  }
+  document.querySelectorAll(".svgbox, .mvcsvg, .clases").forEach(function (box) {
+    var svg = box.querySelector("svg"); if (!svg) return;
+    box.classList.add("zoomable");
+    box.addEventListener("click", function () { open(svg, titulo(box)); });
+  });
+  document.getElementById("lbClose").onclick = close;
+  document.getElementById("lbIn").onclick = function () { zoom(1.3); };
+  document.getElementById("lbOut").onclick = function () { zoom(1 / 1.3); };
+  document.getElementById("lbFit").onclick = fit;
+  lb.addEventListener("click", function (e) { if (e.target === lb || e.target === sc) close(); });
+  document.addEventListener("keydown", function (e) {
+    if (!lb.classList.contains("open")) return;
+    if (e.key === "Escape") close();
+    else if (e.key === "+" || e.key === "=") zoom(1.3);
+    else if (e.key === "-") zoom(1 / 1.3);
+    else if (e.key === "0") fit();
+  });
+  sc.addEventListener("wheel", function (e) { e.preventDefault(); zoom(e.deltaY < 0 ? 1.12 : 1 / 1.12, e.clientX, e.clientY); }, { passive: false });
+  var drag = false, sx, sy, l0, t0, moved = false;
+  sc.addEventListener("mousedown", function (e) { drag = true; moved = false; sx = e.clientX; sy = e.clientY; l0 = sc.scrollLeft; t0 = sc.scrollTop; sc.classList.add("grabbing"); });
+  window.addEventListener("mousemove", function (e) { if (!drag) return; moved = true; sc.scrollLeft = l0 - (e.clientX - sx); sc.scrollTop = t0 - (e.clientY - sy); });
+  window.addEventListener("mouseup", function () { drag = false; sc.classList.remove("grabbing"); });
+})();
+</script>"""
+
+
 doc = f'''<!doctype html>
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Reporte V3 — TPO Grupo 7</title><style>{CSS}</style></head>
@@ -619,12 +681,17 @@ doc = f'''<!doctype html>
 </section>
 
 <section id="clases"><h2>Diagramas de clases y DER</h2>
-<p>Entregable UML: <a href="../diagramas/clases-v3-general.svg">vista general</a> y <a href="../diagramas/clases-v3-modelo.svg">modelo</a> (<code>docs/diagramas/clases-v3.puml</code>). Abajo, vistas parciales en d2.</p>
-<h3>Strategy</h3>
+<p>Entregable UML: <a href="../diagramas/clases-v3-general.svg">vista general</a> y <a href="../diagramas/clases-v3-modelo.svg">modelo</a> (<code>docs/diagramas/clases-v3.puml</code>).</p>
+<h3>Diagrama de clases: vista general MVC (UML)</h3>
+<div class="clases">{re.sub(r"<\?xml[^>]*\?>", "", open(os.path.join(REPO, "docs/diagramas/clases-v3-general.svg")).read())}</div>
+<h3>Diagrama de clases: detalle del modelo (UML)</h3>
+<div class="clases">{re.sub(r"<\?xml[^>]*\?>", "", open(os.path.join(REPO, "docs/diagramas/clases-v3-modelo.svg")).read())}</div>
+<p>Abajo, esquemas parciales en d2 (sin compartimentos, solo para leer rápido).</p>
+<h3>Esquema: Strategy</h3>
 <div class="clases">{d2svg("strategy")}</div>
-<h3>Adapter</h3>
+<h3>Esquema: Adapter</h3>
 <div class="clases">{d2svg("adapter")}</div>
-<h3>Modelo de dominio</h3>
+<h3>Esquema: modelo de dominio</h3>
 <p>Rombo lleno: composición (el todo crea y contiene a sus partes).</p>
 <div class="clases">{d2svg("dominio")}</div>
 <h3>DER</h3>
@@ -637,6 +704,7 @@ doc = f'''<!doctype html>
 <p>Lista completa de cambios hechos y pendientes: <code>docs/entrega/lista-mejoras.md</code>.</p>
 </section>
 </main>
+{LIGHTBOX}
 </body></html>'''
 open(OUT + "/reporte-v3.html", "w").write(doc)
 print(len(doc))

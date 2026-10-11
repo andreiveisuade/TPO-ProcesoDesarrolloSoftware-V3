@@ -58,6 +58,47 @@ package "Controlador" {
     - dashboardService : DashboardService
     + obtenerEstadisticas() : DashboardStatsResponse
   }
+
+  package "security" {
+    class JwtUtil <<Adapter>> {
+      - key : SecretKey
+      - parser : JwtParser
+      - expirationMs : long
+      + generarToken(String) : String
+      + extraerUsername(String) : Optional<String>
+      + esValido(String, String) : boolean
+    }
+    interface "JwtParser (jjwt)" as JwtParser <<Adaptee>> {
+      + parseSignedClaims(CharSequence) : Jws<Claims>
+    }
+    interface "SecretKey (javax.crypto)" as SecretKey {
+      + getAlgorithm() : String
+      + getEncoded() : byte[]
+    }
+    class JwtAuthFilter {
+      - tokenService : TokenService
+      - userDetailsService : UserDetailsService
+      # doFilterInternal(HttpServletRequest, HttpServletResponse, FilterChain) : void
+    }
+    interface "UserDetailsService (Spring)" as UserDetailsService {
+      + loadUserByUsername(String) : UserDetails
+    }
+    class UserDetailsServiceImpl {
+      - usuarioRepository : UsuarioRepository
+      + loadUserByUsername(String) : UserDetails
+    }
+    interface "UserDetails (Spring)" as UserDetails <<Target>> {
+      + getAuthorities() : Collection<GrantedAuthority>
+      + getPassword() : String
+      + getUsername() : String
+    }
+    class UsuarioDetails <<Adapter>> {
+      - usuario : IUsuario
+      + getAuthorities() : Collection<GrantedAuthority>
+      + getPassword() : String
+      + getUsername() : String
+    }
+  }
 }
 
 package "Modelo" {
@@ -124,47 +165,6 @@ package "Modelo" {
       - creditoRepository : CreditoRepository
       - cobranzaRepository : CobranzaRepository
       - cuotaRepository : CuotaRepository
-    }
-  }
-
-  package "security" {
-    class JwtUtil <<Adapter>> {
-      - key : SecretKey
-      - parser : JwtParser
-      - expirationMs : long
-      + generarToken(String) : String
-      + extraerUsername(String) : Optional<String>
-      + esValido(String, String) : boolean
-    }
-    interface "JwtParser (jjwt)" as JwtParser <<Adaptee>> {
-      + parseSignedClaims(CharSequence) : Jws<Claims>
-    }
-    interface "SecretKey (javax.crypto)" as SecretKey <<Adaptee>> {
-      + getAlgorithm() : String
-      + getEncoded() : byte[]
-    }
-    class JwtAuthFilter {
-      - tokenService : TokenService
-      - userDetailsService : UserDetailsService
-      # doFilterInternal(HttpServletRequest, HttpServletResponse, FilterChain) : void
-    }
-    interface "UserDetailsService (Spring)" as UserDetailsService {
-      + loadUserByUsername(String) : UserDetails
-    }
-    class UserDetailsServiceImpl {
-      - usuarioRepository : UsuarioRepository
-      + loadUserByUsername(String) : UserDetails
-    }
-    interface "UserDetails (Spring)" as UserDetails <<Target>> {
-      + getAuthorities() : Collection<GrantedAuthority>
-      + getPassword() : String
-      + getUsername() : String
-    }
-    class UsuarioDetails <<Adapter>> {
-      - usuario : IUsuario
-      + getAuthorities() : Collection<GrantedAuthority>
-      + getPassword() : String
-      + getUsername() : String
     }
   }
 
@@ -267,7 +267,7 @@ IUsuario <|.. Usuario
 note top of JwtUtil
   Adapter (objeto): TokenService es lo que
   esperan AuthServiceImpl y JwtAuthFilter;
-  JwtUtil compone JwtParser y SecretKey (final)
+  JwtUtil compone JwtParser (jjwt) y su SecretKey (final)
   y traduce a la API de jjwt.
 end note
 note as Omitidos
@@ -305,7 +305,6 @@ package "model.interfaces" {
   interface ICuota {
     + estaPagada() : boolean
     + estaVencida() : boolean
-    + estaVencida(LocalDate) : boolean
     + registrarCobranza(BigDecimal) : ICobranza
   }
   interface ICobranza {
@@ -317,6 +316,8 @@ package "model.interfaces" {
     + getPermisos() : IPermisos
     + otorgarPermisos(Permisos) : void
     + asignarRol(Rol) : void
+    + puedeAnularCredito() : boolean
+    + puedeAnularCobranza() : boolean
   }
   interface IPermisos {
     + isPuedeAnularCredito() : boolean
@@ -381,6 +382,8 @@ package "model" {
     + {static} nuevo(String, String, Rol, Permisos) : Usuario
     + otorgarPermisos(Permisos) : void
     + asignarRol(Rol) : void
+    + puedeAnularCredito() : boolean
+    + puedeAnularCobranza() : boolean
   }
   class Permisos <<Embeddable>> {
     - puedeAnularCredito : boolean
