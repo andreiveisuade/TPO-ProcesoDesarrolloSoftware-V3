@@ -84,141 +84,142 @@ def bloque(id_, titulo, patron, problema, antes, solucion, despues, por_que, con
 
 # ---------------- M1..M10 ----------------
 m1 = bloque("m1", "M1. Rechazar el cobro sobre un crédito anulado",
-    "<strong>Information Expert</strong>: la cuota conoce su crédito y decide si se puede cobrar.",
+    "<strong>Information Expert</strong>: la cuota conoce su crédito y decide si admite el cobro.",
     "Se <strong>cobraban cuotas de créditos anulados</strong> (TPO-004).",
     cb("v2", "model/Cuota.java", method("v2", "model/Cuota.java", r"public Cobranza registrarCobranza")),
-    "Si el crédito está anulado: <code>BusinessException</code> (400).",
+    "Crédito anulado: <code>BusinessException</code> (400).",
     cb("main", "model/Cuota.java", method("main", "model/Cuota.java", r"public Cobranza registrarCobranza")),
-    "Es <strong>regla del dominio</strong>: va en <code>Cuota</code>, no en el servicio.",
-    "Gana: <strong>un solo lugar</strong>, vale para todo cobro.",
-    "Cierra TPO-004. Test: <code>backend/src/test/java/com/uade/tpejemplo/model/CuotaTest.java</code>.")
+    "Es <strong>regla de dominio</strong>: pertenece a <code>Cuota</code>, no al servicio.",
+    "La regla vale para todo cobro desde <strong>un único lugar</strong>.",
+    "Cierra TPO-004. Test: <code>CuotaTest</code>.")
 
 m2 = f'''<article class="mejora" id="m2">
 <h3>M2. “Tiene cobranzas” ignora las anuladas <span class="badge impl">absorbida por M8</span></h3>
 <p class="ref">Resuelta por <a href="#m8">M8</a>.</p>
 <dl class="estructura">
 <dt>Patrón</dt><dd><strong>Information Expert</strong>.</dd>
-<dt>Problema (código antes)</dt><dd><p>Contaba <strong>cobranzas anuladas</strong>: el crédito quedaba inanulable.</p>
+<dt>Problema (código antes)</dt><dd><p>Contaba <strong>cobranzas anuladas</strong>: el crédito no podía anularse.</p>
 {cb("v2", "repository/CobranzaRepository.java", lines("v2", "repository/CobranzaRepository.java", "existeCobranzaDelCredito", 1, 1))}
 {cb("v2", "service/impl/CreditoServiceImpl.java", method("v2", "service/impl/CreditoServiceImpl.java", r"public void anularCredito"))}</dd>
-<dt>Solución (código después)</dt><dd><p><code>model/Credito.java</code> <code>tieneCobranzas()</code> usa <code>Cuota::estaPagada</code>; se borra la query.</p></dd>
-<dt>Por qué</dt><dd><strong>Reusar la regla</strong> en vez de duplicarla en SQL.</dd>
+<dt>Solución (código después)</dt><dd><p><code>Credito.tieneCobranzas()</code> usa <code>Cuota::estaPagada</code>; la query se elimina.</p></dd>
+<dt>Por qué</dt><dd><strong>Reutiliza la regla</strong> del modelo en lugar de duplicarla en SQL.</dd>
 <dt>Consecuencias</dt><dd>Test: <code>CreditoTest</code>.</dd>
 </dl>
-{diagramas("m2", tit_a="Antes (V2): el servicio consulta y le pasa un boolean al crédito", solo_antes=True)}
+{diagramas("m2", tit_a="Antes (V2): el servicio consulta y pasa un boolean al crédito", solo_antes=True)}
 </article>'''
 
 m3 = bloque("m3", "M3. Dashboard con números verdaderos",
     "<strong>Corrección</strong> + <strong>Information Expert</strong> (<code>Credito.estado()</code>).",
-    "El dashboard <strong>contaba anulados</strong> y “financiado” sumaba una cuota, no lo prestado (TPO-003).",
+    "El dashboard <strong>contaba anulados</strong> y “financiado” sumaba una cuota, no el capital (TPO-003).",
     cb("v2", "service/impl/DashboardServiceImpl.java", method("v2", "service/impl/DashboardServiceImpl.java", r"obtenerEstadisticasGenerales"))
     + cb("v2", "repository/CreditoRepository.java", lines("v2", "repository/CreditoRepository.java", "sumarImporteCuotaTotal", 1, 1))
     + cb("v2", "repository/CobranzaRepository.java", lines("v2", "repository/CobranzaRepository.java", "sumarImporteTotal", 1, 1)),
-    "Se filtra lo anulado; “financiado” = <code>deudaOriginal</code>; activos = <code>estado() == VIGENTE</code>.",
+    "Se excluye lo anulado; financiado = <code>deudaOriginal</code>; activos = <code>estado() == VIGENTE</code>.",
     cb("main", "service/impl/DashboardServiceImpl.java", method("main", "service/impl/DashboardServiceImpl.java", r"obtenerEstadisticasGenerales"))
     + cb("main", "repository/CreditoRepository.java", lines("main", "repository/CreditoRepository.java", "sumarDeudaOriginalVigente", 1, 1))
     + cb("main", "repository/CobranzaRepository.java", lines("main", "repository/CobranzaRepository.java", "sumarImporteVigente", 1, 1)),
-    "<strong>Activos</strong> = <code>estado() == VIGENTE</code> (modelo). <strong>Financiado y cobrado</strong> = lo no anulado (query): el financiado <strong>incluye cancelados</strong>.",
+    "El <strong>estado lo decide el modelo</strong>; las sumas, la query. Por eso el financiado <strong>incluye cancelados</strong>.",
     "Gana: dashboard y listado coinciden. Cuesta: carga los créditos en memoria.",
     "Cierra TPO-003. Commits <code>8877f29</code>, <code>87f0631</code>.")
 
 m4 = bloque("m4", "M4. Permisos de anulación aplicados en el backend",
     "<strong>MVC</strong> + <strong>Information Expert</strong>: la vista oculta, <strong>el modelo decide</strong>.",
-    "Solo el front ocultaba el botón: <strong>cualquiera anulaba por API</strong> (TPO-007).",
+    "Solo el front ocultaba el botón: <strong>cualquier usuario anulaba por API</strong> (TPO-007).",
     cb("v2", "controller/CreditoController.java", method("v2", "controller/CreditoController.java", r"anularCredito"))
     + cb("v2", "service/impl/CreditoServiceImpl.java", method("v2", "service/impl/CreditoServiceImpl.java", r"public void anularCredito")),
     "El controlador pasa el usuario (<code>@AuthenticationPrincipal</code>); sin permiso, 403.",
     cb("main", "controller/CreditoController.java", method("main", "controller/CreditoController.java", r"public ResponseEntity<Void> anularCredito"))
     + cb("main", "service/impl/CreditoServiceImpl.java", method("main", "service/impl/CreditoServiceImpl.java", r"public void anularCredito")),
-    "La <strong>vista puede ocultar, pero valida el modelo</strong>.",
+    "La vista <strong>no es una barrera de seguridad</strong>.",
     "Gana: el permiso vale sin el front. Cuesta: los servicios reciben el <code>IUsuario</code>.",
     "Cierra TPO-007.")
 
 m5 = bloque("m5", "M5. Handlers HTTP específicos",
     "<strong>MVC</strong>: el controlador traduce errores a <strong>códigos HTTP</strong>.",
-    "Login malo, ruta inexistente o sin permiso: <strong>todo daba 500</strong> (TPO-001, 002).",
+    "Login inválido, ruta inexistente o falta de permiso: <strong>todo daba 500</strong> (TPO-001, 002).",
     cb("v2", "exception/GlobalExceptionHandler.java", method("v2", "exception/GlobalExceptionHandler.java", r"handleGeneral")),
-    "Handlers 401, 403, 404, 405; el 500 no filtra detalles (S4).",
+    "Handlers 401, 403, 404, 405, entre otros; el 500 no expone detalles (S4).",
     cb("main", "exception/GlobalExceptionHandler.java",
        method("main", "exception/GlobalExceptionHandler.java", r"handleAuth"), "",
        method("main", "exception/GlobalExceptionHandler.java", r"handleDenied"), "",
        method("main", "exception/GlobalExceptionHandler.java", r"handleNoResource"), "",
        method("main", "exception/GlobalExceptionHandler.java", r"handleMetodo"), "",
        method("main", "exception/GlobalExceptionHandler.java", r"handleGeneral")),
-    "<strong>Error del cliente ≠ falla del servidor.</strong>",
-    "Gana: Swagger documenta los códigos reales.",
+    "<strong>Un error del cliente no es una falla del servidor.</strong>",
+    "Swagger documenta los códigos reales.",
     "Cierra TPO-001 y TPO-002.")
 
 m6 = bloque("m6", "M6. Cuota.estaVencida()",
-    "<strong>Information Expert</strong>: la cuota tiene la fecha, ella sabe si venció.",
+    "<strong>Information Expert</strong>: la cuota tiene la fecha y sabe si venció.",
     "<strong>No existía la mora</strong>: <code>fechaVencimiento</code> sin uso.",
     cb("v2", "model/Cuota.java", method("v2", "model/Cuota.java", r"public boolean estaPagada")),
     "<code>Cuota.estaVencida()</code>; la vista muestra Pagada / Vencida / Pendiente.",
     cb("main", "model/Cuota.java", method("main", "model/Cuota.java", r"public boolean estaPagada"), "", method("main", "model/Cuota.java", r"public boolean estaVencida")),
-    "La mora es <strong>la pregunta central</strong> de cobranzas (H3).",
-    "Gana: reutilizable (dashboard). La fecha entra por parámetro: <strong>testeable sin reloj</strong>.",
+    "La mora es <strong>la consulta central</strong> de cobranzas (H3).",
+    "Reutilizable (dashboard). La fecha entra por parámetro: <strong>testeable sin reloj</strong>.",
     "Archivos: <code>model/Cuota.java</code>, <code>dto/response/CuotaResponse.java</code>.")
 
 # ---- M7 Adapter (foco) ----
-roles7 = """<table><thead><tr><th>Rol (slide 26/28, clase 10)</th><th>Adapter 1: UsuarioDetails (desde V1)</th><th>Adapter 2: JwtUtil (V3)</th></tr></thead><tbody>
-<tr><td><strong>Client</strong>: solo conoce el Target</td><td>Spring Security (<code>DaoAuthenticationProvider</code>, vía <code>security/UserDetailsServiceImpl.java</code>)</td><td><code>service/impl/AuthServiceImpl.java</code>, <code>security/JwtAuthFilter.java</code></td></tr>
-<tr><td><strong>Target</strong>: la interfaz que el cliente espera</td><td><code>UserDetails</code> (de Spring, no se toca)</td><td><code>service/TokenService.java</code> (propia)</td></tr>
-<tr><td><strong>Adapter</strong>: implementa el Target y <strong>contiene</strong> al Adaptee</td><td><code>security/UsuarioDetails.java</code>: <code>private final IUsuario usuario</code></td><td><code>security/JwtUtil.java</code>: <code>private final SecretKey key</code>, <code>private final JwtParser parser</code></td></tr>
-<tr><td><strong>Adaptee</strong>: lo existente con otra interfaz</td><td><code>model/interfaces/IUsuario.java</code></td><td>jjwt: <code>JwtParser</code> y <code>SecretKey</code>, armados una vez en el constructor</td></tr>
+roles7 = """<table><thead><tr><th>Rol (slides 26 y 28, clase 10)</th><th>UsuarioDetails (desde V1)</th><th>JwtUtil (V3)</th></tr></thead><tbody>
+<tr><td><strong>Client</strong>: solo conoce el Target</td><td>Spring Security (<code>DaoAuthenticationProvider</code>, vía <code>UserDetailsServiceImpl</code>)</td><td><code>AuthServiceImpl</code>, <code>JwtAuthFilter</code></td></tr>
+<tr><td><strong>Target</strong>: interfaz que espera el cliente</td><td><code>UserDetails</code> (Spring, no modificable)</td><td><code>TokenService</code> (propia)</td></tr>
+<tr><td><strong>Adapter</strong>: implementa el Target y <strong>contiene</strong> al Adaptee</td><td><code>UsuarioDetails</code>: <code>private final IUsuario usuario</code></td><td><code>JwtUtil</code>: <code>private final SecretKey key</code>, <code>private final JwtParser parser</code></td></tr>
+<tr><td><strong>Adaptee</strong>: componente con otra interfaz</td><td><code>IUsuario</code></td><td>jjwt: <code>JwtParser</code>, <code>SecretKey</code></td></tr>
 </tbody></table>"""
 
 extra7 = f"""<h4 style="margin-top:22px">Roles</h4>{roles7}
 <ul>
-<li><strong>Object Adapter</strong> (composición 1 a 1): en Java es el único viable (slide 27).</li>
-<li><code>UsuarioDetails</code> calca el <code>AdapterPagosExternos</code> de la slide 28. Traduce <code>getRol().autoridad()</code> → <code>GrantedAuthority</code>.</li>
-<li><code>JwtUtil</code> <strong>contiene</strong> al Adaptee: <code>SecretKey</code> y <code>JwtParser</code> como campos <code>final</code> (<code>2ef8410</code>). Antes rearmaba la clave y el parser en cada llamada: era un wrapper de estáticos, no un Object Adapter.</li>
+<li><strong>Object Adapter</strong> (composición): única variante viable en Java (slide 27).</li>
+<li><code>UsuarioDetails</code> sigue el <code>AdapterPagosExternos</code> (slide 28): traduce <code>getRol().autoridad()</code> a <code>GrantedAuthority</code>.</li>
 </ul>
 <div class="cuadro">
 <div><h4>GRASP de fondo</h4><ul>
-<li><strong>Indirection</strong>: <code>TokenService</code> entre los clientes y jjwt.</li>
+<li><strong>Indirection</strong>: <code>TokenService</code> media entre los clientes y jjwt.</li>
 <li><strong>Pure Fabrication</strong>: <code>JwtUtil</code>, <code>UsuarioDetails</code>.</li>
-<li><strong>Protected Variations</strong>: cambiar la librería toca solo <code>JwtUtil</code>.</li></ul></div>
+<li><strong>Protected Variations</strong>: cambiar la librería afecta solo a <code>JwtUtil</code>.</li></ul></div>
 <div><h4>SOLID de fondo</h4><ul>
+<li><strong>DIP</strong>: los clientes dependen de <code>TokenService</code>, no de jjwt.</li>
 <li><strong>SRP</strong>: cada Adapter solo traduce.</li>
 <li><strong>Target limpio</strong> (O2): sin tipos de jjwt ni de Spring.</li></ul></div>
 </div>
-<h4>Preguntas incómodas</h4>
+<details><summary>Objeciones previsibles</summary>
 <dl class="qa">
-<dt>“¿Por qué es Adapter si <code>JwtUtil</code> es de ustedes?”</dt>
-<dd>El Adaptee es <strong>jjwt</strong>, no <code>JwtUtil</code>. <code>JwtUtil</code> es el Adapter.</dd>
+<dt>“¿Por qué es Adapter si <code>JwtUtil</code> es propio?”</dt>
+<dd>El Adaptee es <strong>jjwt</strong>; <code>JwtUtil</code> es el Adapter.</dd>
 <dt>“¿Una interfaz con una sola implementación?”</dt>
-<dd>Es el costo de <strong>DIP</strong>: sin interfaz, el contrato sería la librería.</dd>
+<dd>Es el costo de <strong>DIP</strong>: sin ella, el contrato sería la librería.</dd>
 <dt>“¿<code>UsuarioDetails</code> adapta una clase propia?”</dt>
-<dd>Sí, clase 9 lo admite (“externas al dominio, <strong>o no</strong>”). Lo intocable es <code>UserDetails</code>: el dominio no depende de Spring.</dd>
+<dd>Sí; la clase 9 lo admite (“externas al dominio, <strong>o no</strong>”). Lo no modificable es <code>UserDetails</code>, y así el dominio no depende de Spring.</dd>
 </dl>
+</details>
 <h4>Diagramas: <code>UsuarioDetails</code> (V0 → V1)</h4>
 {diagramas("adapter", tit_a="Antes (V0): Usuario implements UserDetails", tit_d="Después (V1 en adelante)")}
 <h4>Diagramas: <code>JwtUtil</code> (V2 → V3)</h4>"""
 
 m7 = bloque("m7", "M7. Adapter: UsuarioDetails y JwtUtil",
-    "<strong>Adapter</strong> (GoF, estructural): <strong>convertir la interfaz</strong> de algo que no podemos modificar en la que espera el cliente. jjwt es la librería de JWT (token firmado que se emite en el login y se valida en cada request).",
-    "Los clientes dependían de la clase concreta <code>security/JwtUtil.java</code>, <strong>atados a jjwt</strong>; el filtro conocía su excepción.",
+    "<strong>Adapter</strong> (GoF, estructural): convierte la interfaz de un componente no modificable en la que espera el cliente. Aquí, jjwt (librería de JWT).",
+    "Los clientes dependían de la clase concreta <code>JwtUtil</code> y, por ella, <strong>de jjwt</strong>: el filtro capturaba su excepción.",
     cb("v2", "service/impl/AuthServiceImpl.java", lines("v2", "service/impl/AuthServiceImpl.java", r"private final JwtUtil", 1), "", method("v2", "service/impl/AuthServiceImpl.java", r"public AuthResponse login"))
     + cb("v2", "security/JwtAuthFilter.java", lines("v2", "security/JwtAuthFilter.java", r"private final JwtUtil", 1), "// ...", lines("v2", "security/JwtAuthFilter.java", r"extraerUsername", 4, 1)),
-    "Target propio <code>service/TokenService.java</code>. <code>JwtUtil</code> lo implementa y <strong>contiene</strong> <code>SecretKey</code> y <code>JwtParser</code>: única clase que importa jjwt.",
+    "Target propio <code>TokenService</code>; <code>JwtUtil</code> lo implementa, <strong>contiene</strong> <code>SecretKey</code> y <code>JwtParser</code> y es la única clase que importa jjwt.",
     cb("main", "service/TokenService.java", body("main", "service/TokenService.java"))
     + cb("main", "security/JwtUtil.java", body("main", "security/JwtUtil.java"))
     + cb("main", "security/JwtAuthFilter.java", lines("main", "security/JwtAuthFilter.java", r"private final TokenService", 1), "// ...", lines("main", "security/JwtAuthFilter.java", r"tokenService.extraerUsername", 4), "// ...", lines("main", "security/JwtAuthFilter.java", r"tokenService.esValido", 3))
     + cb("main", "service/impl/AuthServiceImpl.java", lines("main", "service/impl/AuthServiceImpl.java", r"private final TokenService", 1)),
-    "<strong>DIP + Protected Variations</strong>: la dependencia apunta a una abstracción propia; jjwt queda encerrada en un Adapter.",
-    "<ul><li>Gana: cambiar de librería toca una clase; la clave se arma una vez, no por request.</li><li>Cuesta: una interfaz con una sola implementación.</li></ul>",
-    "Commits <code>aa76375</code>, <code>de78c07</code> (O2), <code>2ef8410</code> (composición). Archivos: <code>service/TokenService.java</code>, <code>security/JwtUtil.java</code>, <code>security/JwtAuthFilter.java</code>, <code>service/impl/AuthServiceImpl.java</code>, <code>security/UsuarioDetails.java</code>.",
+    "Aislar a los clientes de una <strong>librería externa que no se puede modificar</strong>.",
+    "<ul><li>Gana: cambiar de librería toca una clase; la clave se arma una vez (antes, en cada llamada).</li><li>Cuesta: una interfaz con una sola implementación; mantener el Adapter si jjwt cambia.</li></ul>",
+    "Commits <code>aa76375</code>, <code>de78c07</code> (O2), <code>2ef8410</code> (composición).",
     extra=extra7,
-    intro='<h4>Primero, el ejemplo de manual: <code>UsuarioDetails</code></h4><p>Implementa el Target de Spring (<code>UserDetails</code>) y <strong>contiene</strong> un <code>IUsuario</code>. El dominio no depende de Spring Security.</p>'
+    intro='<h4>Caso de manual: <code>UsuarioDetails</code></h4><p>Implementa <code>UserDetails</code> (Target de Spring) y <strong>contiene</strong> un <code>IUsuario</code>: el dominio no depende de Spring Security.</p>'
       + cb("main", "security/UsuarioDetails.java", body("main", "security/UsuarioDetails.java"))
-      + '<h4>Después, <code>JwtUtil</code> sobre jjwt</h4>')
+      + '<h4>Caso V3: <code>JwtUtil</code> sobre jjwt</h4>')
 
 m8 = bloque("m8", "M8. EstadoCredito y Credito como agregado de sus cuotas",
     "<strong>Information Expert</strong> + <strong>Creator</strong>: el crédito crea y conoce sus cuotas.",
-    "Estado = boolean <code>anulado</code>: <strong>sin “cancelado” ni saldo</strong> (H1, H2).",
+    "El estado era un boolean <code>anulado</code>: <strong>sin “cancelado” ni saldo</strong> (H1, H2).",
     cb("v2", "model/Credito.java", lines("v2", "model/Credito.java", r"private boolean anulado", 1, 1), "", method("v2", "model/Credito.java", r"public void anular"))
     + cb("v2", "service/impl/CreditoServiceImpl.java", method("v2", "service/impl/CreditoServiceImpl.java", r"public void anularCredito")),
-    "<code>EstadoCredito</code> <strong>derivado</strong>, no persistido. <code>Credito</code> calcula estado, saldo y si se puede anular.",
+    "<code>EstadoCredito</code> <strong>derivado</strong>, no persistido. <code>Credito</code> calcula estado, saldo y si puede anularse.",
     cb("main", "model/EstadoCredito.java", body("main", "model/EstadoCredito.java"))
     + cb("main", "model/Credito.java", lines("main", "model/Credito.java", r"private List<Cuota> cuotas", 1, 3), "",
          method("main", "model/Credito.java", r"public EstadoCredito estado"), "",
@@ -234,10 +235,10 @@ m8 = bloque("m8", "M8. EstadoCredito y Credito como agregado de sus cuotas",
 
 # ---- M9 Strategy (foco) ----
 roles9 = '''<table><thead><tr><th>Rol (apunte clase 10)</th><th>Clase</th></tr></thead><tbody>
-<tr><td><strong>Context</strong>: tiene referencia a la Strategy y delega</td><td><code>model/Credito.java</code>: <code>private CalculoDeCuota calculo()</code> devuelve la estrategia; el constructor llama <code>calculo().importeCuota(...)</code></td></tr>
-<tr><td><strong>Strategy</strong>: interfaz común</td><td><code>model/interfaces/CalculoDeCuota.java</code> (<code>importeCuota</code>)</td></tr>
+<tr><td><strong>Context</strong>: referencia a la Strategy y delega</td><td><code>Credito</code>: obtiene la estrategia con <code>calculo()</code> y le delega <code>importeCuota</code> en el constructor</td></tr>
+<tr><td><strong>Strategy</strong>: interfaz común</td><td><code>model/interfaces/CalculoDeCuota.java</code></td></tr>
 <tr><td><strong>ConcreteStrategies</strong>: no se conocen entre sí</td><td><code>model/plan/InteresSimple.java</code>, <code>model/plan/SistemaFrances.java</code></td></tr>
-<tr><td><strong>Cliente que elige</strong></td><td>quien otorga: <code>&lt;select&gt;</code> de <code>frontend/src/pages/Creditos.jsx</code> → <code>dto/request/CreditoRequest.java</code> (<code>tipoPlan</code>) → <code>model/TipoPlan.java</code> (enum persistido que enumera las estrategias)</td></tr>
+<tr><td><strong>Cliente que elige</strong></td><td>quien otorga: <code>&lt;select&gt;</code> de <code>Creditos.jsx</code> → <code>CreditoRequest.tipoPlan</code> → <code>TipoPlan</code> (enum persistido, registro de estrategias)</td></tr>
 </tbody></table>'''
 
 
@@ -278,81 +279,71 @@ def _grafico():
 
 filas_fr = "".join(f"<tr><td>{m}</td><td>{fmt(q)}</td><td>{fmt(it)}</td><td>{fmt(k)}</td><td>{fmt(s)}</td></tr>" for m, q, k, it, s in FFILAS)
 int_fr = sum(f[3] for f in FFILAS)
-explica9 = f"""<h4 style="margin-top:22px">Los dos planes, en criollo</h4>
-<p>Cuota = <strong>capital</strong> (lo prestado) + <strong>interés</strong> (lo que cobra el que presta). Los sistemas difieren en <em>sobre qué</em> se calcula el interés.</p>
+explica9 = f"""<h4 style="margin-top:22px">Los dos planes de pago</h4>
 <ul>
-<li><strong>Interés simple</strong>: una vez, sobre todo lo prestado, repartido en partes iguales. “30 %” = 30 % del total.</li>
-<li><strong>Sistema francés</strong> (el de los bancos): cuota fija, interés mensual <strong>sobre el saldo</strong>. “5 %” = 5 % por mes. Fórmula: <code>cuota = C·i / (1 − (1+i)^−n)</code>.</li>
+<li><strong>Interés simple</strong>: tasa única sobre el capital, repartida en cuotas iguales. 30 % = 30 % del total.</li>
+<li><strong>Sistema francés</strong>: cuota fija; interés mensual sobre el saldo. 5 % = 5 % por mes. <code>cuota = C·i / (1 − (1+i)^−n)</code>.</li>
 </ul>
-<p><strong>Ejemplo: $12.000 en 6 cuotas.</strong></p>
+<details><summary>Ejemplo: $12.000 en 6 cuotas</summary>
 <div class="cuadro">
-<div><h4>Interés simple, tasa 30 % total</h4><p>Total = 12.000 × 1,30 = <strong>15.600</strong>. Cuota = 15.600 / 6 = <strong>2.600</strong> todos los meses: 2.000 de capital y 600 de interés. Interés total: <strong>3.600</strong>.</p></div>
-<div><h4>Sistema francés, tasa 5 % mensual</h4><p>Cuota fija = <strong>{fmt(FQ)}</strong>. Mes 1: interés 5 % de 12.000 = 600. Mes 6: interés 5 % de lo poco que queda = 112,58. Total = <strong>{fmt(FQ*6)}</strong>; interés total: <strong>{fmt(int_fr)}</strong>.</p></div>
+<div><h4>Interés simple, 30 % total</h4><p>Cuota = 12.000 × 1,30 / 6 = <strong>2.600</strong> (2.000 de capital y 600 de interés). Interés total: <strong>3.600</strong>.</p></div>
+<div><h4>Sistema francés, 5 % mensual</h4><p>Cuota fija = <strong>{fmt(FQ)}</strong>. Interés del mes 1: 600; del mes 6: 112,58. Interés total: <strong>{fmt(int_fr)}</strong>.</p></div>
 </div>
 <div class="mvcsvg">{_grafico()}</div>
 <table><thead><tr><th>Mes</th><th>Cuota francés</th><th>Interés</th><th>Capital</th><th>Saldo después</th></tr></thead><tbody>{filas_fr}</tbody></table>
-<h4>Por qué el francés: la segunda ConcreteStrategy</h4>
+</details>
+<h4>Justificación del patrón</h4>
 <ul>
-<li><strong>“Misma acción, distintos algoritmos”</strong> (clase 9): calcular la cuota, dos fórmulas reales.</li>
-<li><strong>Revierte el descarte del 15/09 (V2).</strong> En V2 el objetivo era la convención interfaz + clase, y un solo algoritmo alcanzaba. En V3 el tema es Strategy: necesita dos algoritmos que de verdad varíen.</li>
-</ul>
-<h4>Quién elige y por qué no hay <code>setEstrategia</code></h4>
-<ul>
-<li><strong>Elige quien otorga</strong>, en ejecución: <code>&lt;select&gt;</code> → <code>CreditoRequest.tipoPlan</code> → <code>TipoPlan.calculo()</code>.</li>
-<li><strong>Sin <code>setEstrategia</code></strong>: el plan es parte del contrato. Cambiarlo alteraría cuotas ya emitidas.</li>
-<li><strong>Enum y no campo de interfaz</strong>: JPA persiste un <code>@Enumerated</code>, no una interfaz. <code>TipoPlan</code> es el registro de estrategias.</li>
-</ul>
-<h4>Límites conocidos</h4>
-<ul>
-<li>Un plan nuevo toca el enum (registro): OCP se cumple para <code>Credito</code> y las estrategias.</li>
-<li>La cuota no separa capital e interés; el “interés simple” es un recargo plano (P-M9).</li>
+<li><strong>Revierte V2</strong>: el 15/09 se descartó el francés porque la convención interfaz + clase se cumplía con un algoritmo. Strategy exige dos que varíen de verdad.</li>
+<li><strong>Sin <code>setEstrategia</code></strong>: el plan es parte del contrato; cambiarlo alteraría cuotas emitidas. Es enum porque JPA persiste un <code>@Enumerated</code>, no una interfaz.</li>
 </ul>
 """
 
 extra9 = explica9 + f'''<h4 style="margin-top:22px">Roles</h4>{roles9}
 <div class="cuadro">
 <div><h4>GRASP de fondo</h4><ul>
-<li><strong>Polymorphism</strong>: la variación “cómo se calcula la cuota” se resuelve con dos clases que implementan la misma operación, no con un <code>if</code> por tipo.</li>
-<li><strong>Protected Variations</strong>: <code>Credito</code> queda protegido de las fórmulas; agregar o cambiar un sistema no lo toca.</li>
-<li><strong>Information Expert</strong>: el total del crédito sale de las cuotas que el crédito emitió (<code>importeCuota × cantidadCuotas</code>), no de volver a correr la estrategia.</li></ul></div>
+<li><strong>Polymorphism</strong>: dos clases con la misma operación reemplazan el <code>if</code> por tipo.</li>
+<li><strong>Protected Variations</strong>: agregar o cambiar un sistema no toca <code>Credito</code>.</li>
+<li><strong>Information Expert</strong>: el total sale de las cuotas emitidas (<code>importeCuota × cantidadCuotas</code>), sin recalcular.</li></ul></div>
 <div><h4>SOLID de fondo</h4><ul>
-<li><strong>OCP</strong>: un sistema nuevo (alemán, etc.) es una clase en <code>model/plan/</code> y una constante en <code>TipoPlan</code>; <code>Credito</code> no cambia.</li>
-<li><strong>DIP</strong>: <code>Credito</code> depende de <code>CalculoDeCuota</code>, no de <code>InteresSimple</code> ni de <code>SistemaFrances</code>.</li>
-<li><strong>SRP</strong>: cada estrategia tiene una sola fórmula y se testea aislada (<code>InteresSimpleTest</code>, <code>SistemaFrancesTest</code>).</li></ul></div>
+<li><strong>OCP</strong>: un sistema nuevo es una clase en <code>model/plan/</code> y una constante en <code>TipoPlan</code>; <code>Credito</code> no cambia.</li>
+<li><strong>DIP</strong>: <code>Credito</code> depende de <code>CalculoDeCuota</code>, no de las estrategias concretas.</li>
+<li><strong>SRP</strong>: una fórmula por clase, testeada aislada (<code>InteresSimpleTest</code>, <code>SistemaFrancesTest</code>).</li></ul></div>
 </div>
-<h4>Preguntas incómodas</h4>
+<details><summary>Objeciones previsibles</summary>
 <dl class="qa">
 <dt>“¿Dos algoritmos no es sobre-ingeniería?”</dt>
-<dd>No: con una sola fórmula sí lo sería (slide 38). Acá hay <strong>dos algoritmos reales que el usuario elige</strong> al otorgar, y la variación ya ocurrió: el francés entró sin tocar <code>Credito</code> (simple 1200 al 10 % en 3 → 440; francés → 482,54).</dd>
+<dd>Con una sola fórmula lo sería (slide 38). Hay <strong>dos algoritmos reales que el usuario elige</strong>, y el francés entró sin tocar <code>Credito</code> (1200 al 10 % en 3 cuotas: simple 440, francés 482,54).</dd>
 <dt>“Si cambia la fórmula, ¿qué pasa con los créditos otorgados?”</dt>
-<dd>Nada: la cuota <strong>se guarda al otorgar</strong> y el total sale de las cuotas emitidas (O3).</dd>
+<dd>Nada: la cuota <strong>se guarda al otorgar</strong> (O3).</dd>
 <dt>“¿<code>EstadoCredito</code> no es un State?”</dt>
-<dd>No: es un <strong>valor derivado</strong>, no cambia el comportamiento (O9).</dd>
-</dl>'''
+<dd>No: es un <strong>valor derivado</strong> que no cambia el comportamiento (O9).</dd>
+</dl>
+</details>'''
 
 m9 = bloque("m9", "M9. Strategy del cálculo de cuota",
-    "<strong>Strategy</strong> (GoF, comportamiento): la misma acción (calcular la cuota) con algoritmos intercambiables, encapsulados detrás de una interfaz común.",
-    "Fórmula <strong>cableada</strong> en <code>model/Credito.java</code>: otro sistema era un <code>if</code> por tipo.",
+    "<strong>Strategy</strong> (GoF, comportamiento): algoritmos intercambiables para una misma acción, detrás de una interfaz común.",
+    "Fórmula <strong>cableada</strong> en <code>Credito</code>: cada sistema nuevo exigía un <code>if</code> por tipo.",
     cb("v2", "model/Credito.java", method("v2", "model/Credito.java", r"public BigDecimal totalADevolver"), "", method("v2", "model/Credito.java", r"private BigDecimal calcularImporteCuota")),
-    "<code>Credito</code> tiene referencia a la Strategy (<code>calculo()</code>) y <strong>delega</strong> al otorgar. El total sale de las cuotas emitidas.",
+    "<code>Credito</code> <strong>delega</strong> el cálculo en la estrategia de su plan (<code>calculo()</code>) al otorgar.",
     cb("main", "model/Credito.java", lines("main", "model/Credito.java", r"this.importeCuota = calculo", 1), "", method("main", "model/Credito.java", r"private CalculoDeCuota calculo"), "", method("main", "model/Credito.java", r"public BigDecimal totalADevolver"))
     + cb("main", "model/interfaces/CalculoDeCuota.java", body("main", "model/interfaces/CalculoDeCuota.java"))
     + cb("main", "model/plan/InteresSimple.java", body("main", "model/plan/InteresSimple.java"))
     + cb("main", "model/plan/SistemaFrances.java", body("main", "model/plan/SistemaFrances.java"))
     + cb("main", "model/TipoPlan.java", body("main", "model/TipoPlan.java")),
-    "<strong>Misma acción, distintos algoritmos.</strong>",
-    "<ul><li>Gana: cada fórmula se testea aislada.</li><li>Cuesta: <code>tasaInteres</code> (<code>model/Credito.java</code>) cambia de unidad según el plan (<code>frontend/src/pages/Creditos.jsx</code> rotula “% total” o “% mensual”); columna <code>tipo_plan</code> nueva.</li></ul>",
+    "<strong>Misma acción, distintos algoritmos</strong>, elegidos por el usuario al otorgar.",
+    "<ul><li>Gana: un sistema nuevo no modifica <code>Credito</code>.</li><li>Cuesta: <code>tasaInteres</code> cambia de unidad según el plan (la vista rotula “% total” o “% mensual”); columna <code>tipo_plan</code> nueva; la cuota no separa capital e interés (P-M9).</li></ul>",
     "Commits <code>065eb37</code>, <code>9ea428d</code>, <code>1f9fc50</code> (O3), <code>fa0c180</code> (<code>calculo()</code>).",
     extra=extra9)
 
 m10 = bloque("m10", "M10. Dashboard también para ADMIN",
-    "Corrección del ticket <strong>TPO-010</strong>.",
+    "<strong>Corrección</strong>, sin patrón.",
     "<strong>El ADMIN no veía el dashboard</strong> (TPO-010).",
     cb("v2", "config/SecurityConfig.java", lines("v2", "config/SecurityConfig.java", r'hasRole\("SUPERVISOR"\)', 1)),
     "Matcher propio para <code>/api/dashboard/**</code> con los dos roles.",
     cb("main", "config/SecurityConfig.java", lines("main", "config/SecurityConfig.java", r'"/api/admin/\*\*"', 3)),
     "El admin ve estadísticas <strong>sin cambiar de rol</strong>.",
-    "Manda el backend.",
+    "La autorización queda en el backend.",
     "Cierra TPO-010. Commit <code>f7ce757</code>.")
 
 mejoras = [m9, m7, m1, m2, m3, m4, m5, m6, m8, m10]
