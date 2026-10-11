@@ -536,7 +536,7 @@ doc = f'''<!doctype html>
 <title>Reporte V3 — TPO Grupo 7</title><style>{CSS}</style></head>
 <body>
 <div id="barra"><strong style="color:var(--navy)">Reporte V3</strong>
-<nav><a href="#portada">Portada</a><a href="#timeline">Timeline</a><a href="#tecnologias">Tecnologías</a><a href="#mvc">MVC</a><a href="#mejoras">Mejoras</a><a href="#m9">Strategy</a><a href="#m7">Adapter</a><a href="#convenciones">Convenciones</a><a href="#matriz">GRASP/SOLID</a><a href="#evolucion">Evolución</a><a href="#revision">Revisión</a><a href="#verificacion">Verificación</a><a href="#casos">Casos de uso</a><a href="#clases">Diagramas</a><a href="#pendientes">Pendientes</a></nav>
+<nav><a href="#portada">Portada</a><a href="#timeline">Timeline</a><a href="#tecnologias">Tecnologías</a><a href="#mvc">MVC</a><a href="#mejoras">Mejoras</a><a href="#m9">Strategy</a><a href="#m7">Adapter</a><a href="#convenciones">Convenciones</a><a href="#matriz">GRASP/SOLID</a><a href="#evolucion">Evolución</a><a href="#revision">Revisión</a><a href="#verificacion">Verificación</a><a href="#casos-de-uso">Casos de uso</a><a href="#clases">Diagramas</a><a href="#pendientes">Pendientes</a></nav>
 <button class="sec" onclick="window.print()">Exportar PDF</button></div>
 <main>
 
@@ -604,7 +604,7 @@ doc = f'''<!doctype html>
 </ul>
 </section>
 
-<section id="casos"><h2>Casos de uso</h2>
+<section id="casos-de-uso"><h2>Casos de uso</h2>
 <p>Fichas, diagrama y trazabilidad: <a href="../casos-de-uso/README.md"><code>docs/casos-de-uso/README.md</code></a>. Verificados con <code>docs/casos-de-uso/verificar-cu.sh</code>.</p>
 <p><a href="../casos-de-uso/casos-de-uso-v3.svg"><img src="../casos-de-uso/casos-de-uso-v3.svg" alt="Diagrama de casos de uso V3" style="width:100%;background:#fff;border:1px solid var(--linea);border-radius:4px"></a></p>
 </section>

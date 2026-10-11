@@ -88,7 +88,7 @@ details summary{cursor:pointer;color:var(--azul);font-size:14px;margin-top:6px}
 </style></head>
 <body>
 <div id="barra"><strong style="color:var(--navy)">Reporte V3</strong>
-<nav><a href="#portada">Portada</a><a href="#timeline">Timeline</a><a href="#tecnologias">Tecnologías</a><a href="#mvc">MVC</a><a href="#mejoras">Mejoras</a><a href="#m9">Strategy</a><a href="#m7">Adapter</a><a href="#convenciones">Convenciones</a><a href="#matriz">GRASP/SOLID</a><a href="#evolucion">Evolución</a><a href="#revision">Revisión</a><a href="#verificacion">Verificación</a><a href="#casos">Casos de uso</a><a href="#clases">Diagramas</a><a href="#pendientes">Pendientes</a></nav>
+<nav><a href="#portada">Portada</a><a href="#timeline">Timeline</a><a href="#tecnologias">Tecnologías</a><a href="#mvc">MVC</a><a href="#mejoras">Mejoras</a><a href="#m9">Strategy</a><a href="#m7">Adapter</a><a href="#convenciones">Convenciones</a><a href="#matriz">GRASP/SOLID</a><a href="#evolucion">Evolución</a><a href="#revision">Revisión</a><a href="#verificacion">Verificación</a><a href="#casos-de-uso">Casos de uso</a><a href="#clases">Diagramas</a><a href="#pendientes">Pendientes</a></nav>
 <button class="sec" onclick="window.print()">Exportar PDF</button></div>
 <main>
 
@@ -111,10 +111,11 @@ details summary{cursor:pointer;color:var(--azul);font-size:14px;margin-top:6px}
 <ul><li>13 smells corregidos (god class, data class, primitive obsession, encapsulamiento)</li><li><code>MetaCobranza</code> eliminada; <code>Cuota.estaPagada()</code> y <code>registrarCobranza</code></li><li><code>UsuarioDetails</code> como Adapter</li><li>Resueltos TPO-005, 006, 013, 015</li></ul></div>
 <div class="hito"><div class="punto"></div><h4>V2</h4><p class="tema">Iteración 2: GRASP + interfaces</p><p class="meta">Mergeada 15/09 · <code>main@45e228c</code> (tag <code>v2</code>) · 5 commits</p>
 <ul><li>Information Expert: <code>Cobranza.anular()</code>, <code>Credito.anular()</code></li><li>Creator: <code>Usuario.nuevo</code></li><li>Interfaz por cada clase del modelo y de servicio</li><li>Revierte §3.7 del informe 1 (Lazy class): interfaces de servicio restituidas</li></ul></div>
-<div class="hito actual"><div class="punto"></div><h4>V3</h4><p class="tema">Iteración 3: MVC + Strategy + Adapter</p><p class="meta">Entrega 13/10/2026 · repo V3, <code>main</code> · 152 commits sin merges</p>
+<div class="hito actual"><div class="punto"></div><h4>V3</h4><p class="tema">Iteración 3: MVC + Strategy + Adapter</p><p class="meta">Entrega 13/10/2026 · repo V3, <code>main</code> · 153 commits sin merges</p>
 <ul><li><strong>Strategy</strong>: cálculo de cuota, interés simple y sistema francés (M9)</li><li><strong>Adapter</strong>: <code>TokenService</code> sobre jjwt (M7)</li><li><code>EstadoCredito</code>, saldo, mora (M6, M8)</li><li>Permisos y errores HTTP en el backend (M4, M5), Swagger</li><li>Dashboard corregido y con saldo y vencido (M3, M10, O7); el crédito crea sus cuotas (O6); 40 tests</li><li>Revierte V2: sistema francés descartado el 15/09</li><li>Swagger, perfiles dev/prod, UI, dark theme, UC06/UC09</li></ul></div>
 </div>
-<details><summary>Commits V2 → V3 (git log v2..main)</summary><pre><code>e8c1a1c Backlog: pendientes del code review
+<details><summary>Commits V2 → V3 (git log v2..main)</summary><pre><code>5804d77 Reporte regenerado con los commits del code review
+e8c1a1c Backlog: pendientes del code review
 020be2f Frontend: refrescarUsuario solo aplica si sigue la misma sesión (A2)
 e4a8f9c Frontend: recargar con el DNI o crédito buscado al anular o cobrar (A1)
 ab65fe2 Docs: code review V2 a V3
@@ -1935,7 +1936,7 @@ end note
 </ul>
 </section>
 
-<section id="casos"><h2>Casos de uso</h2>
+<section id="casos-de-uso"><h2>Casos de uso</h2>
 <p>Fichas, diagrama y trazabilidad: <a href="../casos-de-uso/README.md"><code>docs/casos-de-uso/README.md</code></a>. Verificados con <code>docs/casos-de-uso/verificar-cu.sh</code>.</p>
 <p><a href="../casos-de-uso/casos-de-uso-v3.svg"><img src="../casos-de-uso/casos-de-uso-v3.svg" alt="Diagrama de casos de uso V3" style="width:100%;background:#fff;border:1px solid var(--linea);border-radius:4px"></a></p>
 </section>
