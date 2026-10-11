@@ -1,6 +1,6 @@
 # Lista de mejoras — Iteración 3 (TPO Grupo 7, Dashboard de préstamos)
 
-Rutas Java relativas a `backend/src/main/java/com/uade/tpejemplo/`. Reporte completo: `docs/reporte/reporte-v3.html`. Casos de uso: `docs/casos-de-uso/README.md`. Diagrama de clases: `docs/diagramas/clases-v3-general.svg` y `docs/diagramas/clases-v3-modelo.svg` (fuente `clases-v3.puml`).
+Rutas Java relativas a `backend/src/main/java/com/uade/tpejemplo/`. Reporte completo: `docs/reporte/reporte-v3.html`. Casos de uso: `docs/casos-de-uso/README.md`. Diagrama de clases: `docs/diagramas/clases-v3-mvc.svg` (capas MVC), `clases-v3-seguridad.svg` (seguridad y Adapter) y `clases-v3-modelo.svg` (modelo y Strategy) (fuente `clases-v3.puml`).
 
 ## Foco de la consigna: Strategy y Adapter
 

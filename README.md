@@ -89,7 +89,7 @@ Detalle completo, con clase y método de cada una: [lista de mejoras](docs/entre
 
 ![Diagrama de clases del modelo](docs/diagramas/clases-v3-modelo.svg)
 
-- Diagrama de clases entregable: [`clases-v3.puml`](docs/diagramas/clases-v3.puml) ([general](docs/diagramas/clases-v3-general.svg), [modelo](docs/diagramas/clases-v3-modelo.svg)).
+- Diagrama de clases entregable: [`clases-v3.puml`](docs/diagramas/clases-v3.puml) ([capas MVC](docs/diagramas/clases-v3-mvc.svg), [seguridad y Adapter](docs/diagramas/clases-v3-seguridad.svg), [modelo](docs/diagramas/clases-v3-modelo.svg)).
 - Ciclo de vida del crédito: [`credito-estados.svg`](docs/diagramas/archify/credito-estados.svg); secuencia de anular: [`anular-credito.svg`](docs/diagramas/archify/anular-credito.svg).
 - DER: [`der-v3.py`](docs/diagramas/der-v3.py) · [SVG](docs/diagramas/der-v3.svg) · [PNG](docs/diagramas/der-v3.png).
 

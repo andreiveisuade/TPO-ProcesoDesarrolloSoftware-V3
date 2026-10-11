@@ -681,9 +681,11 @@ doc = f'''<!doctype html>
 </section>
 
 <section id="clases"><h2>Diagramas de clases y DER</h2>
-<p>Entregable UML: <a href="../diagramas/clases-v3-general.svg">vista general</a> y <a href="../diagramas/clases-v3-modelo.svg">modelo</a> (<code>docs/diagramas/clases-v3.puml</code>).</p>
-<h3>Diagrama de clases: vista general MVC (UML)</h3>
-<div class="clases">{re.sub(r"<\?xml[^>]*\?>", "", open(os.path.join(REPO, "docs/diagramas/clases-v3-general.svg")).read())}</div>
+<p>Entregable UML en tres vistas (<code>docs/diagramas/clases-v3.puml</code>): capas MVC, seguridad y Adapter, y modelo con Strategy. Todas las clases con sus tres compartimentos.</p>
+<h3>Diagrama de clases: capas MVC (UML)</h3>
+<div class="clases">{re.sub(r"<\?xml[^>]*\?>", "", open(os.path.join(REPO, "docs/diagramas/clases-v3-mvc.svg")).read())}</div>
+<h3>Diagrama de clases: seguridad y Adapter (UML)</h3>
+<div class="clases">{re.sub(r"<\?xml[^>]*\?>", "", open(os.path.join(REPO, "docs/diagramas/clases-v3-seguridad.svg")).read())}</div>
 <h3>Diagrama de clases: detalle del modelo (UML)</h3>
 <div class="clases">{re.sub(r"<\?xml[^>]*\?>", "", open(os.path.join(REPO, "docs/diagramas/clases-v3-modelo.svg")).read())}</div>
 <p>Abajo, esquemas parciales en d2 (sin compartimentos, solo para leer rápido).</p>

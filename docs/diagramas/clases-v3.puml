@@ -1,22 +1,24 @@
-@startuml clases-v3-general
-title Dashboard de préstamos V3 — vista general MVC
+@startuml clases-v3-mvc
+title Dashboard de préstamos V3 — capas MVC
 skinparam classAttributeIconSize 0
 skinparam packageStyle rectangle
 skinparam shadowing false
-left to right direction
+skinparam linetype ortho
+skinparam nodesep 30
+skinparam ranksep 60
 hide <<component>> members
 
-package "Vista (React)" {
-  class "api/auth.js" as VAuth <<component>>
-  class "api/clientes.js" as VClientes <<component>>
-  class "api/creditos.js" as VCreditos <<component>>
-  class "api/cobranzas.js" as VCobranzas <<component>>
-  class "api/admin.js" as VAdmin <<component>>
-  class "api/supervisor.js" as VSupervisor <<component>>
-  class "store/dashboardSlice.js" as VDashboard <<component>>
+package "Vista (React, frontend/src/api)" as Vista {
+  class "auth.js" as VAuth <<component>>
+  class "clientes.js" as VClientes <<component>>
+  class "creditos.js" as VCreditos <<component>>
+  class "cobranzas.js" as VCobranzas <<component>>
+  class "admin.js" as VAdmin <<component>>
+  class "supervisor.js" as VSupervisor <<component>>
+  class "dashboard.js" as VDashboard <<component>>
 }
 
-package "Controlador" {
+package "Controlador (controller)" as Controlador {
   class AuthController <<RestController>> {
     - authService : AuthService
     + registrar(RegisterRequest) : AuthResponse
@@ -58,161 +60,104 @@ package "Controlador" {
     - dashboardService : DashboardService
     + obtenerEstadisticas() : DashboardStatsResponse
   }
+}
 
-  package "security" {
-    class JwtUtil <<Adapter>> {
-      - key : SecretKey
-      - parser : JwtParser
-      - expirationMs : long
-      + generarToken(String) : String
-      + extraerUsername(String) : Optional<String>
-      + esValido(String, String) : boolean
-    }
-    interface "JwtParser (jjwt)" as JwtParser <<Adaptee>> {
-      + parseSignedClaims(CharSequence) : Jws<Claims>
-    }
-    interface "SecretKey (javax.crypto)" as SecretKey {
-      + getAlgorithm() : String
-      + getEncoded() : byte[]
-    }
-    class JwtAuthFilter {
-      - tokenService : TokenService
-      - userDetailsService : UserDetailsService
-      # doFilterInternal(HttpServletRequest, HttpServletResponse, FilterChain) : void
-    }
-    interface "UserDetailsService (Spring)" as UserDetailsService {
-      + loadUserByUsername(String) : UserDetails
-    }
-    class UserDetailsServiceImpl {
-      - usuarioRepository : UsuarioRepository
-      + loadUserByUsername(String) : UserDetails
-    }
-    interface "UserDetails (Spring)" as UserDetails <<Target>> {
-      + getAuthorities() : Collection<GrantedAuthority>
-      + getPassword() : String
-      + getUsername() : String
-    }
-    class UsuarioDetails <<Adapter>> {
-      - usuario : IUsuario
-      + getAuthorities() : Collection<GrantedAuthority>
-      + getPassword() : String
-      + getUsername() : String
-    }
+package "Modelo: servicios (service)" as Servicios {
+  interface AuthService {
+    + registrar(RegisterRequest) : AuthResponse
+    + login(LoginRequest) : AuthResponse
+    + actual(String) : AuthResponse
+  }
+  interface ClienteService {
+    + crear(ClienteRequest) : ClienteResponse
+    + buscarPorDni(String) : ClienteResponse
+    + listarTodos() : List<ClienteResponse>
+  }
+  interface CreditoService {
+    + crear(CreditoRequest) : CreditoResponse
+    + buscarPorId(Long) : CreditoResponse
+    + listarTodos() : List<CreditoResponse>
+    + listarPorCliente(String) : List<CreditoResponse>
+    + anularCredito(Long, IUsuario) : void
+  }
+  interface CobranzaService {
+    + registrar(CobranzaRequest) : CobranzaResponse
+    + listarPorCredito(Long) : List<CobranzaResponse>
+    + anularCobranza(Long, IUsuario) : void
+  }
+  interface AdminService {
+    + listarUsuarios() : List<UsuarioResponse>
+    + actualizarPermisos(Long, PermisosRequest) : UsuarioResponse
+    + actualizarRol(Long, RolRequest) : UsuarioResponse
+  }
+  interface DashboardService {
+    + obtenerEstadisticasGenerales() : DashboardStatsResponse
+  }
+  class AuthServiceImpl {
+    - usuarioRepository : UsuarioRepository
+    - passwordEncoder : PasswordEncoder
+    - authenticationManager : AuthenticationManager
+    - tokenService : TokenService
+  }
+  class ClienteServiceImpl {
+    - clienteRepository : ClienteRepository
+  }
+  class CreditoServiceImpl {
+    - creditoRepository : CreditoRepository
+    - clienteRepository : ClienteRepository
+    - cuotaRepository : CuotaRepository
+  }
+  class CobranzaServiceImpl {
+    - cobranzaRepository : CobranzaRepository
+    - cuotaRepository : CuotaRepository
+    - creditoRepository : CreditoRepository
+  }
+  class AdminServiceImpl {
+    - usuarioRepository : UsuarioRepository
+  }
+  class DashboardServiceImpl {
+    - clienteRepository : ClienteRepository
+    - creditoRepository : CreditoRepository
+    - cobranzaRepository : CobranzaRepository
+    - cuotaRepository : CuotaRepository
   }
 }
 
-package "Modelo" {
-  package "service" {
-    interface AuthService {
-      + registrar(RegisterRequest) : AuthResponse
-      + login(LoginRequest) : AuthResponse
-      + actual(String) : AuthResponse
-    }
-    interface ClienteService {
-      + crear(ClienteRequest) : ClienteResponse
-      + buscarPorDni(String) : ClienteResponse
-      + listarTodos() : List<ClienteResponse>
-    }
-    interface CreditoService {
-      + crear(CreditoRequest) : CreditoResponse
-      + buscarPorId(Long) : CreditoResponse
-      + listarTodos() : List<CreditoResponse>
-      + listarPorCliente(String) : List<CreditoResponse>
-      + anularCredito(Long, IUsuario) : void
-    }
-    interface CobranzaService {
-      + registrar(CobranzaRequest) : CobranzaResponse
-      + listarPorCredito(Long) : List<CobranzaResponse>
-      + anularCobranza(Long, IUsuario) : void
-    }
-    interface AdminService {
-      + listarUsuarios() : List<UsuarioResponse>
-      + actualizarPermisos(Long, PermisosRequest) : UsuarioResponse
-      + actualizarRol(Long, RolRequest) : UsuarioResponse
-    }
-    interface DashboardService {
-      + obtenerEstadisticasGenerales() : DashboardStatsResponse
-    }
-    interface TokenService <<Target>> {
-      + generarToken(String) : String
-      + extraerUsername(String) : Optional<String>
-      + esValido(String, String) : boolean
-    }
-    class AuthServiceImpl {
-      - usuarioRepository : UsuarioRepository
-      - passwordEncoder : PasswordEncoder
-      - authenticationManager : AuthenticationManager
-      - tokenService : TokenService
-    }
-    class ClienteServiceImpl {
-      - clienteRepository : ClienteRepository
-    }
-    class CreditoServiceImpl {
-      - creditoRepository : CreditoRepository
-      - clienteRepository : ClienteRepository
-      - cuotaRepository : CuotaRepository
-    }
-    class CobranzaServiceImpl {
-      - cobranzaRepository : CobranzaRepository
-      - cuotaRepository : CuotaRepository
-      - creditoRepository : CreditoRepository
-    }
-    class AdminServiceImpl {
-      - usuarioRepository : UsuarioRepository
-    }
-    class DashboardServiceImpl {
-      - clienteRepository : ClienteRepository
-      - creditoRepository : CreditoRepository
-      - cobranzaRepository : CobranzaRepository
-      - cuotaRepository : CuotaRepository
-    }
+package "Modelo: persistencia (repository, Spring Data JPA)" as Repos {
+  interface ClienteRepository <<JpaRepository<Cliente, String>>> {
+    + findById(String) : Optional<Cliente>
+    + existsById(String) : boolean
   }
-
-  package "repository" {
-    interface ClienteRepository <<JpaRepository<Cliente, String>>> {
-      + findById(String) : Optional<Cliente>
-      + existsById(String) : boolean
-    }
-    interface CreditoRepository <<JpaRepository<Credito, Long>>> {
-      + buscarConCuotas(Long) : Optional<Credito>
-      + buscarPorClienteConCuotas(String) : List<Credito>
-      + buscarTodosConCuotas() : List<Credito>
-      + bloquearPorId(Long) : Optional<Credito>
-      + sumarDeudaOriginalNoAnulada() : BigDecimal
-    }
-    interface CuotaRepository <<JpaRepository<Cuota, Long>>> {
-      + buscarPorCredito(Long) : List<Cuota>
-      + buscarTodasConCobranzas() : List<Cuota>
-      + buscarPorCliente(String) : List<Cuota>
-      + buscarPorCreditoYNumero(Long, Integer) : Optional<Cuota>
-    }
-    interface CobranzaRepository <<JpaRepository<Cobranza, Long>>> {
-      + buscarPorCredito(Long) : List<Cobranza>
-      + sumarImporteNoAnulado() : BigDecimal
-    }
-    interface UsuarioRepository <<JpaRepository<Usuario, Long>>> {
-      + findByUsername(String) : Optional<Usuario>
-      + existsByUsername(String) : boolean
-    }
+  interface CreditoRepository <<JpaRepository<Credito, Long>>> {
+    + buscarConCuotas(Long) : Optional<Credito>
+    + buscarPorClienteConCuotas(String) : List<Credito>
+    + buscarTodosConCuotas() : List<Credito>
+    + bloquearPorId(Long) : Optional<Credito>
+    + sumarDeudaOriginalNoAnulada() : BigDecimal
   }
-
-  package "model (detalle en clases-v3-modelo)" as M {
-    class Cliente
-    class Credito
-    class Cuota
-    class Cobranza
-    interface IUsuario <<Adaptee>>
-    class Usuario
+  interface CuotaRepository <<JpaRepository<Cuota, Long>>> {
+    + buscarPorCredito(Long) : List<Cuota>
+    + buscarTodasConCobranzas() : List<Cuota>
+    + buscarPorCliente(String) : List<Cuota>
+    + buscarPorCreditoYNumero(Long, Integer) : Optional<Cuota>
+  }
+  interface CobranzaRepository <<JpaRepository<Cobranza, Long>>> {
+    + buscarPorCredito(Long) : List<Cobranza>
+    + sumarImporteNoAnulado() : BigDecimal
+  }
+  interface UsuarioRepository <<JpaRepository<Usuario, Long>>> {
+    + findByUsername(String) : Optional<Usuario>
+    + existsByUsername(String) : boolean
   }
 }
 
-VAuth ..> AuthController : HTTP /api/auth
-VClientes ..> ClienteController : HTTP /api/clientes
-VCreditos ..> CreditoController : HTTP /api/creditos
-VCobranzas ..> CobranzaController : HTTP /api/cobranzas
-VAdmin ..> AdminController : HTTP /api/admin
-VSupervisor ..> SupervisorController : HTTP /api/supervisor
-VDashboard ..> DashboardController : HTTP /api/dashboard
+VAuth ..> AuthController
+VClientes ..> ClienteController
+VCreditos ..> CreditoController
+VCobranzas ..> CobranzaController
+VAdmin ..> AdminController
+VSupervisor ..> SupervisorController
+VDashboard ..> DashboardController
 
 AuthController --> "1" AuthService
 ClienteController --> "1" ClienteService
@@ -229,57 +174,106 @@ CobranzaService <|.. CobranzaServiceImpl
 AdminService <|.. AdminServiceImpl
 DashboardService <|.. DashboardServiceImpl
 
+Servicios ..down.> Repos : cada *ServiceImpl usa los\nrepositories de sus atributos
+
+note as Leyenda
+  Cada módulo de frontend/src/api llama por HTTP a /api/<recurso>.
+  Cada *ServiceImpl implementa las operaciones de su interfaz.
+  Las entidades del modelo (Credito, Cuota, ...) están en clases-v3-modelo;
+  JWT y Spring Security, en clases-v3-seguridad.
+  Omitidos: DTOs (estructuras sin comportamiento), excepciones,
+  configuración y GlobalExceptionHandler (@RestControllerAdvice).
+end note
+@enduml
+
+@startuml clases-v3-seguridad
+title Dashboard de préstamos V3 — seguridad y Adapter
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam linetype ortho
+skinparam nodesep 40
+skinparam ranksep 60
+
+package "Adapter 1: JWT (jjwt)" {
+  class AuthServiceImpl <<Client>> {
+    - tokenService : TokenService
+    + login(LoginRequest) : AuthResponse
+  }
+  class JwtAuthFilter <<Client>> {
+    - tokenService : TokenService
+    - userDetailsService : UserDetailsService
+    # doFilterInternal(HttpServletRequest, HttpServletResponse, FilterChain) : void
+  }
+  interface TokenService <<Target>> {
+    + generarToken(String) : String
+    + extraerUsername(String) : Optional<String>
+    + esValido(String, String) : boolean
+  }
+  class JwtUtil <<Adapter>> {
+    - key : SecretKey
+    - parser : JwtParser
+    - expirationMs : long
+    + generarToken(String) : String
+    + extraerUsername(String) : Optional<String>
+    + esValido(String, String) : boolean
+  }
+  interface "JwtParser (jjwt)" as JwtParser <<Adaptee>> {
+    + parseSignedClaims(CharSequence) : Jws<Claims>
+  }
+  interface "SecretKey (javax.crypto)" as SecretKey {
+    + getAlgorithm() : String
+    + getEncoded() : byte[]
+  }
+}
+
+package "Adapter 2: usuario para Spring Security" {
+  interface "UserDetailsService (Spring)" as UserDetailsService {
+    + loadUserByUsername(String) : UserDetails
+  }
+  class UserDetailsServiceImpl {
+    - usuarioRepository : UsuarioRepository
+    + loadUserByUsername(String) : UserDetails
+  }
+  interface "UserDetails (Spring)" as UserDetails <<Target>> {
+    + getAuthorities() : Collection<GrantedAuthority>
+    + getPassword() : String
+    + getUsername() : String
+  }
+  class UsuarioDetails <<Adapter>> {
+    - usuario : IUsuario
+    + getAuthorities() : Collection<GrantedAuthority>
+    + getPassword() : String
+    + getUsername() : String
+  }
+  interface IUsuario <<Adaptee>> {
+    + getUsername() : String
+    + getPassword() : String
+    + getRol() : Rol
+  }
+}
+
 AuthServiceImpl --> "1" TokenService
-AuthServiceImpl ..> Usuario : crea
-ClienteServiceImpl ..> Cliente : crea
-CreditoServiceImpl ..> Credito : crea / anula
-CobranzaServiceImpl ..> Cuota : registrarCobranza
-CobranzaServiceImpl ..> Cobranza : anula
-AdminServiceImpl ..> Usuario : permisos / rol
-DashboardServiceImpl ..> Credito : saldo() y montoVencido()
-
-AuthServiceImpl --> "1" UsuarioRepository
-ClienteServiceImpl --> "1" ClienteRepository
-CreditoServiceImpl --> "1" CreditoRepository
-CreditoServiceImpl --> "1" ClienteRepository
-CreditoServiceImpl --> "1" CuotaRepository
-CobranzaServiceImpl --> "1" CobranzaRepository
-CobranzaServiceImpl --> "1" CuotaRepository
-CobranzaServiceImpl --> "1" CreditoRepository
-AdminServiceImpl --> "1" UsuarioRepository
-DashboardServiceImpl --> "1" ClienteRepository
-DashboardServiceImpl --> "1" CreditoRepository
-DashboardServiceImpl --> "1" CobranzaRepository
-DashboardServiceImpl --> "1" CuotaRepository
-
+JwtAuthFilter --> "1" TokenService
 TokenService <|.. JwtUtil
 JwtUtil *-- "1" JwtParser : parser
 JwtUtil *-- "1" SecretKey : key
-JwtAuthFilter --> "1" TokenService
+
 JwtAuthFilter --> "1" UserDetailsService
 UserDetailsService <|.. UserDetailsServiceImpl
-UserDetailsServiceImpl --> "1" UsuarioRepository
 UserDetailsServiceImpl ..> UsuarioDetails : crea
 UserDetails <|.. UsuarioDetails
 UsuarioDetails --> "1" IUsuario : usuario
-IUsuario <|.. Usuario
 
-note top of JwtUtil
-  Adapter (objeto): TokenService es lo que
-  esperan AuthServiceImpl y JwtAuthFilter;
-  JwtUtil compone JwtParser (jjwt) y su SecretKey (final)
-  y traduce a la API de jjwt.
+note left of JwtUtil
+  Object Adapter: implementa el Target
+  y compone el JwtParser de jjwt.
+  Única clase que importa jjwt.
 end note
-note as Omitidos
-  Cada *ServiceImpl implementa las operaciones de su interfaz.
-  Omitidos por legibilidad: DTOs de request/response (estructuras
-  sin comportamiento, paquete dto), excepciones (paquete exception),
-  configuración (SecurityConfig, OpenApiConfig, DataInitializer)
-  y GlobalExceptionHandler (@RestControllerAdvice).
-end note
-note bottom of UsuarioDetails
-  Adapter: Spring Security pide UserDetails;
-  UsuarioDetails envuelve al IUsuario del dominio.
+note right of UsuarioDetails
+  Object Adapter: Spring Security pide
+  UserDetails; envuelve al IUsuario
+  del dominio.
 end note
 @enduml
 
