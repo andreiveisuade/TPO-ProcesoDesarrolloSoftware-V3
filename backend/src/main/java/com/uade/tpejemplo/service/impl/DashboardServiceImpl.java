@@ -51,7 +51,6 @@ public class DashboardServiceImpl implements DashboardService {
             .map(Credito::saldo)
             .reduce(BigDecimal.ZERO, BigDecimal::add);
         BigDecimal montoVencido = todos.stream()
-            .filter(credito -> !credito.isAnulado())
             .flatMap(credito -> credito.getCuotas().stream())
             .filter(Cuota::estaVencida)
             .map(Cuota::getImporte)

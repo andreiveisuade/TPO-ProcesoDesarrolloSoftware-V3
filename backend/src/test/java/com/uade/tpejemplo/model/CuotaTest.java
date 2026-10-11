@@ -35,6 +35,14 @@ class CuotaTest {
     }
 
     @Test
+    void cuotaDeUnCreditoAnuladoNoEstaVencida() {
+        Credito credito = creditoOtorgado(LocalDate.now().minusMonths(2));
+        credito.anular();
+
+        assertThat(credito.getCuotas().get(0).estaVencida()).isFalse();
+    }
+
+    @Test
     void cuotaPagadaNoEstaVencida() {
         Cuota cuota = creditoOtorgado(LocalDate.now().minusMonths(2)).getCuotas().get(0);
         cuota.registrarCobranza(new BigDecimal("100.00"));
