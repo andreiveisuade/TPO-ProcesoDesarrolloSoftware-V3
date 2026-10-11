@@ -105,7 +105,6 @@ package "Modelo: servicios (service)" as Servicios {
   class CreditoServiceImpl {
     - creditoRepository : CreditoRepository
     - clienteRepository : ClienteRepository
-    - cuotaRepository : CuotaRepository
   }
   class CobranzaServiceImpl {
     - cobranzaRepository : CobranzaRepository
@@ -119,7 +118,6 @@ package "Modelo: servicios (service)" as Servicios {
     - clienteRepository : ClienteRepository
     - creditoRepository : CreditoRepository
     - cobranzaRepository : CobranzaRepository
-    - cuotaRepository : CuotaRepository
   }
 }
 
@@ -129,16 +127,13 @@ package "Modelo: persistencia (repository, Spring Data JPA)" as Repos {
     + existsById(String) : boolean
   }
   interface CreditoRepository <<JpaRepository<Credito, Long>>> {
-    + buscarConCuotas(Long) : Optional<Credito>
-    + buscarPorClienteConCuotas(String) : List<Credito>
-    + buscarTodosConCuotas() : List<Credito>
+    + findById(Long) : Optional<Credito>
+    + findAll() : List<Credito>
+    + buscarPorCliente(String) : List<Credito>
     + bloquearPorId(Long) : Optional<Credito>
     + sumarDeudaOriginalNoAnulada() : BigDecimal
   }
   interface CuotaRepository <<JpaRepository<Cuota, Long>>> {
-    + buscarPorCredito(Long) : List<Cuota>
-    + buscarTodasConCobranzas() : List<Cuota>
-    + buscarPorCliente(String) : List<Cuota>
     + buscarPorCreditoYNumero(Long, Integer) : Optional<Cuota>
   }
   interface CobranzaRepository <<JpaRepository<Cobranza, Long>>> {

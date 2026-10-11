@@ -7,7 +7,6 @@ import com.uade.tpejemplo.model.Cliente;
 import com.uade.tpejemplo.model.Credito;
 import com.uade.tpejemplo.repository.ClienteRepository;
 import com.uade.tpejemplo.repository.CreditoRepository;
-import com.uade.tpejemplo.repository.CuotaRepository;
 import com.uade.tpejemplo.service.CreditoService;
 import com.uade.tpejemplo.model.interfaces.IUsuario;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +24,6 @@ public class CreditoServiceImpl implements CreditoService {
 
     private final CreditoRepository creditoRepository;
     private final ClienteRepository clienteRepository;
-    private final CuotaRepository cuotaRepository;
 
     @Transactional
     @Override
@@ -53,10 +51,7 @@ public class CreditoServiceImpl implements CreditoService {
     @Transactional(readOnly = true)
     @Override
     public List<CreditoResponse> listarTodos() {
-        List<Credito> creditos = creditoRepository.buscarTodosConCuotas();
-        // Precarga las cobranzas en la sesion (el resultado se descarta): 2 consultas en vez de N+1.
-        cuotaRepository.buscarTodasConCobranzas();
-        return creditos.stream()
+        return creditoRepository.findAll().stream()
             .map(CreditoResponse::desde)
             .toList();
     }
@@ -67,10 +62,7 @@ public class CreditoServiceImpl implements CreditoService {
         if (!clienteRepository.existsById(dniCliente)) {
             throw new ResourceNotFoundException("cliente", "DNI", dniCliente);
         }
-        List<Credito> creditos = creditoRepository.buscarPorClienteConCuotas(dniCliente);
-        // Precarga las cobranzas en la sesion (el resultado se descarta): 2 consultas en vez de N+1.
-        cuotaRepository.buscarPorCliente(dniCliente);
-        return creditos.stream()
+        return creditoRepository.buscarPorCliente(dniCliente).stream()
             .map(CreditoResponse::desde)
             .toList();
     }
@@ -82,8 +74,8 @@ public class CreditoServiceImpl implements CreditoService {
             throw new AccessDeniedException("El usuario no tiene permiso para anular creditos");
         }
 
-        creditoRepository.bloquearPorId(id);
-        Credito credito = buscarCredito(id);
+        Credito credito = creditoRepository.bloquearPorId(id)
+            .orElseThrow(() -> new ResourceNotFoundException("crédito", "id", id));
 
         credito.anular();
         creditoRepository.save(credito);
@@ -95,10 +87,7 @@ public class CreditoServiceImpl implements CreditoService {
     }
 
     private Credito buscarCredito(Long id) {
-        Credito credito = creditoRepository.buscarConCuotas(id)
+        return creditoRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("crédito", "id", id));
-        // Precarga las cobranzas en la sesion (el resultado se descarta): evita N+1 al leer Cuota.estaPagada().
-        cuotaRepository.buscarPorCredito(id);
-        return credito;
     }
 }

@@ -955,11 +955,11 @@ svg .s-security{color: var(--security-stroke);}
         </g>
         </g>
 
-        <g data-edge-from="svc" data-edge-to="repo" data-edge-label="buscarConCuotas(id)" data-edge-key="5" data-edge-id="find">
+        <g data-edge-from="svc" data-edge-to="repo" data-edge-label="bloquearPorId(id)" data-edge-key="5" data-edge-id="find">
           <path data-composition-edge-from="svc" data-composition-edge-to="repo" data-composition-edge-id="find" data-composition-points="568,430;995.5,430" d="M 568 430 L 995.5 430" class="a-default" stroke-width="1.4" marker-end="url(#arrowhead)"/>
         <g data-detail="context">
-          <rect x="726.35" y="410" width="110.8" height="16" rx="3" class="c-mask"/>
-          <text x="781.75" y="420" class="t-backend" font-size="9" text-anchor="middle">buscarConCuotas(id)</text>
+          <rect x="731.55" y="410" width="100.4" height="16" rx="3" class="c-mask"/>
+          <text x="781.75" y="420" class="t-backend" font-size="9" text-anchor="middle">bloquearPorId(id)</text>
         </g>
         </g>
 
@@ -1444,7 +1444,7 @@ SELECT * FROM COBRANZAS WHERE ANULADA = FALSE;  -- cobranzas vigentes</code></pr
           <tr><td>Interfaz por cada clase de <code>model/</code> (<code>model/interfaces/</code>)</td><td>Pedido de la cátedra en V2. Los DTO de respuesta y <code>UsuarioDetails</code> consumen la interfaz. <code>IRol</code> no tiene consumidor.</td></tr>
           <tr><td><code>MetaCobranza</code> eliminada (V1)</td><td>Data class sin uso real; UC17 retirado.</td></tr>
           <tr><td>Sistema francés <strong>descartado en V2 y reabierto en V3</strong></td><td>El 15/09 se descartó (no se buscaba polimorfismo). En V3 entra como segunda estrategia real para que Strategy no quede con una sola implementación (M9).</td></tr>
-          <tr><td><code>Credito</code> como agregado de sus cuotas, con estado calculado (M8)</td><td>Saca la consulta al repositorio de <code>anularCredito</code> y corrige que se contaran cobranzas anuladas (absorbe M2). Carga con fetch explícito para no caer en N+1.</td></tr>
+          <tr><td><code>Credito</code> como agregado de sus cuotas, con estado calculado (M8)</td><td>Saca la consulta al repositorio de <code>anularCredito</code> y corrige que se contaran cobranzas anuladas (absorbe M2). Cuotas y cobranzas se leen con lazy loading dentro de la transacción.</td></tr>
           <tr><td>Permisos validados en el servicio con el usuario autenticado (M4)</td><td>En MVC la vista oculta pero el modelo decide. Costo: el servicio queda acoplado a <code>IUsuario</code>.</td></tr>
           <tr><td><code>JwtUtil</code> detrás de <code>TokenService</code> (M7)</td><td>Los clientes de auth dejan de depender de jjwt. Una sola implementación: es frontera con una librería, no polimorfismo.</td></tr>
           <tr><td>Dashboard también para ADMIN (M10)</td><td>Cierra TPO-010. Pendiente confirmar con Regulo.</td></tr>

@@ -6,7 +6,6 @@ import com.uade.tpejemplo.model.EstadoCredito;
 import com.uade.tpejemplo.repository.ClienteRepository;
 import com.uade.tpejemplo.repository.CreditoRepository;
 import com.uade.tpejemplo.repository.CobranzaRepository;
-import com.uade.tpejemplo.repository.CuotaRepository;
 import com.uade.tpejemplo.service.DashboardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,15 +22,12 @@ public class DashboardServiceImpl implements DashboardService {
     private final ClienteRepository clienteRepository;
     private final CreditoRepository creditoRepository;
     private final CobranzaRepository cobranzaRepository;
-    private final CuotaRepository cuotaRepository;
 
     @Transactional(readOnly = true)
     @Override
     public DashboardStatsResponse obtenerEstadisticasGenerales() {
         long clientes = clienteRepository.count();
-        List<Credito> creditos = creditoRepository.buscarTodosConCuotas();
-        // Precarga las cobranzas en la sesion (el resultado se descarta): 2 consultas en vez de N+1.
-        cuotaRepository.buscarTodasConCobranzas();
+        List<Credito> creditos = creditoRepository.findAll();
         long creditosVigentes = creditos.stream().filter(credito -> credito.estado() == EstadoCredito.VIGENTE).count();
 
         BigDecimal totalFinanciado = creditoRepository.sumarDeudaOriginalNoAnulada();

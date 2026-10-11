@@ -15,22 +15,8 @@ import java.util.Optional;
 @Repository
 public interface CreditoRepository extends JpaRepository<Credito, Long> {
 
-    @Query("""
-        SELECT DISTINCT c FROM Credito c JOIN FETCH c.cliente LEFT JOIN FETCH c.cuotas
-        WHERE c.id = :id
-        """)
-    Optional<Credito> buscarConCuotas(@Param("id") Long id);
-
-    @Query("""
-        SELECT DISTINCT c FROM Credito c JOIN FETCH c.cliente LEFT JOIN FETCH c.cuotas
-        WHERE c.cliente.dni = :dni
-        """)
-    List<Credito> buscarPorClienteConCuotas(@Param("dni") String dni);
-
-    @Query("""
-        SELECT DISTINCT c FROM Credito c JOIN FETCH c.cliente LEFT JOIN FETCH c.cuotas
-        """)
-    List<Credito> buscarTodosConCuotas();
+    @Query("SELECT c FROM Credito c WHERE c.cliente.dni = :dni")
+    List<Credito> buscarPorCliente(@Param("dni") String dni);
 
     // Bloquea el credito: cobrar y anular se serializan (siempre credito primero, despues cuota).
     @Lock(LockModeType.PESSIMISTIC_WRITE)

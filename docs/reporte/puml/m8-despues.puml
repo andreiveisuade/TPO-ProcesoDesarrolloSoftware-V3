@@ -44,7 +44,7 @@ Credito "1" *-- "1..*" Cuota : crea y conoce
 Cuota "1" --> "0..*" Cobranza
 Credito ..> EstadoCredito
 note bottom of Credito #FFF8E1
-  cuotas y cobranzas se traen en 2 consultas
-  (JOIN FETCH), sin N+1 ni lazy fuera de tx
+  cuotas y cobranzas se leen con lazy
+  loading dentro de la transaccion
 end note
 @enduml

@@ -136,11 +136,11 @@ svg .s-external{color: var(--external-stroke);}
         </g>
         </g>
 
-        <g data-edge-from="svc" data-edge-to="repo" data-edge-label="bloquearPorId(id), buscarConCuotas(id)" data-edge-key="5" data-edge-id="find">
+        <g data-edge-from="svc" data-edge-to="repo" data-edge-label="bloquearPorId(id)" data-edge-key="5" data-edge-id="find">
           <path data-composition-edge-from="svc" data-composition-edge-to="repo" data-composition-edge-id="find" data-composition-points="568,376;995.5,376" d="M 568 376 L 995.5 376" class="a-default" stroke-width="1.4" marker-end="url(#arrowhead)"/>
         <g data-detail="context">
-          <rect x="650.35" y="356" width="262.79999999999995" height="18" rx="3" class="c-mask"/>
-          <text x="781.75" y="366" class="t-muted" font-size="11" text-anchor="middle">bloquearPorId(id), buscarConCuotas(id)</text>
+          <rect x="719.65" y="356" width="124.19999999999999" height="18" rx="3" class="c-mask"/>
+          <text x="781.75" y="366" class="t-muted" font-size="11" text-anchor="middle">bloquearPorId(id)</text>
         </g>
         </g>
 

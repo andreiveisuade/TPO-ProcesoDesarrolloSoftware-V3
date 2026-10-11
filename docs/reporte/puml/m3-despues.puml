@@ -21,18 +21,14 @@ class Credito {
 }
 DashboardServiceImpl ..> Credito : cuenta estado() == VIGENTE
 interface CreditoRepository #DDEBF7 {
-  +buscarTodosConCuotas()
+  +findAll()
   +sumarDeudaOriginalNoAnulada()
 }
 interface CobranzaRepository #DDEBF7 {
   +sumarImporteNoAnulado()
 }
-interface CuotaRepository #DDEBF7 {
-  +buscarTodasConCobranzas()
-}
 DashboardServiceImpl --> CreditoRepository
 DashboardServiceImpl --> CobranzaRepository
-DashboardServiceImpl --> CuotaRepository : precarga cobranzas
 note bottom of CreditoRepository #DDEBF7
   WHERE anulado = false
   SUM(deudaOriginal)

@@ -8,26 +8,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface CuotaRepository extends JpaRepository<Cuota, Long> {
-
-    @Query("""
-        SELECT DISTINCT c FROM Cuota c LEFT JOIN FETCH c.cobranzas
-        WHERE c.credito.id = :idCredito ORDER BY c.numero
-        """)
-    List<Cuota> buscarPorCredito(@Param("idCredito") Long idCredito);
-
-    @Query("SELECT DISTINCT c FROM Cuota c LEFT JOIN FETCH c.cobranzas")
-    List<Cuota> buscarTodasConCobranzas();
-
-    @Query("""
-        SELECT DISTINCT c FROM Cuota c LEFT JOIN FETCH c.cobranzas
-        WHERE c.credito.cliente.dni = :dni
-        """)
-    List<Cuota> buscarPorCliente(@Param("dni") String dni);
 
     // Bloquea la fila: dos cobros de la misma cuota se serializan. Sin JOIN FETCH, para que las
     // cobranzas se lean despues del bloqueo y vean la que acaba de commitear el otro request.

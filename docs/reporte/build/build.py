@@ -245,7 +245,7 @@ m8 = bloque("m8", "M8. EstadoCredito y Credito como agregado de sus cuotas",
          method("main", "model/Credito.java", r"public void anular"))
     + cb("main", "service/impl/CreditoServiceImpl.java", method("main", "service/impl/CreditoServiceImpl.java", r"private Credito buscarCredito")),
     "<strong>La decisión vuelve al experto</strong>: el servicio ya no le pasa un boolean.",
-    "Gana: sin migración; de N+1 a 2 consultas. Cuesta: cuotas cargadas en la transacción.",
+    "Gana: sin migración. Cuesta: cuotas y cobranzas se leen con lazy loading dentro de la transacción (N+1, aceptable con H2 en memoria).",
     "Tests: <code>CreditoTest</code>.",
     extra=figura("credito-estados", "Estados del crédito (derivados, solo se guarda anulado)"))
 

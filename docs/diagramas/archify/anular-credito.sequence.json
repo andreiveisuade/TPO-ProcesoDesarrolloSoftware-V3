@@ -129,7 +129,7 @@
       "from": "svc",
       "to": "repo",
       "y": 376,
-      "label": "bloquearPorId(id), buscarConCuotas(id)"
+      "label": "bloquearPorId(id)"
     },
     {
       "id": "found",
