@@ -11,11 +11,11 @@
 3. **M8 + O6 EstadoCredito, agregado y Creator** (`EstadoCredito`, `Credito`, `Cuota`, `CreditoServiceImpl`): el estado deja de ser boolean y el crédito sabe su saldo. `Credito` crea sus cuotas al otorgarse (Creator + cascade) y el service ya no las arma. Con cobranzas no se anula: lo decide `Cuota.estaPagada()`.
 4. **M4 + BS3 permisos en el modelo** (`CreditoController`, `Usuario`, `CreditoServiceImpl`): el controller identifica al usuario y el modelo decide con `Usuario.puedeAnularCredito()`. La vista solo oculta, la regla se valida en el backend.
 5. **M5 errores, seguridad y perfiles** (`GlobalExceptionHandler`, `SecurityConfig`, `OpenApiConfig`, `application-dev/prod`): 401 sin token, 403 sin rol o permiso, 400 por body mal formado o regla de negocio; el 500 no filtra el mensaje interno. Perfil dev con consola H2, prod sin ella y con CORS por variable.
-6. **M3 + O7 Dashboard** (`DashboardServiceImpl`, `DashboardStatsResponse`): los números reflejan solo lo vigente; saldo pendiente y monto vencido salen del `Credito` y de la `Cuota`, que son los que tienen los datos.
+6. **M3 + O7 Dashboard** (`DashboardServiceImpl`, `DashboardStatsResponse`): los números excluyen lo anulado (activos = VIGENTE); saldo pendiente y monto vencido salen del `Credito` y de la `Cuota`, que son los que tienen los datos.
 7. **Cortos**:
    - **M1** (`Cuota`): no se cobra una cuota de un crédito anulado, la regla vive en `Cuota`.
    - **M6** (`Cuota`): `estaVencida()` en la entidad que tiene los datos.
-   - **M10** (`SecurityConfig`): el ADMIN ve el dashboard sin ganar los permisos de anulación del supervisor.
+   - **M10** (`SecurityConfig`): el ADMIN ve el dashboard; M10 no toca permisos.
    - **I-1** (`CuotaRepository`, `CobranzaServiceImpl`): bloqueo pesimista al buscar la cuota, dos cobros simultáneos de la misma cuota se serializan y el segundo falla.
 
 ## Mostrar la app en vivo

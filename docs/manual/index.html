@@ -464,7 +464,7 @@ body.lightbox-locked { overflow: hidden; }
           <tr><td>Spring Boot Actuator</td><td>Endpoints de diagnóstico de la aplicación (como health). Está como dependencia en <code>pom.xml</code>.</td></tr>
           <tr><td>JUnit 5 + AssertJ</td><td>Framework de tests y librería de aserciones; vienen en <code>spring-boot-starter-test</code>. Los usan todos los tests.</td></tr>
           <tr><td>Mockito / <code>@WebMvcTest</code></td><td>Mockito crea objetos simulados; <code>@WebMvcTest</code> levanta solo la capa web de Spring. Juntos prueban los códigos HTTP sin base ni servicios reales (<code>controller/CodigosHttpTest.java</code>).</td></tr>
-          <tr><td>PlantUML y d2</td><td>Dos lenguajes que dibujan diagramas a partir de texto. PlantUML hace el diagrama de clases UML completo y el DER (<code>docs/diagramas/*.puml</code>); d2 hace las vistas simplificadas de Strategy, Adapter y el dominio (<code>docs/diagramas/d2/</code>).</td></tr>
+          <tr><td>PlantUML y d2</td><td>Dos lenguajes que dibujan diagramas a partir de texto. PlantUML hace el diagrama de clases UML completo (<code>docs/diagramas/clases-v3.puml</code>) y el DER sale de <code>docs/diagramas/der-v3.py</code>; d2 hace las vistas simplificadas de Strategy, Adapter y el dominio (<code>docs/diagramas/d2/</code>).</td></tr>
           <tr><td>Archify</td><td>Genera diagramas de arquitectura, secuencia y estados desde un JSON validado; con él están el panorama MVC, el flujo de anular un crédito y los estados del crédito (<code>docs/diagramas/archify/</code>).</td></tr>
           <tr><td>React 19</td><td>Librería para construir la interfaz con componentes; las pantallas están en <code>frontend/src/pages/</code>.</td></tr>
           <tr><td>React Router</td><td>Navegación entre pantallas del front sin recargar la página.</td></tr>
@@ -501,7 +501,7 @@ body.lightbox-locked { overflow: hidden; }
         <li>Listar créditos (todos o de un cliente) con estado (vigente, cancelado, anulado), saldo y cuotas pagadas, pendientes o vencidas.</li>
         <li>Registrar el cobro de una cuota y listar las cobranzas de un crédito.</li>
         <li>Anular cobranzas del día y créditos sin cobranzas vigentes, según permisos del usuario.</li>
-        <li>Dashboard con totales de lo vigente, saldo pendiente y monto vencido, para supervisor y administrador.</li>
+        <li>Dashboard con totales sin lo anulado (activos = VIGENTE), saldo pendiente y monto vencido, para supervisor y administrador.</li>
         <li>Registro y login con JWT; gestión de roles (ADMIN) y de permisos de anulación (SUPERVISOR, ADMIN).</li>
       </ul>
     </section>
@@ -515,7 +515,7 @@ body.lightbox-locked { overflow: hidden; }
           <tr><td>R1</td><td>El DNI del cliente es único</td><td><code>service/impl/ClienteServiceImpl.java</code> <code>crear</code></td></tr>
           <tr><td>R2</td><td>Capital &gt; 0 con hasta 8 enteros y 2 decimales, tasa entre 0 y 999,99 con 2 decimales, al menos 1 cuota, tipo de plan obligatorio. DNI hasta 15 caracteres, nombre y username hasta 255, importe de cobranza hasta 10 enteros y 2 decimales (<code>@Size</code> y <code>@Digits</code>, anotaciones de Bean Validation que Spring chequea con <code>@Valid</code> antes de entrar al controller: lo que no entra en la columna da 400 y no 500)</td><td><code>dto/request/CreditoRequest.java</code>, <code>dto/request/ClienteRequest.java</code>, <code>dto/request/CobranzaRequest.java</code>, <code>dto/request/RegisterRequest.java</code></td></tr>
           <tr><td>R3</td><td>Interés simple: <code>total = capital × (1 + tasa/100)</code>, cuota = total / N con redondeo HALF_UP a 2 decimales</td><td><code>model/plan/InteresSimple.java</code> <code>totalADevolver</code>, <code>importeCuota</code></td></tr>
-          <tr><td>R4</td><td>Sistema francés: cuota = C·i / (1 − (1+i)<sup>−n</sup>), con i = tasa/100 por período; tasa 0 → C/N; total = cuota × N</td><td><code>model/plan/SistemaFrances.java</code> <code>importeCuota</code>, <code>totalADevolver</code></td></tr>
+          <tr><td>R4</td><td>Sistema francés: cuota = C·i / (1 − (1+i)<sup>−n</sup>), con i = tasa/100 por período; tasa 0 → C/N; total = cuota × N</td><td><code>model/plan/SistemaFrances.java</code> <code>importeCuota</code>; el total en <code>model/Credito.java</code> <code>totalADevolver</code></td></tr>
           <tr><td>R5</td><td>El crédito nace con su plan: N cuotas numeradas 1..N, vencimiento <code>fecha + i meses</code>, persistidas por cascade</td><td><code>model/Credito.java</code> constructor y <code>generarPlanDeCuotas</code> (privado)</td></tr>
           <tr><td>R6</td><td>No se cobra sobre un crédito anulado</td><td><code>model/Cuota.java</code> <code>registrarCobranza</code></td></tr>
           <tr><td>R7</td><td>Una cuota tiene a lo sumo una cobranza vigente; las anuladas no cuentan</td><td><code>model/Cuota.java</code> <code>estaPagada</code>, <code>registrarCobranza</code></td></tr>
@@ -523,11 +523,11 @@ body.lightbox-locked { overflow: hidden; }
           <tr><td>R9</td><td>La fecha de la cobranza la pone el sistema (hoy)</td><td><code>model/Cobranza.java</code> constructor</td></tr>
           <tr><td>R10</td><td>Solo se anulan cobranzas del día, y no dos veces</td><td><code>model/Cobranza.java</code> <code>anular(LocalDate)</code></td></tr>
           <tr><td>R11</td><td>No se anula un crédito ya anulado ni uno con cobranzas vigentes</td><td><code>model/Credito.java</code> <code>anular</code>, <code>tieneCobranzas</code></td></tr>
-          <tr><td>R12</td><td>Una cuota está vencida si no está pagada y su vencimiento es anterior a hoy</td><td><code>model/Cuota.java</code> <code>estaVencida(LocalDate)</code></td></tr>
+          <tr><td>R12</td><td>Una cuota está vencida si no está pagada y su vencimiento es anterior a hoy y el crédito no está anulado</td><td><code>model/Cuota.java</code> <code>estaVencida(LocalDate)</code></td></tr>
           <tr><td>R13</td><td>Estado del crédito: ANULADO si se anuló; CANCELADO si todas las cuotas están pagas; si no, VIGENTE</td><td><code>model/Credito.java</code> <code>estado</code>, <code>estaCancelado</code></td></tr>
           <tr><td>R14</td><td>Saldo = suma de cuotas impagas; 0 si está anulado</td><td><code>model/Credito.java</code> <code>saldo</code></td></tr>
           <tr><td>R15</td><td>Anular un crédito requiere <code>puedeAnularCredito</code>; anular una cobranza, <code>puedeAnularCobranza</code></td><td><code>service/impl/CreditoServiceImpl.java</code> <code>anularCredito</code>; <code>service/impl/CobranzaServiceImpl.java</code> <code>anularCobranza</code></td></tr>
-          <tr><td>R16</td><td>Nadie otorga ni quita el rol ADMIN</td><td><code>service/impl/AdminServiceImpl.java</code> <code>actualizarRol</code></td></tr>
+          <tr><td>R16</td><td>Nadie otorga ni quita el rol ADMIN</td><td><code>model/Usuario.java</code> <code>asignarRol</code></td></tr>
           <tr><td>R17</td><td>El registro crea siempre un USER sin permisos; username único</td><td><code>service/impl/AuthServiceImpl.java</code> <code>registrar</code></td></tr>
           <tr><td>R18</td><td>Activos = créditos con <code>estado()</code> VIGENTE (modelo); financiado = deuda original de lo no anulado (incluye cancelados), cobrado = cobranzas no anuladas, saldo pendiente = suma de <code>Credito.saldo</code>, vencido = suma de <code>Credito.montoVencido</code> (cuotas vencidas de créditos no anulados)</td><td><code>service/impl/DashboardServiceImpl.java</code> <code>obtenerEstadisticasGenerales</code>; <code>repository/CreditoRepository.java</code> <code>sumarDeudaOriginalNoAnulada</code>; <code>repository/CobranzaRepository.java</code> <code>sumarImporteNoAnulado</code></td></tr>
         </tbody>
@@ -542,14 +542,14 @@ body.lightbox-locked { overflow: hidden; }
         <tbody>
           <tr><td>UC01 Registrarse</td><td><span class="tag tag-ok">implementado</span></td><td></td></tr>
           <tr><td>UC02 Iniciar sesión</td><td><span class="tag tag-ok">implementado</span></td><td>Password incorrecta → 401 (M5)</td></tr>
-          <tr><td>UC03 Emitir token JWT</td><td><span class="tag tag-ok">implementado</span></td><td>Es un mecanismo de UC01/UC02, no un CU</td></tr>
+          <tr><td>UC03 Emitir token JWT</td><td><span class="tag">reclasificado</span></td><td>Es un mecanismo de UC01/UC02, no un CU</td></tr>
           <tr><td>UC04 Registrar cliente</td><td><span class="tag tag-ok">implementado</span></td><td>Sin modificación ni baja</td></tr>
           <tr><td>UC05 Listar clientes</td><td><span class="tag tag-ok">implementado</span></td><td>Sin paginación</td></tr>
           <tr><td>UC06 Buscar cliente por DNI</td><td><span class="tag tag-ok">implementado</span></td><td>Bloque de búsqueda en <code>pages/Clientes.jsx</code></td></tr>
           <tr><td>UC07 Otorgar crédito</td><td><span class="tag tag-ok">implementado</span></td><td>Con tipo de plan (M9)</td></tr>
           <tr><td>UC08 Generar plan de cuotas</td><td><span class="tag tag-ok">implementado</span></td><td>Include de UC07</td></tr>
           <tr><td>UC09 Consultar crédito</td><td><span class="tag tag-ok">implementado</span></td><td>Búsqueda por número en <code>pages/Creditos.jsx</code></td></tr>
-          <tr><td>UC10 Listar créditos</td><td><span class="tag tag-ok">implementado</span></td><td>Por cliente y general (<code>GET /api/creditos</code>)</td></tr>
+          <tr><td>UC10 Listar créditos</td><td><span class="tag tag-ok">implementado</span></td><td>Por cliente (<code>GET /api/creditos/cliente/{dni}</code>); <code>GET /api/creditos</code> es un endpoint sin CU</td></tr>
           <tr><td>UC11 Anular crédito</td><td><span class="tag tag-ok">implementado</span></td><td>Permiso aplicado en backend (M4); ignora cobranzas anuladas (M8)</td></tr>
           <tr><td>UC12 Eliminar crédito</td><td><span class="tag">retirado</span></td><td>Duplicaba UC11 salteando su regla</td></tr>
           <tr><td>UC13 Registrar cobro</td><td><span class="tag tag-ok">implementado</span></td><td>Rechaza crédito anulado (M1); no registra quién cobró</td></tr>
@@ -557,9 +557,9 @@ body.lightbox-locked { overflow: hidden; }
           <tr><td>UC15 Anular cobranza</td><td><span class="tag tag-ok">implementado</span></td><td>Permiso aplicado en backend (M4); rechaza la doble anulación</td></tr>
           <tr><td>UC16 Ver estadísticas</td><td><span class="tag tag-ok">implementado</span></td><td>Números corregidos (M3), también ADMIN (M10), saldo pendiente y vencido (O7)</td></tr>
           <tr><td>UC17 Administrar metas</td><td><span class="tag">retirado</span></td><td>Con <code>MetaCobranza</code> en V1 (Data class)</td></tr>
-          <tr><td>UC18 Listar usuarios</td><td><span class="tag tag-ok">implementado</span></td><td>ADMIN ve todos menos ADMIN; SUPERVISOR ve todos</td></tr>
+          <tr><td>UC18 Listar usuarios</td><td><span class="tag tag-ok">implementado</span></td><td>ADMIN y SUPERVISOR ven todos menos los ADMIN</td></tr>
           <tr><td>UC19 Asignar permisos de anulación</td><td><span class="tag tag-ok">implementado</span></td><td>Desde V3 el backend los aplica (M4)</td></tr>
-          <tr><td>Cambiar rol de usuario (nuevo V2)</td><td><span class="tag tag-ok">implementado</span></td><td><code>pages/PanelAdmin.jsx</code>; falta en los docs V0</td></tr>
+          <tr><td>UC20 Cambiar rol de usuario (nuevo V2)</td><td><span class="tag tag-ok">implementado</span></td><td><code>pages/PanelAdmin.jsx</code>; falta en los docs V0</td></tr>
         </tbody>
       </table></div>
     </section>
@@ -1304,7 +1304,7 @@ svg .s-security{color: var(--security-stroke);}
       <div class="table-wrap"><table>
         <thead><tr><th>Rol</th><th>Clase</th></tr></thead>
         <tbody>
-          <tr><td>Context</td><td><code>model/Credito.java</code> (constructor y <code>totalADevolver</code> delegan)</td></tr>
+          <tr><td>Context</td><td><code>model/Credito.java</code> (el constructor delega; <code>totalADevolver</code> sale de las cuotas, O3)</td></tr>
           <tr><td>Strategy</td><td><code>model/interfaces/CalculoDeCuota.java</code></td></tr>
           <tr><td>ConcreteStrategy</td><td><code>model/plan/InteresSimple.java</code>, <code>model/plan/SistemaFrances.java</code></td></tr>
           <tr><td>Selección</td><td><code>model/TipoPlan.java</code> (enum persistido, <code>calculo()</code>); viene en <code>CreditoRequest.tipoPlan</code></td></tr>
@@ -1351,7 +1351,7 @@ svg .s-security{color: var(--security-stroke);}
         <li><strong>Doble control de roles</strong>: las zonas de admin y supervisor se chequean en las reglas de URL de <code>config/SecurityConfig.java</code> y otra vez con <code>@PreAuthorize</code> en <code>controller/AdminController.java</code> y <code>controller/SupervisorController.java</code>. Es a propósito (ver "Decisiones de diseño").</li>
         <li><strong>CORS</strong>: <code>config/SecurityConfig.java</code> <code>corsConfigurationSource</code> admite un solo origen, <code>app.cors.origin</code>: <code>http://localhost:5173</code> en dev y la variable <code>CORS_ORIGIN</code> en prod.</li>
         <li><strong>Secret JWT</strong>: prod exige <code>JWT_SECRET</code> sin default (<code>application-prod.properties</code>); sin ella no arranca. Los usuarios semilla (<code>config/DataInitializer.java</code>, <code>@Profile("dev")</code>) solo existen en dev.</li>
-        <li><strong>Concurrencia</strong>: cobrar y anular bloquean el crédito (<code>@Lock(PESSIMISTIC_WRITE)</code> en <code>repository/CreditoRepository.java</code>), después la cuota: no queda un crédito anulado con una cobranza vigente.</li>
+        <li><strong>Concurrencia</strong>: cobrar y anular bloquean primero el crédito (<code>@Lock(PESSIMISTIC_WRITE)</code> en <code>repository/CreditoRepository.java</code>); cobrar además bloquea la cuota: no queda un crédito anulado con una cobranza vigente.</li>
         <li><strong>Consola H2</strong>: solo en el perfil dev (<code>application-dev.properties</code>); en prod está deshabilitada y responde 404 (TPO-008).</li>
         <li>Body mal formado o parámetro de tipo incorrecto → 400 (<code>exception/GlobalExceptionHandler.java</code> <code>handleSolicitudInvalida</code>). <code>Content-Type</code> no JSON → 415; <code>Accept</code> no JSON → 406, ambos con <code>ErrorResponse</code>.</li>
       </ul>
@@ -1398,7 +1398,7 @@ cd frontend &amp;&amp; npm install &amp;&amp; npm run dev   # Vite, proxy /api �
         <li>Driver Class <code>org.h2.Driver</code>, JDBC URL <code>jdbc:h2:mem:tpdb</code>, User Name <code>sa</code>, Password vacío.</li>
         <li><em>Connect</em>. A la izquierda quedan las tablas: <code>CLIENTES</code>, <code>CREDITOS</code>, <code>CUOTAS</code>, <code>COBRANZAS</code> y <code>USUARIOS</code>.</li>
       </ol>
-      <pre><code>SELECT * FROM CREDITOS;                         -- estado, plan, tasa, importe de cuota
+      <pre><code>SELECT * FROM CREDITOS;                         -- anulado, tipo_plan, tasa, importe de cuota
 SELECT * FROM CUOTAS WHERE ID_CREDITO = 1;      -- cuotas de un crédito
 SELECT * FROM COBRANZAS WHERE ANULADA = FALSE;  -- cobranzas vigentes</code></pre>
       <p>
@@ -1467,7 +1467,7 @@ SELECT * FROM COBRANZAS WHERE ANULADA = FALSE;  -- cobranzas vigentes</code></pr
         <li><strong>V0</strong> (<code>main@2a90af8</code>): proyecto inicial con docs PlantUML, requerimientos y CU.</li>
         <li><strong>V1</strong> (<code>andrei-iteracion1@86c75cc</code>, 08/09): bad smells; <code>Permisos</code>, <code>Cuota</code> con importe y su cobranza, tasa de interés, panel de supervisor.</li>
         <li><strong>V2</strong> (<code>main@45e228c</code>, tag <code>v2</code>, 15/09): GRASP + interfaces de modelo y de servicio.</li>
-        <li><strong>V3</strong> (este repo, entrega 13/10): MVC + Strategy + Adapter; bugs TPO-001..004, 007, 009, 010 cerrados; Creator del plan de cuotas y dashboard con saldo y vencido; 42 tests (dominio, códigos HTTP y concurrencia); perfiles dev y prod; Swagger; <code>GET /api/auth/me</code>; pantallas de UC06 y UC09; UI con formato es-AR y dark theme; casos de uso documentados.</li>
+        <li><strong>V3</strong> (este repo, entrega 13/10): MVC + Strategy + Adapter; bugs TPO-001..004, 007, 008, 009, 010, 012 cerrados; Creator del plan de cuotas y dashboard con saldo y vencido; 42 tests (dominio, códigos HTTP y concurrencia); perfiles dev y prod; Swagger; <code>GET /api/auth/me</code>; pantallas de UC06 y UC09; UI con formato es-AR y dark theme; casos de uso documentados.</li>
       </ul>
     </section>
 
@@ -1478,10 +1478,10 @@ SELECT * FROM COBRANZAS WHERE ANULADA = FALSE;  -- cobranzas vigentes</code></pr
         <li>O8: pagos parciales; hoy se exige el importe exacto de la cuota (TPO-006).</li>
         <li>H8, trazabilidad: <code>Cobranza</code> no sabe quién cobró ni quién anuló; <code>Credito</code> no sabe quién lo otorgó.</li>
         <li>La fecha del crédito es libre: acepta pasado y futuro (<code>dto/request/CreditoRequest.java</code>).</li>
-        <li>Interés simple: la suma de cuotas puede diferir del total en centavos.</li>
+        <li>Interés simple: el total (suma de cuotas) puede diferir en centavos de capital × (1 + tasa).</li>
         <li><strong>Base persistente para prod</strong>: el perfil prod sigue con H2 en memoria; falta una base real (PostgreSQL) con migraciones y alta de admin.</li>
         <li>Tests sin cubrir: queries del dashboard (<code>@DataJpaTest</code>) y <code>Permisos</code>.</li>
-        <li>Backlog GRASP: <code>TasaInteres</code> como value object.</li>
+        <li>P-M9: tasa con unidad declarada por plan y cuota con capital e interés separados.</li>
         <li>Confirmar con Regulo que ADMIN debe ver el dashboard (M10).</li>
       </ul>
     </section>

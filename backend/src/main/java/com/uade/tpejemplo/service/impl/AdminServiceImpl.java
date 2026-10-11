@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-// Casos de uso de administracion de usuarios: alta, rol y permisos.
+// Casos de uso de administracion de usuarios: listado, rol y permisos.
 @Service
 @RequiredArgsConstructor
 public class AdminServiceImpl implements AdminService {

@@ -371,7 +371,7 @@ indice = [
  ("m2", "“Tiene cobranzas” ignora anuladas (absorbida por M8)", "Information Expert", "revisión del dominio"),
  ("m3", "Dashboard con números verdaderos", "Corrección + Expert", "TPO-003"),
  ("m4", "Permisos de anulación en el backend", "MVC + Expert", "TPO-007"),
- ("m5", "Handlers HTTP 400 a 415", "MVC", "TPO-001, 002"),
+ ("m5", "Handlers HTTP 401, 403, 404, 405", "MVC", "TPO-001, 002"),
  ("m6", "Cuota.estaVencida()", "Information Expert", "revisión del dominio"),
  ("m8", "EstadoCredito + Credito agregado", "Information Expert", "revisión del dominio"),
  ("m10", "Dashboard para ADMIN", "Corrección, sin patrón", "TPO-010"),
@@ -480,7 +480,7 @@ timeline = f'''<div class="timeline">
 <div class="hito"><div class="punto"></div><h4>V2</h4><p class="tema">Iteración 2: GRASP + interfaces</p><p class="meta">Mergeada 15/09 · <code>main@45e228c</code> (tag <code>v2</code>) · 5 commits</p>
 <ul><li>Information Expert: <code>Cobranza.anular()</code>, <code>Credito.anular()</code></li><li>Creator: <code>Usuario.nuevo</code></li><li>Interfaz por cada clase del modelo y de servicio</li><li>Revierte §3.7 de V1 (Lazy class): restituye las interfaces de servicio</li></ul></div>
 <div class="hito actual"><div class="punto"></div><h4>V3</h4><p class="tema">Iteración 3: MVC + Strategy + Adapter</p><p class="meta">Entrega 13/10/2026 · repo V3, <code>main</code> · {n_v3} commits sin merges</p>
-<ul><li><strong>Strategy</strong>: cálculo de cuota, interés simple y sistema francés (M9)</li><li><strong>Adapter</strong>: <code>TokenService</code> sobre jjwt (M7)</li><li><code>EstadoCredito</code>, saldo, mora (M6, M8)</li><li>Permisos y errores HTTP en el backend (M4, M5)</li><li>Dashboard con saldo y vencido (M3, M10, O7); 41 tests</li><li>Revierte V2: el sistema francés, descartado el 15/09, vuelve como segunda estrategia</li><li>Swagger, perfiles dev/prod, UI, dark theme, UC06/UC09</li></ul></div>
+<ul><li><strong>Strategy</strong>: cálculo de cuota, interés simple y sistema francés (M9)</li><li><strong>Adapter</strong>: <code>TokenService</code> sobre jjwt (M7)</li><li><code>EstadoCredito</code>, saldo, mora (M6, M8)</li><li>Permisos y errores HTTP en el backend (M4, M5)</li><li>Dashboard con saldo y vencido (M3, M10, O7); 42 tests</li><li>Revierte V2: el sistema francés, descartado el 15/09, vuelve como segunda estrategia</li><li>Swagger, perfiles dev/prod, UI, dark theme, UC06/UC09</li></ul></div>
 </div>
 <details><summary>Commits V2 → V3 (git log v2..main)</summary><pre><code>{e(log_v3)}</code></pre></details>'''
 

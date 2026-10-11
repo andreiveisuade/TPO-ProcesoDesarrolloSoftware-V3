@@ -1,6 +1,6 @@
 # Backlog consolidado de mejoras pendientes
 
-Junta lo que quedó abierto en la iteración 3 (dominio, prácticas de Spring, bad smells, tests, API y front), contrastado con el código de `main`. No se lista lo que ya está hecho (O1-O7, S5, BS2, I-2, T-1, T-4, T-5, H4 con `GET /api/auth/me`, pantallas de UC06 y UC09, S1-S4, D1, D2, BS1, DF1, DF3, BSF1, título ADMIN, `@Valid` de permisos y rol, 401 sin token, `GET /api/creditos`, `tipoPlan` en `CreditoResponse`, `esValido(String, String)` en `TokenService`, I-1 (bloqueo pesimista en `…/repository/CuotaRepository.java` `buscarPorCreditoYNumero`, test en `backend/src/test/java/com/uade/tpejemplo/service/CobranzaConcurrenteTest.java`), M-3 (bloqueo del crédito al anular y cobrar, `9c3d4ae`), S7-S9 y TPO-008 (perfiles dev y prod, CORS con `CORS_ORIGIN`, consola H2 solo en dev), BS3, BS4, BS6, DF2, BSF2, BSF4, BSF5, BSF6 (TPO-012), 403 con token y sin rol, 400 en requests mal formadas, mejoras de UI, dark theme, comentarios y limpieza del repo).
+Junta lo que quedó abierto en la iteración 3 (dominio, prácticas de Spring, bad smells, tests, API y front), contrastado con el código de `main`. No se lista lo que ya está hecho (O1-O7, S5, BS2, I-2, T-1, T-5, H4 con `GET /api/auth/me`, pantallas de UC06 y UC09, S1-S4, D1, D2, BS1, DF1, DF3, BSF1, título ADMIN, `@Valid` de permisos y rol, 401 sin token, `GET /api/creditos`, `tipoPlan` en `CreditoResponse`, `esValido(String, String)` en `TokenService`, I-1 (bloqueo pesimista en `…/repository/CuotaRepository.java` `buscarPorCreditoYNumero`, test en `backend/src/test/java/com/uade/tpejemplo/service/CobranzaConcurrenteTest.java`), I1 (bloqueo del crédito al anular y cobrar, `9c3d4ae`), S7-S9 y TPO-008 (perfiles dev y prod, CORS con `CORS_ORIGIN`, consola H2 solo en dev), BS3, BS4, BS6, TPO-012, 403 con token y sin rol, 400 en requests mal formadas, mejoras de UI, dark theme, comentarios y limpieza del repo).
 
 `…/` = `backend/src/main/java/com/uade/tpejemplo/`. Rutas de front relativas a `frontend/src/`. Tamaño: S (pocas líneas), M (varios archivos), L (cambia el modelo). Tamaño con `*` = estimación. Fechas: 27/10 y 03/11 son iteraciones, 17/11 es la entrega final.
 
@@ -10,7 +10,8 @@ Junta lo que quedó abierto en la iteración 3 (dominio, prácticas de Spring, b
 |---|---|---|---|---|---|
 | H8 | Trazabilidad de usuario en `Cobranza`: quién registró y quién anuló | `…/model/Cobranza.java`, `…/controller/CobranzaController.java`, `…/dto/response/CobranzaResponse.java` | M* | 27/10 | Modelo nuevo que toca la API |
 | O3b | Ajustar la última cuota para que el total cierre exacto (hoy 10.000 al 45 % en 6 cuotas: total 14.500,02) | `…/model/plan/InteresSimple.java`, `…/model/plan/SistemaFrances.java`, `…/model/Credito.java` | M | 03/11 | Alternativa que O3 dejó para después; hoy el centavo se explica como redondeo por cuota |
-| C1 | Renombrar `CalculoDeCuota` a `ICalculoDeCuota` o justificar que es un rol de patrón | `…/model/interfaces/CalculoDeCuota.java` | S* | 03/11 | Inconsistencia de nombres con `ICredito`, `ICuota`, `IPermisos` |
+| O8 | Pagos parciales (A-01) | `…/model/Cuota.java`, `…/model/Cobranza.java`, `…/model/Credito.java` | L | — | Cambia `Cuota.estaPagada()`, `Cobranza`, `Credito.saldo()`, el dashboard y la vista. Exigir el importe exacto (TPO-006) se defiende para este alcance; queda fuera de V3 |
+| P-M9 | Tasa con unidad declarada por plan; cuota con capital/interés separados | `…/model/TipoPlan.java`, `…/model/Cuota.java` | M* | — | Límites del Strategy actual (ver reporte, M9) |
 
 ## Spring
 
@@ -39,7 +40,7 @@ Junta lo que quedó abierto en la iteración 3 (dominio, prácticas de Spring, b
 
 | ID | Qué | Motivo |
 |---|---|---|
-| O8 | Pagos parciales (A-01) | Tamaño L y riesgo alto: cambia `Cuota.estaPagada()`, `Cobranza`, `Credito.saldo()`, el dashboard y la vista. Exigir el importe exacto (TPO-006) se defiende para este alcance. Va como pendiente en el reporte |
+| C1 | Renombrar `CalculoDeCuota` a `ICalculoDeCuota` | Decidido: queda sin prefijo `I` por ser el nombre de rol de la interfaz Strategy (ver convenciones en `docs/entrega/lista-mejoras.md`) |
 | O9 | `EstadoCredito` como patrón State | El estado es derivado, no se guarda y hay una sola transición con regla (`Credito.anular()`). Sobreingeniería; el apunte advierte contra confundir Strategy con State. Respuesta para la defensa |
 | O10 | Strategy para punitorios, Adapter sobre `PasswordEncoder`, Adapter sobre `fetch` | Ninguno tapa un hueco: no hay punitorios, `PasswordEncoder` ya es la abstracción de Spring y `api/apiClient.js` ya hace de pasarela |
 | S6 | Una sola fuente de autorización por rol (sacar `@PreAuthorize` o las reglas de URL) | Decisión: se mantienen las dos. Las reglas de URL de `…/config/SecurityConfig.java` cubren las tres zonas y `@PreAuthorize` en `AdminController` y `SupervisorController` repite el control en el método: defensa en profundidad, si alguien cambia una ruta el método sigue protegido |

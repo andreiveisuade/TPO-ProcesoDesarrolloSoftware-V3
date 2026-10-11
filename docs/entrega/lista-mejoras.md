@@ -88,7 +88,7 @@ Decisión S6: el control de roles queda doble a propósito, reglas de URL en `co
 | BS3 | El usuario responde si puede anular | `model/interfaces/IUsuario.java`, `model/Usuario.java` `puedeAnularCredito`, `puedeAnularCobranza`; usados en `service/impl/CreditoServiceImpl.java` `anularCredito` y `service/impl/CobranzaServiceImpl.java` `anularCobranza` | Information Expert / Tell, don't ask |
 | BS4 | `rol` tipado como `Rol` en las respuestas | `dto/response/UsuarioResponse.java`, `dto/response/AuthResponse.java` | Primitive obsession |
 | BS6 | Mismo verbo para el mismo caso | `controller/SupervisorController.java` `listarUsuarios` | Nombres consistentes |
-| I1 | Anular y cobrar en paralelo ya no deja un crédito ANULADO con cobranza vigente: los dos caminos bloquean el crédito y después la cuota | `repository/CreditoRepository.java` (`@Lock(PESSIMISTIC_WRITE)`), `service/impl/CreditoServiceImpl.java` `anularCredito`, `service/impl/CobranzaServiceImpl.java` `registrar`; test `backend/src/test/java/com/uade/tpejemplo/service/AnulacionConcurrenteTest.java` | Concurrencia (bloqueo pesimista) |
+| I1 | Anular y cobrar en paralelo ya no deja un crédito ANULADO con cobranza vigente: los dos caminos bloquean primero el crédito; cobrar además bloquea la cuota | `repository/CreditoRepository.java` (`@Lock(PESSIMISTIC_WRITE)`), `service/impl/CreditoServiceImpl.java` `anularCredito`, `service/impl/CobranzaServiceImpl.java` `registrar`; test `backend/src/test/java/com/uade/tpejemplo/service/AnulacionConcurrenteTest.java` | Concurrencia (bloqueo pesimista) |
 | I3 | `Content-Type` no JSON → 415; `Accept` no JSON → 406, con `ErrorResponse` (antes 500) | `exception/GlobalExceptionHandler.java`; test `backend/src/test/java/com/uade/tpejemplo/controller/CodigosHttpTest.java` | Error del cliente = 4xx |
 | I4 | Un alta ya no aparece en la lista de otro cliente o crédito buscado | `frontend/src/store/slices/creditosSlice.js`, `frontend/src/store/slices/cobranzasSlice.js` | MVC: la vista muestra lo que dice el modelo |
 | Front | `RoleRoute` y `ROLES`, toda la API por `src/api`, `ESTADO_CUOTA`, sin restos de Vite (TPO-012) | `frontend/src/components/RoleRoute.jsx`, `frontend/src/utils/roles.js`, `frontend/src/api/dashboard.js`, `frontend/src/pages/Creditos.jsx` `estadoCuota` | Duplicated code, strings mágicos |
@@ -99,8 +99,8 @@ Decisión S6: el control de roles queda doble a propósito, reglas de URL en `co
 - Por qué: el esquema no admite un `unique` porque las anuladas también cuentan; el bloqueo serializa solo los cobros de la misma cuota.
 
 **S7-S9. Perfiles.**
-- Problema: `application.properties` mezclaba lo de desarrollo con lo único, `.cors(Customizer.withDefaults())` no tenía `CorsConfigurationSource` y `/h2-console/**` estaba en `permitAll` (acceso a la base sin login).
-- Qué se hizo: `dev` por defecto (consola H2, SQL en logs, `create-drop`, CORS para `http://localhost:5173`); `prod` sin consola, sin SQL, `update` y CORS solo para `CORS_ORIGIN`, obligatoria. La consola salió del `permitAll`.
+- Problema: `application.properties` mezclaba lo de desarrollo con lo único, `.cors(Customizer.withDefaults())` no tenía `CorsConfigurationSource` y `/h2-console/**` estaba en `permitAll` y además en `web.ignoring()`: la consola quedaba abierta sin login en cualquier perfil.
+- Qué se hizo: `dev` por defecto (consola H2, SQL en logs, `create-drop`, CORS para `http://localhost:5173`); `prod` sin consola, sin SQL, `update` y CORS solo para `CORS_ORIGIN`, obligatoria. En prod la consola se deshabilita (`spring.h2.console.enabled=false`) y se sacó el `permitAll` redundante; en dev sigue abierta a propósito, fuera de la cadena por `web.ignoring()`.
 - Por qué: lo cómodo para la demo no llega a prod. S6 no se tocó: el doble control de roles queda a propósito.
 
 ## Recorrido de casos de uso por la UI (T33)
@@ -140,7 +140,7 @@ Salen de recorrer cada caso de uso por la UI (incluido H4).
 |---|---|---|---|
 | O8 | Pagos parciales | `model/Cuota.java` `estaPagada` y todo lo que depende | Tamaño L, fuera de alcance de V3 |
 | S10 | Renombrar paquete `com.uade.tpejemplo` (TPO-014) | todo el backend | Diff ruidoso; evaluar para el 17/11 |
-| Tests | `@DataJpaTest` del dashboard, `Permisos` | `backend/src/test` | Siguiente iteración |
+| T-2, T-3 | `@DataJpaTest` del dashboard, `Permisos` | `backend/src/test` | Siguiente iteración |
 | H8 | Trazabilidad: qué usuario cobró o anuló | `model/Cobranza.java`, `model/Credito.java` | Modelo nuevo y cambio de API |
 | Base prod | Prod sigue con H2 en memoria: sin persistencia ni alta de admin | `application-prod.properties` | Falta base real (PostgreSQL) y migraciones |
 | P-M9 | Tasa con unidad declarada por plan; cuota con capital/interés separados | `model/TipoPlan.java`, `model/Cuota.java` | Límites del Strategy actual (ver reporte) |

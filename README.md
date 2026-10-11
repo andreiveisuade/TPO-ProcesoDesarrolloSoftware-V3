@@ -56,7 +56,7 @@ Detalle completo, con clase y método de cada una: [lista de mejoras](docs/entre
 | M9 | Cuota con interés simple o sistema francés | Strategy | [`CalculoDeCuota`](backend/src/main/java/com/uade/tpejemplo/model/interfaces/CalculoDeCuota.java) |
 | M7 | JWT detrás de un Target propio | Adapter | [`JwtUtil`](backend/src/main/java/com/uade/tpejemplo/security/JwtUtil.java) |
 | M1 | No se cobra una cuota de un crédito anulado (TPO-004) | Information Expert | [`Cuota`](backend/src/main/java/com/uade/tpejemplo/model/Cuota.java) |
-| M3 | Dashboard solo con lo vigente (TPO-003) | Corrección + Expert | [`DashboardServiceImpl`](backend/src/main/java/com/uade/tpejemplo/service/impl/DashboardServiceImpl.java) |
+| M3 | Dashboard sin lo anulado, activos = VIGENTE (TPO-003) | Corrección + Expert | [`DashboardServiceImpl`](backend/src/main/java/com/uade/tpejemplo/service/impl/DashboardServiceImpl.java) |
 | M4 | Permisos de anulación validados en el backend (TPO-007) | MVC + Expert | [`CreditoServiceImpl`](backend/src/main/java/com/uade/tpejemplo/service/impl/CreditoServiceImpl.java) |
 | M5 | Respuestas 401/403/404/405 (TPO-001, TPO-002) | MVC | [`GlobalExceptionHandler`](backend/src/main/java/com/uade/tpejemplo/exception/GlobalExceptionHandler.java) |
 | M8 | Estado, saldo y anulación en el agregado `Credito` | Information Expert | [`EstadoCredito`](backend/src/main/java/com/uade/tpejemplo/model/EstadoCredito.java) |
@@ -76,7 +76,7 @@ Detalle completo, con clase y método de cada una: [lista de mejoras](docs/entre
 | O6 | El crédito nace con su plan de cuotas | Creator | [`Credito`](backend/src/main/java/com/uade/tpejemplo/model/Credito.java) |
 | O7 | Saldo pendiente y monto vencido en el dashboard | Expert | [`DashboardStatsResponse`](backend/src/main/java/com/uade/tpejemplo/dto/response/DashboardStatsResponse.java) |
 | H1 | Anular una cobranza ya anulada da 400 | Information Expert | [`Cobranza`](backend/src/main/java/com/uade/tpejemplo/model/Cobranza.java) |
-| F1, F2 | 403 sin el rol; 400 ante body mal formado | MVC | [`GlobalExceptionHandler`](backend/src/main/java/com/uade/tpejemplo/exception/GlobalExceptionHandler.java) |
+| F1, F2 | 403 sin el rol; 400 ante body mal formado | MVC | [`SecurityConfig`](backend/src/main/java/com/uade/tpejemplo/config/SecurityConfig.java), [`GlobalExceptionHandler`](backend/src/main/java/com/uade/tpejemplo/exception/GlobalExceptionHandler.java) |
 | R3 | `GET /api/auth/me` y refresco de permisos | MVC + Expert | [`AuthController`](backend/src/main/java/com/uade/tpejemplo/controller/AuthController.java) |
 | S1-S5 | Transacciones, open-in-view, secreto JWT por env, 500 sin filtrar, auth provider de Spring | Prácticas de Spring | [`application.properties`](backend/src/main/resources/application.properties) |
 | D, BS, DF | Código muerto, duplicado y de depuración | Bad smells | [lista](docs/entrega/lista-mejoras.md) |
