@@ -37,9 +37,7 @@ public class Usuario implements IUsuario {
         this.permisos = permisos;
     }
 
-    // Unica forma de dar de alta un usuario: el id lo asigna la base, y
-    // quien lo crea decide su rol y permisos iniciales explicitamente,
-    // en vez de armarlo campo por campo con un builder publico.
+    // Unica forma de dar de alta un usuario: rol y permisos explicitos; el id lo asigna la base.
     public static Usuario nuevo(String username, String passwordHasheado, Rol rol, Permisos permisos) {
         return new Usuario(username, passwordHasheado, rol, permisos);
     }

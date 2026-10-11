@@ -51,10 +51,7 @@ public class Cobranza implements ICobranza {
         return new Cobranza(cuota, importe);
     }
 
-    // Solo se puede anular una cobranza del mismo dia: la cobranza es
-    // quien conoce su fecha, asi que es quien decide si todavia se
-    // puede deshacer.
-    // Information Expert: la cobranza decide si todavia se puede anular
+    // Information Expert: la cobranza decide si todavia se puede anular (solo el mismo dia)
     public void anular() {
         anular(LocalDate.now());
     }

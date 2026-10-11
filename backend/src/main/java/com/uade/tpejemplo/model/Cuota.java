@@ -56,9 +56,7 @@ public class Cuota implements ICuota {
         this.fechaVencimiento = fechaVencimiento;
     }
 
-    // Una cuota esta pagada cuando tiene una cobranza vigente. Las
-    // anuladas no cuentan: anular una cobranza es deshacer el pago.
-    // Information Expert: la cuota sabe si esta pagada
+    // Information Expert: la cuota sabe si esta pagada (las cobranzas anuladas no cuentan)
     public boolean estaPagada() {
         return cobranzas.stream().anyMatch(cobranza -> !cobranza.isAnulada());
     }
@@ -72,8 +70,6 @@ public class Cuota implements ICuota {
         return !credito.isAnulado() && !estaPagada() && fechaVencimiento.isBefore(hoy);
     }
 
-    // La cuota crea su propia cobranza: es quien sabe si ya esta pagada y
-    // cuanto vale, asi que es quien puede rechazar el cobro.
     // Creator: la cuota crea su cobranza
     public Cobranza registrarCobranza(BigDecimal importe) {
         if (credito.isAnulado()) {
