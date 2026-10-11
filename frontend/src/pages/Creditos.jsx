@@ -16,6 +16,8 @@ const estadoCuota = (c) => {
   return ESTADO_CUOTA.pendiente;
 };
 
+const FORM_VACIO = { dniCliente:'', deudaOriginal:'', fecha:'', tasaInteres:'', cantidadCuotas:'', tipoPlan:'INTERES_SIMPLE' };
+
 const descripcionPlan = (cr) => cr.tipoPlan === 'SISTEMA_FRANCES'
   ? `Sistema francés · ${cr.tasaInteres}% mensual`
   : `Interés simple · ${cr.tasaInteres}% total`;
@@ -36,7 +38,7 @@ export default function Creditos() {
   const [idConsulta, setIdConsulta] = useState('');
   const [detalle, setDetalle] = useState(null);
   const [errorDetalle, setErrorDetalle] = useState(null);
-  const [form, setForm] = useState({ dniCliente:'', deudaOriginal:'', fecha:'', tasaInteres:'', cantidadCuotas:'', tipoPlan:'INTERES_SIMPLE' });
+  const [form, setForm] = useState(FORM_VACIO);
 
   const buscar = async (e) => {
     e.preventDefault();
@@ -64,7 +66,7 @@ export default function Creditos() {
     const result = await dispatch(addCredito(payload));
     if (result.meta.requestStatus === 'fulfilled') {
       setExito(`Crédito #${result.payload.id} creado para el DNI ${form.dniCliente}.`);
-      setForm({ dniCliente:'', deudaOriginal:'', fecha:'', tasaInteres:'', cantidadCuotas:'', tipoPlan:'INTERES_SIMPLE' });
+      setForm(FORM_VACIO);
       if (buscado && form.dniCliente === dniBuscado) dispatch(fetchCreditosPorCliente(dniBuscado));
     }
   };

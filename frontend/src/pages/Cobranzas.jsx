@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchCobranzasPorCredito, addCobranza, clearCobranzas, anularCobranzaThunk } from '../store/slices/cobranzasSlice';
 
+const FORM_VACIO = { idCredito:'', numeroCuota:'', importe:'' };
+
 // Registro de cobranzas de un credito y anulacion de las del dia.
 export default function Cobranzas() {
   const dispatch = useDispatch();
@@ -15,7 +17,7 @@ export default function Cobranzas() {
   const [buscado, setBuscado]     = useState(false);
   const [errorBusqueda, setErrorBusqueda] = useState(null);
   const [exito, setExito]         = useState(null);
-  const [form, setForm]           = useState({ idCredito:'', numeroCuota:'', importe:'' });
+  const [form, setForm]           = useState(FORM_VACIO);
 
   const buscar = async (e) => {
     e.preventDefault();
@@ -38,7 +40,7 @@ export default function Cobranzas() {
     const result = await dispatch(addCobranza(payload));
     if (result.meta.requestStatus === 'fulfilled') {
       setExito(`Cobranza #${result.payload.id} registrada: cuota ${form.numeroCuota} del crédito #${form.idCredito}.`);
-      setForm({ idCredito:'', numeroCuota:'', importe:'' });
+      setForm(FORM_VACIO);
       if (buscado && String(form.idCredito) === idBuscado) dispatch(fetchCobranzasPorCredito(idBuscado));
     }
   };

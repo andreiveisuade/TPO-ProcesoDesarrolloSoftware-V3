@@ -4,11 +4,13 @@ import { fetchClientes, addCliente } from '../store/slices/clientesSlice';
 import { getCliente } from '../api/clientes';
 import Aviso from '../components/Aviso';
 
+const FORM_VACIO = { dni: '', nombre: '' };
+
 // Alta, busqueda por DNI y listado de clientes.
 export default function Clientes() {
   const dispatch = useDispatch();
   const { lista, loading, error } = useSelector((state) => state.clientes);
-  const [form, setForm] = useState({ dni: '', nombre: '' });
+  const [form, setForm] = useState(FORM_VACIO);
   const [dniBuscado, setDniBuscado] = useState('');
   const [encontrado, setEncontrado] = useState(null);
   const [errorBusqueda, setErrorBusqueda] = useState(null);
@@ -29,7 +31,7 @@ export default function Clientes() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const result = await dispatch(addCliente(form));
-    if (result.meta.requestStatus === 'fulfilled') setForm({ dni: '', nombre: '' });
+    if (result.meta.requestStatus === 'fulfilled') setForm(FORM_VACIO);
   };
 
   return (
