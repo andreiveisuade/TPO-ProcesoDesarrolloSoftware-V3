@@ -65,6 +65,20 @@ def diagramas(key, tit_a="Antes (V2)", tit_d="Después (V3)", solo_antes=False):
     return out + '</div>'
 
 
+def archify_svg(n):
+    # Prefija los id con el nombre del diagrama: varios SVG inline no pueden repetir id ni pisar anclas del reporte.
+    t = open(os.path.join(REPO, f"docs/diagramas/archify/{n}.svg")).read()
+    t = re.sub(r'\bid="([^"]+)"', rf'id="{n}-\1"', t)
+    t = re.sub(r'url\(#([^)]+)\)', rf'url(#{n}-\1)', t)
+    t = re.sub(r'(aria-labelledby|aria-describedby)="([^"]+)"', lambda m: m.group(1) + '="' + " ".join(f"{n}-{i}" for i in m.group(2).split()) + '"', t)
+    t = re.sub(r'href="#([^"]+)"', rf'href="#{n}-\1"', t)
+    return re.sub(r'<svg ', '<svg style="width:100%;height:auto" ', t, count=1)
+
+
+def figura(n, titulo):
+    return f'<figure style="margin-top:18px"><figcaption>{titulo}</figcaption><div class="mvcsvg">{archify_svg(n)}</div></figure>'
+
+
 def bloque(id_, titulo, patron, problema, antes, solucion, despues, por_que, consecuencias, ref="", extra="", diag=None, intro=""):
     return f'''<article class="mejora" id="{id_}">
 <h3>{titulo} <span class="badge impl">implementada</span></h3>
@@ -132,7 +146,8 @@ m4 = bloque("m4", "M4. Permisos de anulación aplicados en el backend",
     + cb("main", "service/impl/CreditoServiceImpl.java", method("main", "service/impl/CreditoServiceImpl.java", r"public void anularCredito")),
     "La vista <strong>no es una barrera de seguridad</strong>.",
     "Gana: el permiso vale sin el front. Cuesta: los servicios reciben el <code>IUsuario</code>.",
-    "Cierra TPO-007.")
+    "Cierra TPO-007.",
+    extra=figura("anular-credito", "Secuencia: anular un crédito"))
 
 m5 = bloque("m5", "M5. Handlers HTTP específicos",
     "<strong>MVC</strong>: el controlador traduce errores a <strong>códigos HTTP</strong>.",
@@ -167,7 +182,7 @@ roles7 = """<table><thead><tr><th>Rol (slides 26 y 28, clase 10)</th><th>Usuario
 <tr><td><strong>Adaptee</strong>: componente con otra interfaz</td><td><code>IUsuario</code></td><td>jjwt: <code>JwtParser</code>, <code>SecretKey</code></td></tr>
 </tbody></table>"""
 
-extra7 = f"""<h4 style="margin-top:22px">Roles</h4>{roles7}
+extra7 = figura("adapter-jwt", "Secuencia: cada request valida el token sin conocer jjwt") + f"""<h4 style="margin-top:22px">Roles</h4>{roles7}
 <ul>
 <li><strong>Object Adapter</strong> (composición): única variante viable en Java (slide 27).</li>
 <li><code>UsuarioDetails</code> sigue el <code>AdapterPagosExternos</code> (slide 28): traduce <code>getRol().autoridad()</code> a <code>GrantedAuthority</code>.</li>
@@ -231,7 +246,8 @@ m8 = bloque("m8", "M8. EstadoCredito y Credito como agregado de sus cuotas",
     + cb("main", "service/impl/CreditoServiceImpl.java", method("main", "service/impl/CreditoServiceImpl.java", r"private Credito buscarCredito")),
     "<strong>La decisión vuelve al experto</strong>: el servicio ya no le pasa un boolean.",
     "Gana: sin migración; de N+1 a 2 consultas. Cuesta: cuotas cargadas en la transacción.",
-    "Tests: <code>CreditoTest</code>.")
+    "Tests: <code>CreditoTest</code>.",
+    extra=figura("credito-estados", "Estados del crédito (derivados, solo se guarda anulado)"))
 
 # ---- M9 Strategy (foco) ----
 roles9 = '''<table><thead><tr><th>Rol (apunte clase 10)</th><th>Clase</th></tr></thead><tbody>
@@ -500,9 +516,6 @@ tecnologias = '''<dl class="tec">
 </dl>'''
 
 
-def archify_svg(n):
-    t = open(os.path.join(REPO, f"docs/diagramas/archify/{n}.svg")).read()
-    return re.sub(r'<svg ', '<svg style="width:100%;height:auto" ', t, count=1)
 
 def d2svg(n):
     t = re.sub(r"<\?xml[^>]*\?>", "", open(os.path.join(REPO, f"docs/diagramas/d2/{n}.svg")).read())

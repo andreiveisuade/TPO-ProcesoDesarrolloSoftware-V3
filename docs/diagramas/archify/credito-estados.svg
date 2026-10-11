@@ -143,7 +143,7 @@ svg .s-security{color: var(--security-stroke);}
 
         <!-- Legend -->
         <g data-legend="" data-legend-bridge="">
-          <text x="40" y="624" class="t-primary" font-size="12" font-weight="650">Legend</text>
+          <text x="40" y="624" class="t-primary" font-size="12" font-weight="650">Referencias</text>
           <g data-legend-semantic-kind="start" data-legend-kind="start" data-legend-label="Inicio" data-legend-x="40" data-legend-baseline="644" data-legend-width="73">
             <rect x="40" y="636" width="14" height="9" rx="2" class="c-frontend" stroke-width="1"/>
             <text x="62" y="644" class="t-muted" font-size="10" font-weight="500">Inicio</text>

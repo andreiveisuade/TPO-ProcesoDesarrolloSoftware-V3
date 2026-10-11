@@ -1,0 +1,198 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "Adapter: cada request valida el token sin conocer jjwt",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1080,
+      680
+    ],
+    "column_fit": "spread",
+    "legend": {
+      "entries": {
+        "emphasis": {
+          "label": "llamada al Target"
+        },
+        "dashed": {
+          "label": "traducción a jjwt"
+        },
+        "return": {
+          "label": "respuesta"
+        },
+        "security": {
+          "label": "Spring Security"
+        }
+      }
+    }
+  },
+  "participants": [
+    {
+      "id": "ui",
+      "type": "frontend",
+      "label": "React",
+      "sublabel": "apiClient"
+    },
+    {
+      "id": "filtro",
+      "type": "security",
+      "label": "JwtAuthFilter",
+      "sublabel": "Client"
+    },
+    {
+      "id": "target",
+      "type": "backend",
+      "label": "TokenService",
+      "sublabel": "Target"
+    },
+    {
+      "id": "adapter",
+      "type": "backend",
+      "label": "JwtUtil",
+      "sublabel": "Adapter"
+    },
+    {
+      "id": "jjwt",
+      "type": "external",
+      "label": "jjwt",
+      "sublabel": "Adaptee (librería)"
+    },
+    {
+      "id": "uds",
+      "type": "security",
+      "label": "UserDetailsService",
+      "sublabel": "Spring Security"
+    }
+  ],
+  "segments": [
+    {
+      "from": 160,
+      "to": 385,
+      "label": "Extraer usuario"
+    },
+    {
+      "from": 395,
+      "to": 560,
+      "label": "Validar y seguir"
+    }
+  ],
+  "messages": [
+    {
+      "id": "req",
+      "from": "ui",
+      "to": "filtro",
+      "y": 190,
+      "label": "Authorization: Bearer token"
+    },
+    {
+      "id": "extraer",
+      "from": "filtro",
+      "to": "target",
+      "y": 230,
+      "label": "extraerUsername(token)",
+      "variant": "emphasis"
+    },
+    {
+      "id": "impl",
+      "from": "target",
+      "to": "adapter",
+      "y": 265,
+      "label": "implementado por",
+      "variant": "dashed"
+    },
+    {
+      "id": "parse",
+      "from": "adapter",
+      "to": "jjwt",
+      "y": 300,
+      "label": "parseSignedClaims(token)",
+      "variant": "dashed"
+    },
+    {
+      "id": "claims",
+      "from": "jjwt",
+      "to": "adapter",
+      "y": 335,
+      "label": "Claims o JwtException",
+      "variant": "return"
+    },
+    {
+      "id": "opt",
+      "from": "adapter",
+      "to": "filtro",
+      "y": 365,
+      "label": "Optional<String> (vacío: 401)",
+      "variant": "return"
+    },
+    {
+      "id": "load",
+      "from": "filtro",
+      "to": "uds",
+      "y": 415,
+      "label": "loadUserByUsername(username)",
+      "variant": "security"
+    },
+    {
+      "id": "valido",
+      "from": "filtro",
+      "to": "target",
+      "y": 455,
+      "label": "esValido(token, username)",
+      "variant": "emphasis"
+    },
+    {
+      "id": "ok",
+      "from": "target",
+      "to": "filtro",
+      "y": 490,
+      "label": "true",
+      "variant": "return"
+    },
+    {
+      "id": "sigue",
+      "from": "filtro",
+      "to": "ui",
+      "y": 535,
+      "label": "request autenticado → controlador",
+      "variant": "return"
+    }
+  ],
+  "activations": [
+    {
+      "participant": "filtro",
+      "from": 185,
+      "to": 540,
+      "type": "security"
+    },
+    {
+      "participant": "target",
+      "from": 225,
+      "to": 270,
+      "type": "backend"
+    },
+    {
+      "participant": "adapter",
+      "from": 260,
+      "to": 370,
+      "type": "backend"
+    },
+    {
+      "participant": "jjwt",
+      "from": 295,
+      "to": 340,
+      "type": "external"
+    },
+    {
+      "participant": "uds",
+      "from": 410,
+      "to": 430,
+      "type": "security"
+    },
+    {
+      "participant": "target",
+      "from": 450,
+      "to": 495,
+      "type": "backend"
+    }
+  ]
+}

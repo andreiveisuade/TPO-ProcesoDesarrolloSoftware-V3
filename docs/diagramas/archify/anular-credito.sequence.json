@@ -6,7 +6,7 @@
     "quality_profile": "showcase",
     "viewBox": [
       1100,
-      780
+      680
     ],
     "column_fit": "spread",
     "legend": {
@@ -53,7 +53,7 @@
     {
       "id": "permisos",
       "type": "security",
-      "label": "Permisos"
+      "label": "Usuario"
     },
     {
       "id": "credito",
@@ -69,17 +69,17 @@
   "segments": [
     {
       "from": 160,
-      "to": 300,
+      "to": 272,
       "label": "Controlador"
     },
     {
-      "from": 320,
-      "to": 585,
+      "from": 288,
+      "to": 500,
       "label": "Modelo"
     },
     {
-      "from": 600,
-      "to": 665,
+      "from": 512,
+      "to": 564,
       "label": "Respuesta"
     }
   ],
@@ -88,7 +88,7 @@
       "id": "req",
       "from": "ui",
       "to": "filtro",
-      "y": 190,
+      "y": 184,
       "label": "DELETE /api/creditos/anular/{id}",
       "variant": "emphasis"
     },
@@ -96,7 +96,7 @@
       "id": "auth",
       "from": "filtro",
       "to": "ctrl",
-      "y": 240,
+      "y": 224,
       "label": "token válido, usuario cargado",
       "variant": "security"
     },
@@ -104,7 +104,7 @@
       "id": "call",
       "from": "ctrl",
       "to": "svc",
-      "y": 290,
+      "y": 264,
       "label": "anularCredito(id, usuario)",
       "variant": "emphasis"
     },
@@ -112,15 +112,15 @@
       "id": "perm",
       "from": "svc",
       "to": "permisos",
-      "y": 340,
-      "label": "isPuedeAnularCredito()",
+      "y": 304,
+      "label": "puedeAnularCredito()",
       "variant": "security"
     },
     {
       "id": "permok",
       "from": "permisos",
       "to": "svc",
-      "y": 380,
+      "y": 336,
       "label": "true (si no, 403)",
       "variant": "return"
     },
@@ -128,14 +128,14 @@
       "id": "find",
       "from": "svc",
       "to": "repo",
-      "y": 430,
-      "label": "buscarConCuotas(id)"
+      "y": 376,
+      "label": "bloquearPorId(id), buscarConCuotas(id)"
     },
     {
       "id": "found",
       "from": "repo",
       "to": "svc",
-      "y": 470,
+      "y": 408,
       "label": "Credito (si no, 404)",
       "variant": "return"
     },
@@ -143,7 +143,7 @@
       "id": "anular",
       "from": "svc",
       "to": "credito",
-      "y": 520,
+      "y": 448,
       "label": "anular()",
       "variant": "emphasis",
       "note": "con cobranzas vigentes: 400"
@@ -152,7 +152,7 @@
       "id": "save",
       "from": "svc",
       "to": "repo",
-      "y": 570,
+      "y": 488,
       "label": "save(credito)",
       "variant": "dashed"
     },
@@ -160,7 +160,7 @@
       "id": "resp",
       "from": "ctrl",
       "to": "ui",
-      "y": 630,
+      "y": 536,
       "label": "204 No Content",
       "variant": "return"
     }
@@ -168,38 +168,38 @@
   "activations": [
     {
       "participant": "filtro",
-      "from": 185,
-      "to": 245,
+      "from": 180,
+      "to": 228,
       "type": "security"
     },
     {
       "participant": "ctrl",
-      "from": 235,
-      "to": 635,
+      "from": 220,
+      "to": 540,
       "type": "backend"
     },
     {
       "participant": "svc",
-      "from": 285,
-      "to": 580,
+      "from": 260,
+      "to": 496,
       "type": "backend"
     },
     {
       "participant": "permisos",
-      "from": 335,
-      "to": 385,
+      "from": 300,
+      "to": 340,
       "type": "security"
     },
     {
       "participant": "repo",
-      "from": 425,
-      "to": 475,
+      "from": 372,
+      "to": 412,
       "type": "database"
     },
     {
       "participant": "credito",
-      "from": 515,
-      "to": 545,
+      "from": 444,
+      "to": 468,
       "type": "backend"
     }
   ]
