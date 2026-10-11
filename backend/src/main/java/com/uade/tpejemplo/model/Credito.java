@@ -15,6 +15,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 
 // Credito otorgado a un cliente: genera sus cuotas, calcula saldo y estado
 // y decide si se puede anular.
@@ -123,16 +124,17 @@ public class Credito implements ICredito {
         if (anulado) {
             return BigDecimal.ZERO;
         }
-        return cuotas.stream()
-            .filter(cuota -> !cuota.estaPagada())
-            .map(Cuota::getImporte)
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
+        return sumarCuotas(cuota -> !cuota.estaPagada());
     }
 
     // Information Expert: suma lo que la cuota sabe que esta vencido
     public BigDecimal montoVencido() {
+        return sumarCuotas(Cuota::estaVencida);
+    }
+
+    private BigDecimal sumarCuotas(Predicate<Cuota> filtro) {
         return cuotas.stream()
-            .filter(Cuota::estaVencida)
+            .filter(filtro)
             .map(Cuota::getImporte)
             .reduce(BigDecimal.ZERO, BigDecimal::add);
     }

@@ -92,10 +92,10 @@ Fuente: `casos-de-uso-v3.puml` (renderizado con `plantuml -tsvg` y `-tpng`). Sup
 
 - **Actor**: Usuario. **RF V0**: RF-CR-01. Incluye UC08.
 - **Precondición**: el cliente existe.
-- **Flujo principal**: 1. El usuario carga DNI del cliente, deuda original, fecha, tasa, cantidad de cuotas y tipo de plan (interés simple o sistema francés). 2. El sistema valida los datos. 3. Busca el cliente. 4. Crea el crédito: el importe de cuota lo calcula la estrategia del plan elegido (`model/Credito.java:80`, `model/TipoPlan.java:19` `calculo`, `model/plan/InteresSimple.java`, `model/plan/SistemaFrances.java`; M9 Strategy). 5. Genera el plan de cuotas (UC08). 6. Responde **201** con cuotas, total a devolver, estado VIGENTE y saldo igual al total.
+- **Flujo principal**: 1. El usuario carga DNI del cliente, deuda original, fecha, tasa, cantidad de cuotas y tipo de plan (interés simple o sistema francés). 2. El sistema valida los datos. 3. Busca el cliente. 4. Crea el crédito: el importe de cuota lo calcula la estrategia del plan elegido (`model/Credito.java:81`, `model/TipoPlan.java:19` `calculo`, `model/plan/InteresSimple.java`, `model/plan/SistemaFrances.java`; M9 Strategy). 5. Genera el plan de cuotas (UC08). 6. Responde **201** con cuotas, total a devolver, estado VIGENTE y saldo igual al total.
 - **Errores**: cliente inexistente → **404**. Deuda ≤ 0, cuotas < 1, tasa negativa o > 999,99, algún campo vacío → **400** de validación (`dto/request/CreditoRequest.java`). Tipo de plan inexistente o JSON mal formado → **400** "Solicitud inválida".
 - **Postcondición**: crédito VIGENTE con su plan de cuotas.
-- **Reglas**: `service/impl/CreditoServiceImpl.java:32` `crear`; `model/Credito.java:98` `totalADevolver` (cuota × cantidad, O3).
+- **Reglas**: `service/impl/CreditoServiceImpl.java:32` `crear`; `model/Credito.java:99` `totalADevolver` (cuota × cantidad, O3).
 - **Endpoint**: `POST /api/creditos` → `controller/CreditoController.java:35` `crear`.
 - **Pantalla**: `pages/Creditos.jsx` (formulario de alta).
 - **Verificación**: Test `model/plan/InteresSimpleTest` (4), `model/plan/SistemaFrancesTest` (4), `model/CreditoTest.java:34` `nuevoEstaVigenteConSaldoIgualAlTotal`; Smoke "Crédito INTERES_SIMPLE… (M9)", "Crédito SISTEMA_FRANCES…"; Final captura `04-creditos.png`; API (UC07 x8).
@@ -106,7 +106,7 @@ Fuente: `casos-de-uso-v3.puml` (renderizado con `plantuml -tsvg` y `-tpng`). Sup
 
 - **Actor**: lo dispara UC07, no tiene actor propio.
 - **Flujo**: el crédito crea N cuotas numeradas 1..N, todas con el importe de cuota, y vencimiento mensual: cuota i vence en fecha + i meses.
-- **Reglas**: `model/Credito.java:104` `generarPlanDeCuotas`, privado y llamado desde el constructor (`model/Credito.java:72`, O6): el crédito nace con su plan, no hay forma de tener uno sin cuotas. El servicio solo persiste y las cuotas se guardan en cascada (`service/impl/CreditoServiceImpl.java:32`).
+- **Reglas**: `model/Credito.java:105` `generarPlanDeCuotas`, privado y llamado desde el constructor (`model/Credito.java:73`, O6): el crédito nace con su plan, no hay forma de tener uno sin cuotas. El servicio solo persiste y las cuotas se guardan en cascada (`service/impl/CreditoServiceImpl.java:32`).
 - **Verificación**: Test `model/CreditoTest.java:25` `generaUnaCuotaPorMesDesdeLaFecha`; las diferencias de centavos por redondeo las fijan los tests de `model/plan/`.
 
 ### UC09 Consultar crédito
@@ -114,7 +114,7 @@ Fuente: `casos-de-uso-v3.puml` (renderizado con `plantuml -tsvg` y `-tpng`). Sup
 - **Actor**: Usuario. **RF V0**: RF-CR-03.
 - **Flujo principal**: 1. Se pide un crédito por id. 2. El sistema devuelve el crédito con sus cuotas (cada una con `pagada` y `vencida`), estado (VIGENTE, CANCELADO o ANULADO), saldo y si puede anularse (**200**).
 - **Errores**: id inexistente → **404**. Id no numérico → **400**.
-- **Reglas**: `service/impl/CreditoServiceImpl.java:49` `buscarPorId`; estado, saldo y anulabilidad los calcula el crédito: `model/Credito.java:115` `estado`, `:122` `saldo`, `:149` `puedeAnularse` (M8); mora en `model/Cuota.java:64` `estaVencida`, que delega en `:69` `estaVencida(LocalDate)` (M6).
+- **Reglas**: `service/impl/CreditoServiceImpl.java:49` `buscarPorId`; estado, saldo y anulabilidad los calcula el crédito: `model/Credito.java:116` `estado`, `:123` `saldo`, `:151` `puedeAnularse` (M8); mora en `model/Cuota.java:64` `estaVencida`, que delega en `:69` `estaVencida(LocalDate)` (M6).
 - **Endpoint**: `GET /api/creditos/{id}` → `controller/CreditoController.java:52` `buscarPorId`.
 - **Pantalla**: `pages/Creditos.jsx` (bloque "Consultar crédito por número"): muestra la misma ficha que el listado de UC10 (estado, plan, saldo, cuotas y Anular si corresponde). Usa `api/creditos.js` `getCredito`.
 - **Verificación**: Smoke "Respuesta del crédito recién creado", "Saldo tras pagar 1 de 3 cuotas"; API (UC09 x4); captura de la pantalla en la verificación del equipo.
@@ -136,7 +136,7 @@ Fuente: `casos-de-uso-v3.puml` (renderizado con `plantuml -tsvg` y `-tpng`). Sup
 - **Flujo principal**: 1. En el listado de UC10 el usuario aprieta Anular; el botón solo aparece si el crédito puede anularse y el usuario tiene el permiso (`pages/Creditos.jsx:115`). 2. Confirma. 3. El sistema verifica el permiso. 4. Busca el crédito. 5. El crédito se anula. 6. Responde **204** y la pantalla recarga el listado (O1).
 - **Errores**: sin permiso → **403** "El usuario no tiene permiso para anular creditos". Crédito inexistente → **404**. Ya anulado → **400** "El crédito x ya está anulado.". Con cobranzas vigentes (incluido un crédito cancelado) → **400** "No se puede anular el crédito x porque tiene cobranzas registradas.".
 - **Postcondición**: estado ANULADO, saldo 0, no admite cobranzas y sale del dashboard. Es una baja lógica.
-- **Reglas**: permiso en `service/impl/CreditoServiceImpl.java:80` `anularCredito` (M4); doble anulación y cobranzas vigentes en `model/Credito.java:153` `anular` (M8).
+- **Reglas**: permiso en `service/impl/CreditoServiceImpl.java:80` `anularCredito` (M4); doble anulación y cobranzas vigentes en `model/Credito.java:155` `anular` (M8).
 - **Endpoint**: `DELETE /api/creditos/anular/{id}` → `controller/CreditoController.java:72` `anularCredito`.
 - **Pantalla**: `pages/Creditos.jsx` (botón Anular por crédito).
 - **Verificación**: Test `model/CreditoTest.java:71` `anuladoQuedaConSaldoCero`, `:81` `rechazaDobleAnulacion`, `:91` `rechazaAnularConCobranzasVigentes`, `:102` `permiteAnularSiLaUnicaCobranzaEstaAnulada`; Smoke "Anular crédito con `user` sin permiso (M4)", "Anular un crédito ya anulado"; Final capturas `06-anular-refresca.png`, `09-user-sin-anular.png`; API (UC11 x6).
@@ -301,7 +301,7 @@ Además: `mvn test` → 43 tests, 0 fallas (contando los agregados después de e
 
 ### Hallazgos
 
-- **H1 (UC15)**: anular dos veces la misma cobranza responde 204. `model/Cobranza.java:55` `anular` no mira si ya está anulada, mientras que `model/Credito.java:153` `anular` sí rechaza la doble anulación. No rompe datos, pero las dos anulaciones del sistema se comportan distinto. **Resuelto en** `model/Cobranza.java:60` `anular(LocalDate)`: rechaza la segunda con `BusinessException` (400), test `model/CobranzaTest.java:26` `noSePuedeAnularDosVeces`.
+- **H1 (UC15)**: anular dos veces la misma cobranza responde 204. `model/Cobranza.java:55` `anular` no mira si ya está anulada, mientras que `model/Credito.java:155` `anular` sí rechaza la doble anulación. No rompe datos, pero las dos anulaciones del sistema se comportan distinto. **Resuelto en** `model/Cobranza.java:60` `anular(LocalDate)`: rechaza la segunda con `BusinessException` (400), test `model/CobranzaTest.java:26` `noSePuedeAnularDosVeces`.
 - **H2 (UC14)**: `GET /api/cobranzas/credito/999` responde 200 con lista vacía; `service/impl/CobranzaServiceImpl.java:45` no verifica que el crédito exista. UC10, en el mismo caso, responde 404.
 - **H3 (UC16)**: "Créditos activos" y "Monto total financiado" miden cosas distintas (cartera vigente vs. todo lo prestado y no anulado). Ver la observación de UC16.
 - **H4 (UC19, UC20)**: backend y front no ven los permisos y el rol al mismo tiempo. El backend usa el valor nuevo desde la request siguiente (`security/JwtAuthFilter.java:69`); el front sigue mostrando el que tenía al loguear. Del lado de la seguridad está bien (manda el backend); el costo es de usabilidad: el botón o el link aparece recién al volver a iniciar sesión. **Resuelto en** `GET /api/auth/me` (`controller/AuthController.java:53`): `components/PrivateRoute.jsx` lo llama al navegar y actualiza el usuario del front (`store/slices/authSlice.js:20` `refrescarUsuario`).

@@ -348,6 +348,7 @@ package "model" {
     + estado() : EstadoCredito
     + saldo() : BigDecimal
     + montoVencido() : BigDecimal
+    - sumarCuotas(Predicate<Cuota>) : BigDecimal
     + estaCancelado() : boolean
     + tieneCobranzas() : boolean
     + puedeAnularse() : boolean
