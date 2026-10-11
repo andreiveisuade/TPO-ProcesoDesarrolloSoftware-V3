@@ -63,7 +63,7 @@ Rutas Java relativas a `backend/src/main/java/com/uade/tpejemplo/`. Reporte comp
 | I-2 | Largo y escala acotados en los request: lo que no entra en la columna da 400 y no 500 ni un redondeo silencioso | `dto/request/ClienteRequest.java`, `CreditoRequest.java`, `CobranzaRequest.java`, `RegisterRequest.java` (`@Size`, `@Digits`) | Validación en el controlador (MVC) |
 | T-1 | Tests de los códigos HTTP 400/401/403/404/405 con la seguridad JWT real y los servicios simulados | `backend/src/test/java/com/uade/tpejemplo/controller/CodigosHttpTest.java` (`@WebMvcTest`) | Tests |
 | T-5 | La fecha de hoy entra por parámetro: se testea anular una cobranza de otro día y el vencimiento sin depender del reloj | `model/Cobranza.java` `anular(LocalDate)`; `model/Cuota.java` `estaVencida(LocalDate)` | Tests |
-| DER | Diagrama entidad-relación de la base, con claves y restricciones | `docs/diagramas/der-v3.puml`, `.svg`, `.png` | Documentación |
+| DER | Diagrama entidad-relación de la base, con claves y restricciones | `docs/diagramas/der-v3.py` (genera `.svg` y `.png`) | Documentación |
 | Tests | 40 tests, 0 fallas | `backend/src/test/java/com/uade/tpejemplo/` | JUnit 5 + AssertJ, `@WebMvcTest` |
 
 Desglose de los 40 tests:

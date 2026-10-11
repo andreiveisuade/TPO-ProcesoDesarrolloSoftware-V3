@@ -400,7 +400,7 @@ rev = [
  ("O6, O7", "d89d62d, 6cc5e17", "Crédito <strong>sin cuotas</strong>; dashboard sin saldo ni mora.", "El constructor de <code>Credito</code> crea las cuotas; saldo y vencido en el dashboard."),
  ("BS3, BS4", "5246f27, 7c6dd63, f96f53a", "El servicio consultaba permisos; rol como <code>String</code>.", "<code>Usuario.puedeAnularCredito</code>; enum <code>Rol</code> en los DTO."),
  ("Front", "dfa2c12, d9b0b8f, a085f66, f5c8d05, 0e3284e", "Rutas por rol <strong>duplicadas</strong>; roles como strings.", "<code>RoleRoute</code> y <code>utils/roles.js</code>."),
- ("DER", "8eb2106", "<strong>Sin DER</strong>.", "<code>der-v3.puml</code>; detectó tres inconsistencias del modelo, resueltas."),
+ ("DER", "8eb2106", "<strong>Sin DER</strong>.", "<code>der-v3</code>; detectó tres inconsistencias del modelo, resueltas."),
 ]
 rev_html = '<table><thead><tr><th>ID · commits</th><th>Problema</th><th>Cambio</th></tr></thead><tbody>' + "".join(f'<tr><td><strong>{i}</strong><br><span class="ref"><code>{c}</code></span></td><td>{p}</td><td>{s}</td></tr>' for i, c, p, s in rev) + '</tbody></table>'
 
@@ -695,7 +695,7 @@ doc = f'''<!doctype html>
 <p>Rombo lleno: composición (el todo crea y contiene a sus partes).</p>
 <div class="clases">{d2svg("dominio")}</div>
 <h3>DER</h3>
-<p>Tablas generadas por JPA, con claves y restricciones (<code>docs/diagramas/der-v3.puml</code>).</p>
+<p>Tablas generadas por JPA, con tipos SQL, claves y cada FK unida columna a columna (<code>docs/diagramas/der-v3.py</code>).</p>
 <div class="clases">{der_svg}</div>
 </section>
 
