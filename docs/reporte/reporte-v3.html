@@ -126,15 +126,24 @@ body.lb-locked{overflow:hidden}
 <ul><li>13 smells: god class, data class, primitive obsession, encapsulamiento</li><li>Sin <code>MetaCobranza</code>; <code>Cuota.estaPagada()</code> y <code>registrarCobranza</code></li><li><code>UsuarioDetails</code> como Adapter</li><li>Resueltos TPO-005, 006, 013, 015</li></ul></div>
 <div class="hito"><div class="punto"></div><h4>V2</h4><p class="tema">Iteración 2: GRASP + interfaces</p><p class="meta">Mergeada 15/09 · <code>main@45e228c</code> (tag <code>v2</code>) · 5 commits</p>
 <ul><li>Information Expert: <code>Cobranza.anular()</code>, <code>Credito.anular()</code></li><li>Creator: <code>Usuario.nuevo</code></li><li>Interfaz por cada clase del modelo y de servicio</li><li>Revierte §3.7 de V1 (Lazy class): restituye las interfaces de servicio</li></ul></div>
-<div class="hito actual"><div class="punto"></div><h4>V3</h4><p class="tema">Iteración 3: MVC + Strategy + Adapter</p><p class="meta">Entrega 13/10/2026 · repo V3, <code>main</code> · 170 commits sin merges</p>
+<div class="hito actual"><div class="punto"></div><h4>V3</h4><p class="tema">Iteración 3: MVC + Strategy + Adapter</p><p class="meta">Entrega 13/10/2026 · repo V3, <code>main</code> · 178 commits sin merges</p>
 <ul><li><strong>Strategy</strong>: cálculo de cuota, interés simple y sistema francés (M9)</li><li><strong>Adapter</strong>: <code>TokenService</code> sobre jjwt (M7)</li><li><code>EstadoCredito</code>, saldo, mora (M6, M8)</li><li>Permisos y errores HTTP en el backend (M4, M5)</li><li>Dashboard con saldo y vencido (M3, M10, O7); 41 tests</li><li>Revierte V2: el sistema francés, descartado el 15/09, vuelve como segunda estrategia</li><li>Swagger, perfiles dev/prod, UI, dark theme, UC06/UC09</li></ul></div>
 </div>
-<details><summary>Commits V2 → V3 (git log v2..main)</summary><pre><code>2d94434 Merge mejora-front
+<details><summary>Commits V2 → V3 (git log v2..main)</summary><pre><code>b2aff81 Merge mejora-backend
+57dded8 Docs: nombres nuevos del backend, montoVencido en M3/O7 y 42 tests
+2d94434 Merge mejora-front
+138e55b Credito.montoVencido(): el credito suma sus cuotas vencidas, como saldo()
 fbb70f0 Front: sin imports de React sin uso, map directo en GestorPermisos, indentacion y Aviso en Clientes
+8d1e7be GlobalExceptionHandler: sufijos de los handlers en español y FieldError::getDefaultMessage
 56c8051 permisosSlice: togglePermiso pasa a actualizarPermisos y los fulfilled comparten reemplazarUsuario
+a1264f9 AuthController: métodos registrar y actual en español como su servicio (las rutas no cambian)
+f741ae1 SistemaFrances: tasaMensual en vez de i y constante CIEN como InteresSimple
+df2ada0 Credito: calculo() junto al alta que lo usa; sin inicializar anulado/anulada dos veces
 9d67402 Creditos y Cobranzas: sin &#x27;|| []&#x27; sobre listas que siempre existen y nombres claros
 ad5b4fe Creditos, Cobranzas y Clientes: formulario vacio en una constante FORM_VACIO
+05ce742 DashboardServiceImpl: nombres claros y @RequiredArgsConstructor como el resto de los services
 7d94f14 Creditos: estado de la cuota con if/return en lugar de ternario anidado
+32f475a Renombra las sumas del dashboard: NoAnulada en vez de Vigente
 6edcb03 Auditoría de M1-M10: diagramas y textos alineados con el código
 250acda Merge fix-vencida-anulado
 cb5cdf7 Cuota.estaVencida: la cuota de un crédito anulado no entra en mora
