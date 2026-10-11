@@ -208,7 +208,6 @@ package "Adapter 1: JWT (jjwt)" {
   interface TokenService <<Target>> {
     + generarToken(String) : String
     + extraerUsername(String) : Optional<String>
-    + esValido(String, String) : boolean
   }
   class JwtUtil <<Adapter>> {
     - key : SecretKey
@@ -216,7 +215,6 @@ package "Adapter 1: JWT (jjwt)" {
     - expirationMs : long
     + generarToken(String) : String
     + extraerUsername(String) : Optional<String>
-    + esValido(String, String) : boolean
   }
   interface "JwtParser (jjwt)" as JwtParser <<Adaptee>> {
     + parseSignedClaims(CharSequence) : Jws<Claims>

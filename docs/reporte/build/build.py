@@ -219,7 +219,7 @@ m7 = bloque("m7", "M7. Adapter: UsuarioDetails y JwtUtil",
     "Target propio <code>TokenService</code>; <code>JwtUtil</code> lo implementa, <strong>contiene</strong> el <code>JwtParser</code> de jjwt (y su <code>SecretKey</code>) y es la única clase que importa jjwt.",
     cb("main", "service/TokenService.java", body("main", "service/TokenService.java"))
     + cb("main", "security/JwtUtil.java", body("main", "security/JwtUtil.java"))
-    + cb("main", "security/JwtAuthFilter.java", lines("main", "security/JwtAuthFilter.java", r"private final TokenService", 1), "// ...", lines("main", "security/JwtAuthFilter.java", r"tokenService.extraerUsername", 4), "// ...", lines("main", "security/JwtAuthFilter.java", r"tokenService.esValido", 3))
+    + cb("main", "security/JwtAuthFilter.java", lines("main", "security/JwtAuthFilter.java", r"private final TokenService", 1), "// ...", lines("main", "security/JwtAuthFilter.java", r"tokenService.extraerUsername", 4))
     + cb("main", "service/impl/AuthServiceImpl.java", lines("main", "service/impl/AuthServiceImpl.java", r"private final TokenService", 1)),
     "Aislar a los clientes de una <strong>librería externa que no se puede modificar</strong>.",
     "<ul><li>Gana: cambiar de librería toca una clase; la clave se arma una vez (antes, en cada llamada).</li><li>Cuesta: una interfaz con una sola implementación; mantener el Adapter si jjwt cambia.</li></ul>",

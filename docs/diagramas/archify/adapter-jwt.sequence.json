@@ -6,7 +6,7 @@
     "quality_profile": "showcase",
     "viewBox": [
       1080,
-      680
+      605
     ],
     "column_fit": "spread",
     "legend": {
@@ -72,8 +72,8 @@
     },
     {
       "from": 395,
-      "to": 560,
-      "label": "Validar y seguir"
+      "to": 485,
+      "label": "Cargar usuario y seguir"
     }
   ],
   "messages": [
@@ -133,26 +133,10 @@
       "variant": "security"
     },
     {
-      "id": "valido",
-      "from": "filtro",
-      "to": "target",
-      "y": 455,
-      "label": "esValido(token, username)",
-      "variant": "emphasis"
-    },
-    {
-      "id": "ok",
-      "from": "target",
-      "to": "filtro",
-      "y": 490,
-      "label": "true",
-      "variant": "return"
-    },
-    {
       "id": "sigue",
       "from": "filtro",
       "to": "ui",
-      "y": 535,
+      "y": 460,
       "label": "request autenticado → controlador",
       "variant": "return"
     }
@@ -161,7 +145,7 @@
     {
       "participant": "filtro",
       "from": 185,
-      "to": 540,
+      "to": 465,
       "type": "security"
     },
     {
@@ -187,12 +171,6 @@
       "from": 410,
       "to": 430,
       "type": "security"
-    },
-    {
-      "participant": "target",
-      "from": 450,
-      "to": 495,
-      "type": "backend"
     }
   ]
 }

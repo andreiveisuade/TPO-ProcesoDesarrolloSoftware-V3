@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 680" data-sequence-column-fit="spread" role="img" lang="es" aria-labelledby="archify-diagram-title archify-diagram-description" data-preset="classic" data-quality-profile="showcase"><style>svg{--bg:#ffffff;--grid:transparent;--panel:#ffffff;--panel-border:#D9E1EC;--text:#1D2B4F;--text-muted:#555f73;--text-dim:#8a94a6;--text-faint:#666;--mask:#ffffff;--lane-fill:#F6F9FD;--lane-stroke:#D9E1EC;--arrow:#7d8aa3;--arrow-emphasis:#2E75B6;
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 605" data-sequence-column-fit="spread" role="img" lang="es" aria-labelledby="archify-diagram-title archify-diagram-description" data-preset="classic" data-quality-profile="showcase"><style>svg{--bg:#ffffff;--grid:transparent;--panel:#ffffff;--panel-border:#D9E1EC;--text:#1D2B4F;--text-muted:#555f73;--text-dim:#8a94a6;--text-faint:#666;--mask:#ffffff;--lane-fill:#F6F9FD;--lane-stroke:#D9E1EC;--arrow:#7d8aa3;--arrow-emphasis:#2E75B6;
 --frontend-fill:#EEF4FB;--frontend-stroke:#2E75B6;--backend-fill:#ffffff;--backend-stroke:#1D2B4F;--database-fill:#F1F3F7;--database-stroke:#4A5A7A;--cloud-fill:#FFF8E6;--cloud-stroke:#B38600;--security-fill:#FCEFEE;--security-stroke:#B3261E;--messagebus-fill:#FFF3E8;--messagebus-stroke:#B35C00;--external-fill:#F4F4F4;--external-stroke:#666;
 font-family:"Calibri Light",Calibri,Carlito,"Segoe UI",system-ui,sans-serif}
 svg text{font-family:"Calibri Light",Calibri,Carlito,"Segoe UI",system-ui,sans-serif}
@@ -68,19 +68,19 @@ svg .s-external{color: var(--external-stroke);}
         <!-- Time Segments -->
         <rect data-graph-role="structural-frame" data-composition-frame-kind="segment" data-composition-frame-id="0" x="48" y="160" width="984" height="225" rx="10" class="c-lane" stroke-width="1"/>
 
-        <rect data-graph-role="structural-frame" data-composition-frame-kind="segment" data-composition-frame-id="1" x="48" y="395" width="984" height="165" rx="10" class="c-lane" stroke-width="1"/>
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="segment" data-composition-frame-id="1" x="48" y="395" width="984" height="90" rx="10" class="c-lane" stroke-width="1"/>
 
         <!-- Lifelines -->
-        <path d="M 129.5 142 L 129.5 584" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
-        <path d="M 298.1 142 L 298.1 584" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
-        <path d="M 466.7 142 L 466.7 584" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
-        <path d="M 635.3 142 L 635.3 584" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
-        <path d="M 803.9 142 L 803.9 584" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
-        <path d="M 972.5 142 L 972.5 584" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
+        <path d="M 129.5 142 L 129.5 509" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
+        <path d="M 298.1 142 L 298.1 509" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
+        <path d="M 466.7 142 L 466.7 509" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
+        <path d="M 635.3 142 L 635.3 509" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
+        <path d="M 803.9 142 L 803.9 509" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
+        <path d="M 972.5 142 L 972.5 509" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
 
         <!-- Activations -->
-        <rect x="293.1" y="185" width="10" height="355" rx="3" class="c-mask"/>
-        <rect x="293.1" y="185" width="10" height="355" rx="3" class="c-security" stroke-width="1"/>
+        <rect x="293.1" y="185" width="10" height="280" rx="3" class="c-mask"/>
+        <rect x="293.1" y="185" width="10" height="280" rx="3" class="c-security" stroke-width="1"/>
         <rect x="461.7" y="225" width="10" height="45" rx="3" class="c-mask"/>
         <rect x="461.7" y="225" width="10" height="45" rx="3" class="c-backend" stroke-width="1"/>
         <rect x="630.3" y="260" width="10" height="110" rx="3" class="c-mask"/>
@@ -89,8 +89,6 @@ svg .s-external{color: var(--external-stroke);}
         <rect x="798.9" y="295" width="10" height="45" rx="3" class="c-external" stroke-width="1"/>
         <rect x="967.5" y="410" width="10" height="20" rx="3" class="c-mask"/>
         <rect x="967.5" y="410" width="10" height="20" rx="3" class="c-security" stroke-width="1"/>
-        <rect x="461.7" y="450" width="10" height="45" rx="3" class="c-mask"/>
-        <rect x="461.7" y="450" width="10" height="45" rx="3" class="c-backend" stroke-width="1"/>
 
         <!-- Messages -->
         <g data-edge-from="ui" data-edge-to="filtro" data-edge-label="Authorization: Bearer token" data-edge-key="0" data-edge-id="req">
@@ -149,27 +147,11 @@ svg .s-external{color: var(--external-stroke);}
         </g>
         </g>
 
-        <g data-edge-from="filtro" data-edge-to="target" data-edge-label="esValido(token, username)" data-edge-key="7" data-edge-id="valido">
-          <path data-composition-edge-from="filtro" data-composition-edge-to="target" data-composition-edge-id="valido" data-composition-points="305.1,455;459.7,455" d="M 305.1 455 L 459.7 455" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <g data-edge-from="filtro" data-edge-to="ui" data-edge-label="request autenticado → controlador" data-edge-key="7" data-edge-id="sigue">
+          <path data-composition-edge-from="filtro" data-composition-edge-to="ui" data-composition-edge-id="sigue" data-composition-points="291.1,460;136.5,460" d="M 291.1 460 L 136.5 460" class="a-default" stroke-width="1.4" stroke-dasharray="3,5" marker-end="url(#arrowhead)"/>
         <g data-detail="context">
-          <rect x="293.9" y="435" width="177" height="18" rx="3" class="c-mask"/>
-          <text x="382.4" y="445" class="t-edge-emphasis" font-size="11" text-anchor="middle">esValido(token, username)</text>
-        </g>
-        </g>
-
-        <g data-edge-from="target" data-edge-to="filtro" data-edge-label="true" data-edge-key="8" data-edge-id="ok">
-          <path data-composition-edge-from="target" data-composition-edge-to="filtro" data-composition-edge-id="ok" data-composition-points="459.7,490;305.1,490" d="M 459.7 490 L 305.1 490" class="a-default" stroke-width="1.4" stroke-dasharray="3,5" marker-end="url(#arrowhead)"/>
-        <g data-detail="context">
-          <rect x="363.2" y="470" width="38.4" height="18" rx="3" class="c-mask"/>
-          <text x="382.4" y="480" class="t-muted" font-size="11" text-anchor="middle">true</text>
-        </g>
-        </g>
-
-        <g data-edge-from="filtro" data-edge-to="ui" data-edge-label="request autenticado → controlador" data-edge-key="9" data-edge-id="sigue">
-          <path data-composition-edge-from="filtro" data-composition-edge-to="ui" data-composition-edge-id="sigue" data-composition-points="291.1,535;136.5,535" d="M 291.1 535 L 136.5 535" class="a-default" stroke-width="1.4" stroke-dasharray="3,5" marker-end="url(#arrowhead)"/>
-        <g data-detail="context">
-          <rect x="98.90000000000002" y="515" width="229.79999999999998" height="18" rx="3" class="c-mask"/>
-          <text x="213.8" y="525" class="t-muted" font-size="11" text-anchor="middle">request autenticado → controlador</text>
+          <rect x="98.90000000000002" y="440" width="229.79999999999998" height="18" rx="3" class="c-mask"/>
+          <text x="213.8" y="450" class="t-muted" font-size="11" text-anchor="middle">request autenticado → controlador</text>
         </g>
         </g>
 
@@ -179,8 +161,8 @@ svg .s-external{color: var(--external-stroke);}
           <text x="62" y="151" class="t-dim" font-size="9" font-weight="600">Extraer usuario</text>
         </g>
         <g data-graph-role="segment-label" data-segment-id="1">
-          <rect x="56" y="373" width="97.2" height="18" rx="3" class="c-mask"/>
-          <text x="62" y="386" class="t-dim" font-size="9" font-weight="600">Validar y seguir</text>
+          <rect x="56" y="373" width="133.60000000000002" height="18" rx="3" class="c-mask"/>
+          <text x="62" y="386" class="t-dim" font-size="9" font-weight="600">Cargar usuario y seguir</text>
         </g>
 
         <!-- Participants -->
@@ -258,26 +240,26 @@ svg .s-external{color: var(--external-stroke);}
 
         <!-- Legend -->
         <g data-legend="">
-          <text x="40" y="606" class="t-primary" font-size="12" font-weight="650">Referencias</text>
-          <g data-legend-semantic-kind="emphasis" data-legend-x="40" data-legend-baseline="626" data-legend-width="128">
-            <path d="M 40 623 L 74 623" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
-            <text x="83" y="626" class="t-muted" font-size="10" font-weight="500">llamada al Target</text>
+          <text x="40" y="531" class="t-primary" font-size="12" font-weight="650">Referencias</text>
+          <g data-legend-semantic-kind="emphasis" data-legend-x="40" data-legend-baseline="551" data-legend-width="128">
+            <path d="M 40 548 L 74 548" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+            <text x="83" y="551" class="t-muted" font-size="10" font-weight="500">llamada al Target</text>
           </g>
-          <g data-legend-semantic-kind="return" data-legend-x="190" data-legend-baseline="626" data-legend-width="88">
-            <path d="M 190 623 L 224 623" class="a-default" stroke-width="1.4" stroke-dasharray="3,5" marker-end="url(#arrowhead)"/>
-            <text x="233" y="626" class="t-muted" font-size="10" font-weight="500">respuesta</text>
+          <g data-legend-semantic-kind="return" data-legend-x="190" data-legend-baseline="551" data-legend-width="88">
+            <path d="M 190 548 L 224 548" class="a-default" stroke-width="1.4" stroke-dasharray="3,5" marker-end="url(#arrowhead)"/>
+            <text x="233" y="551" class="t-muted" font-size="10" font-weight="500">respuesta</text>
           </g>
-          <g data-legend-semantic-kind="security" data-legend-x="300" data-legend-baseline="626" data-legend-width="118">
-            <path d="M 300 623 L 334 623" class="a-security" stroke-width="1.4" marker-end="url(#arrowhead-security)"/>
-            <text x="343" y="626" class="t-muted" font-size="10" font-weight="500">Spring Security</text>
+          <g data-legend-semantic-kind="security" data-legend-x="300" data-legend-baseline="551" data-legend-width="118">
+            <path d="M 300 548 L 334 548" class="a-security" stroke-width="1.4" marker-end="url(#arrowhead-security)"/>
+            <text x="343" y="551" class="t-muted" font-size="10" font-weight="500">Spring Security</text>
           </g>
-          <g data-legend-semantic-kind="dashed" data-legend-x="440" data-legend-baseline="626" data-legend-width="128">
-            <path d="M 440 623 L 474 623" class="a-dashed" stroke-width="1.4" marker-end="url(#arrowhead-dashed)"/>
-            <text x="483" y="626" class="t-muted" font-size="10" font-weight="500">traducción a jjwt</text>
+          <g data-legend-semantic-kind="dashed" data-legend-x="440" data-legend-baseline="551" data-legend-width="128">
+            <path d="M 440 548 L 474 548" class="a-dashed" stroke-width="1.4" marker-end="url(#arrowhead-dashed)"/>
+            <text x="483" y="551" class="t-muted" font-size="10" font-weight="500">traducción a jjwt</text>
           </g>
-          <g data-legend-semantic-kind="default" data-legend-x="590" data-legend-baseline="626" data-legend-width="78">
-            <path d="M 590 623 L 624 623" class="a-default" stroke-width="1.4" marker-end="url(#arrowhead)"/>
-            <text x="633" y="626" class="t-muted" font-size="10" font-weight="500">request HTTP</text>
+          <g data-legend-semantic-kind="default" data-legend-x="590" data-legend-baseline="551" data-legend-width="78">
+            <path d="M 590 548 L 624 548" class="a-default" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+            <text x="633" y="551" class="t-muted" font-size="10" font-weight="500">request HTTP</text>
           </g>
         </g>
       </svg>

@@ -16,7 +16,6 @@ hide empty members
 interface TokenService <<Target>> #DDEBF7 {
   +generarToken(username)
   +extraerUsername(token) : Optional<String>
-  +esValido(token, username)
 }
 class JwtUtil <<Adapter>> #DDEBF7 {
   -key : SecretKey
@@ -24,7 +23,6 @@ class JwtUtil <<Adapter>> #DDEBF7 {
   -expirationMs
   +generarToken(username)
   +extraerUsername(token) : Optional<String>
-  +esValido(token, username)
 }
 class "JwtParser (jjwt)" as JwtParser <<Adaptee>>
 class "Jwts (jjwt)" as Jwts <<Adaptee>>

@@ -49,11 +49,6 @@ public class JwtUtil implements TokenService {
         }
     }
 
-    @Override
-    public boolean esValido(String token, String username) {
-        return extraerUsername(token).filter(username::equals).isPresent();
-    }
-
     private <T> T extraerClaim(String token, Function<Claims, T> resolver) {
         Claims claims = parser
             .parseSignedClaims(token)
