@@ -28,7 +28,7 @@ export default function Creditos() {
   const dispatch = useDispatch();
   
   const { user } = useSelector((state) => state.auth);
-  const { lista, loading, error } = useSelector((state) => state.creditos);
+  const { lista: creditos, loading, error } = useSelector((state) => state.creditos);
   
   const [dni, setDni] = useState('');
   const [dniBuscado, setDniBuscado] = useState('');
@@ -94,15 +94,13 @@ export default function Creditos() {
     }
   };
 
-  const creditosSeguros = lista || [];
-
   const fichaCredito = (cr) => (
     <div key={cr.id} style={{ ...styles.creditoBox, opacity: cr.anulado ? 0.6 : 1 }}>
       <div style={styles.creditoHeader}>
         <strong>Crédito #{cr.id}</strong>
         <span style={{ ...styles.badge, ...(estadoColores[cr.estado] || {}) }}>{cr.estado}</span>
         <span style={styles.progreso}>
-          {(cr.cuotas || []).filter(c => c.pagada).length} de {cr.cantidadCuotas} cuotas pagadas
+          {cr.cuotas.filter(c => c.pagada).length} de {cr.cantidadCuotas} cuotas pagadas
         </span>
       </div>
       <dl style={styles.datos}>
@@ -130,7 +128,7 @@ export default function Creditos() {
           </tr>
         </thead>
         <tbody>
-          {(cr.cuotas || []).map(c => (
+          {cr.cuotas.map(c => (
             <tr key={c.numeroCuota}>
               <td style={{padding: '5px 0'}}>{c.numeroCuota}</td>
               <td>{formatFecha(c.fechaVencimiento)}</td>
@@ -196,12 +194,12 @@ export default function Creditos() {
 
       {buscado && (
         <div style={styles.card}>
-          <h3>Créditos del cliente ({creditosSeguros.length})</h3>
+          <h3>Créditos del cliente ({creditos.length})</h3>
           
           {loading && <p style={styles.empty}>Cargando...</p>}
-          {!loading && creditosSeguros.length === 0 && <p style={styles.empty}>Sin créditos.</p>}
+          {!loading && creditos.length === 0 && <p style={styles.empty}>Sin créditos.</p>}
           
-          {creditosSeguros.map(fichaCredito)}
+          {creditos.map(fichaCredito)}
         </div>
       )}
     </div>

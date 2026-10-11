@@ -10,7 +10,7 @@ const FORM_VACIO = { idCredito:'', numeroCuota:'', importe:'' };
 export default function Cobranzas() {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
-  const { lista, loading, error } = useSelector((state) => state.cobranzas);
+  const { lista: cobranzas, loading, error } = useSelector((state) => state.cobranzas);
   
   const [idCredito, setIdCredito] = useState('');
   const [idBuscado, setIdBuscado] = useState('');
@@ -56,8 +56,6 @@ export default function Cobranzas() {
     }
   };
 
-  const cobranzasSeguras = lista || [];
-
   return (
     <div style={styles.page}>
       <h2 style={styles.title}>Cobranzas</h2>
@@ -85,11 +83,11 @@ export default function Cobranzas() {
 
       {buscado && (
         <div style={styles.card}>
-          <h3>Cobranzas del crédito #{idBuscado} ({cobranzasSeguras.length})</h3>
+          <h3>Cobranzas del crédito #{idBuscado} ({cobranzas.length})</h3>
           {loading && <p style={styles.empty}>Cargando...</p>}
-          {!loading && cobranzasSeguras.length === 0 && <p style={styles.empty}>Sin cobranzas registradas.</p>}
+          {!loading && cobranzas.length === 0 && <p style={styles.empty}>Sin cobranzas registradas.</p>}
           
-          {cobranzasSeguras.length > 0 && (
+          {cobranzas.length > 0 && (
             <table style={styles.table}>
               <thead>
                 <tr style={{ borderBottom: '2px solid var(--color-border)' }}>
@@ -102,7 +100,7 @@ export default function Cobranzas() {
                 </tr>
               </thead>
               <tbody>
-                {cobranzasSeguras.map(c => (
+                {cobranzas.map(c => (
                   <tr key={c.id} style={{ opacity: c.anulada ? 0.5 : 1, borderBottom: '1px solid var(--color-border)' }}>
                     <td style={styles.td}>
                       #{c.id}
