@@ -67,8 +67,9 @@ public class Cuota implements ICuota {
         return estaVencida(LocalDate.now());
     }
 
+    // La cuota de un credito anulado ya no se debe: no entra en mora.
     public boolean estaVencida(LocalDate hoy) {
-        return !estaPagada() && fechaVencimiento.isBefore(hoy);
+        return !credito.isAnulado() && !estaPagada() && fechaVencimiento.isBefore(hoy);
     }
 
     // La cuota crea su propia cobranza: es quien sabe si ya esta pagada y
