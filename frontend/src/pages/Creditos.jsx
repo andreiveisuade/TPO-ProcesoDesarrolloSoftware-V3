@@ -10,7 +10,11 @@ const ESTADO_CUOTA = {
   vencida:   { color: 'var(--color-danger)',  texto: '✘ Vencida' },
   pendiente: { color: 'var(--color-warning)', texto: '… Pendiente' },
 };
-const estadoCuota = (c) => ESTADO_CUOTA[c.pagada ? 'pagada' : c.vencida ? 'vencida' : 'pendiente'];
+const estadoCuota = (c) => {
+  if (c.pagada) return ESTADO_CUOTA.pagada;
+  if (c.vencida) return ESTADO_CUOTA.vencida;
+  return ESTADO_CUOTA.pendiente;
+};
 
 const descripcionPlan = (cr) => cr.tipoPlan === 'SISTEMA_FRANCES'
   ? `Sistema francés · ${cr.tasaInteres}% mensual`
