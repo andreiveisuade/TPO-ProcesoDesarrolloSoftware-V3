@@ -65,7 +65,7 @@ public class CreditoServiceImpl implements CreditoService {
     @Override
     public List<CreditoResponse> listarPorCliente(String dniCliente) {
         if (!clienteRepository.existsById(dniCliente)) {
-            throw new ResourceNotFoundException("Cliente", "DNI", dniCliente);
+            throw new ResourceNotFoundException("cliente", "DNI", dniCliente);
         }
         List<Credito> creditos = creditoRepository.buscarPorClienteConCuotas(dniCliente);
         // Precarga las cobranzas en la sesion (el resultado se descarta): 2 consultas en vez de N+1.
@@ -91,12 +91,12 @@ public class CreditoServiceImpl implements CreditoService {
 
     private Cliente buscarCliente(String dni) {
         return clienteRepository.findById(dni)
-            .orElseThrow(() -> new ResourceNotFoundException("Cliente", "DNI", dni));
+            .orElseThrow(() -> new ResourceNotFoundException("cliente", "DNI", dni));
     }
 
     private Credito buscarCredito(Long id) {
         Credito credito = creditoRepository.buscarConCuotas(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Crédito", "id", id));
+            .orElseThrow(() -> new ResourceNotFoundException("crédito", "id", id));
         // Precarga las cobranzas en la sesion (el resultado se descarta): evita N+1 al leer Cuota.estaPagada().
         cuotaRepository.buscarPorCredito(id);
         return credito;

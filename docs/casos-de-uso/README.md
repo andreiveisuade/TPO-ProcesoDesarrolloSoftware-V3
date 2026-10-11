@@ -82,7 +82,7 @@ Fuente: `casos-de-uso-v3.puml` (renderizado con `plantuml -tsvg` y `-tpng`). Sup
 
 - **Actor**: Usuario. **RF V0**: RF-CL-03.
 - **Flujo principal**: 1. Se pide un DNI. 2. El sistema devuelve el cliente (**200**).
-- **Errores**: DNI inexistente → **404** "Cliente no encontrado con DNI: 'x'".
+- **Errores**: DNI inexistente → **404** "No se encontró cliente con DNI x".
 - **Reglas**: `service/impl/ClienteServiceImpl.java:36` `buscarPorDni`.
 - **Endpoint**: `GET /api/clientes/{dni}` → `controller/ClienteController.java:41` `buscarPorDni`.
 - **Pantalla**: `pages/Clientes.jsx` (bloque "Buscar cliente por DNI"): muestra nombre y DNI, o el 404 del back en el mismo bloque. Usa `api/clientes.js` `getCliente`.

@@ -66,6 +66,6 @@ public class AuthServiceImpl implements AuthService {
 
     private Usuario buscar(String username) {
         return usuarioRepository.findByUsername(username)
-            .orElseThrow(() -> new ResourceNotFoundException("Usuario", "username", username));
+            .orElseThrow(() -> new ResourceNotFoundException("usuario", "username", username));
     }
 }

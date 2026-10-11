@@ -60,6 +60,6 @@ public class AdminServiceImpl implements AdminService {
 
     private Usuario buscar(Long id) {
         return usuarioRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario", "id", id));
+                .orElseThrow(() -> new ResourceNotFoundException("usuario", "id", id));
     }
 }

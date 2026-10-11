@@ -95,7 +95,7 @@ class CodigosHttpTest {
     @Test
     @WithMockUser
     void clienteInexistenteDa404() throws Exception {
-        when(clienteService.buscarPorDni("999")).thenThrow(new ResourceNotFoundException("Cliente", "dni", "999"));
+        when(clienteService.buscarPorDni("999")).thenThrow(new ResourceNotFoundException("cliente", "DNI", "999"));
         mvc.perform(get("/api/clientes/999")).andExpect(status().isNotFound());
     }
 

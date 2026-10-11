@@ -33,7 +33,7 @@ public class CobranzaServiceImpl implements CobranzaService {
         creditoRepository.bloquearPorId(request.getIdCredito());
         Cuota cuota = cuotaRepository.buscarPorCreditoYNumero(request.getIdCredito(), request.getNumeroCuota())
             .orElseThrow(() -> new ResourceNotFoundException(
-                "Cuota", "idCredito/numeroCuota", request.getIdCredito() + "/" + request.getNumeroCuota()
+                "cuota", "crédito/cuota", request.getIdCredito() + "/" + request.getNumeroCuota()
             ));
 
         Cobranza cobranza = cobranzaRepository.save(cuota.registrarCobranza(request.getImporte()));
@@ -56,7 +56,7 @@ public class CobranzaServiceImpl implements CobranzaService {
         }
 
         Cobranza cobranza = cobranzaRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Cobranza", "id", id));
+            .orElseThrow(() -> new ResourceNotFoundException("cobranza", "id", id));
 
         cobranza.anular();
         cobranzaRepository.save(cobranza);

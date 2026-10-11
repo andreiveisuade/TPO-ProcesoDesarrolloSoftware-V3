@@ -35,7 +35,7 @@ public class ClienteServiceImpl implements ClienteService {
     @Override
     public ClienteResponse buscarPorDni(String dni) {
         Cliente cliente = clienteRepository.findById(dni)
-            .orElseThrow(() -> new ResourceNotFoundException("Cliente", "DNI", dni));
+            .orElseThrow(() -> new ResourceNotFoundException("cliente", "DNI", dni));
         return ClienteResponse.desde(cliente);
     }
 
