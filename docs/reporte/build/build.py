@@ -429,13 +429,13 @@ evol = [
 ]
 evol_html = '<table><thead><tr><th>Mejora · commits</th><th>Problema</th><th>Solución</th></tr></thead><tbody>' + "".join(f'<tr><td><strong>{t}</strong><br><span class="ref"><code>{c}</code></span></td><td>{p}</td><td>{s}</td></tr>' for t, c, p, s, k in evol) + '</tbody></table>'
 
-convenciones = """<p>Convención: <strong>una <code>I&lt;Clase&gt;</code> por clase de modelo</strong> en <code>model/interfaces/</code> y <strong><code>XService</code> + <code>service/impl/XServiceImpl</code></strong>. Excepciones, a propósito:</p>
+convenciones = """<p>Convención: <strong>una <code>I&lt;Clase&gt;</code> por clase de modelo</strong> en <code>model/interfaces/</code> y <strong><code>XService</code> + <code>service/impl/XServiceImpl</code></strong>. Excepciones deliberadas:</p>
 <table><thead><tr><th>Clase</th><th>Excepción</th><th>Motivo</th></tr></thead><tbody>
-<tr><td><code>model/EstadoCredito.java</code></td><td>sin <code>IEstadoCredito</code></td><td>Enum de <strong>valores sin comportamiento</strong>: la interfaz quedaría vacía.</td></tr>
-<tr><td><code>model/TipoPlan.java</code></td><td>sin <code>ITipoPlan</code></td><td>Enum <strong>registro de estrategias</strong>; su única operación devuelve la Strategy.</td></tr>
-<tr><td><code>model/interfaces/CalculoDeCuota.java</code></td><td>sin prefijo <code>I</code></td><td>Es la <strong>interfaz Strategy</strong>, no la de una clase: nombre de rol, como <code>EstrategiaDescuento</code> en la slide.</td></tr>
-<tr><td><code>service/TokenService.java</code> → <code>security/JwtUtil.java</code></td><td>no es <code>TokenServiceImpl</code> en <code>service/impl/</code></td><td>Es el <strong>Adapter</strong>: pesa el nombre de rol, y es infraestructura, no caso de uso.</td></tr>
-<tr><td><code>model/interfaces/IRol.java</code></td><td>sin consumidor como tipo</td><td>Existe <strong>por la convención</strong>; ningún cliente depende de ella.</td></tr>
+<tr><td><code>model/EstadoCredito.java</code></td><td>sin <code>IEstadoCredito</code></td><td>Enum <strong>sin comportamiento</strong>: la interfaz quedaría vacía.</td></tr>
+<tr><td><code>model/TipoPlan.java</code></td><td>sin <code>ITipoPlan</code></td><td>Enum <strong>registro de estrategias</strong>: solo devuelve la Strategy.</td></tr>
+<tr><td><code>model/interfaces/CalculoDeCuota.java</code></td><td>sin prefijo <code>I</code></td><td><strong>Interfaz Strategy</strong>: lleva nombre de rol, como <code>EstrategiaDescuento</code> en el apunte.</td></tr>
+<tr><td><code>service/TokenService.java</code> → <code>security/JwtUtil.java</code></td><td>no es <code>TokenServiceImpl</code> en <code>service/impl/</code></td><td><strong>Adapter</strong>: nombre de rol; es infraestructura, no caso de uso.</td></tr>
+<tr><td><code>model/interfaces/IRol.java</code></td><td>sin consumidor como tipo</td><td>Existe <strong>solo por la convención</strong>.</td></tr>
 </tbody></table>"""
 
 matriz = [
@@ -450,7 +450,7 @@ matriz = [
  ("ISP", "<code>service/TokenService.java</code> (3 métodos, todos usados); <code>model/interfaces/CalculoDeCuota.java</code> (1)", "Cumple"),
  ("DIP", "<code>model/Credito.java</code> → <code>CalculoDeCuota</code>; clientes → <code>TokenService</code>; servicios inyectados por interfaz", "Cumple"),
 ]
-matriz_html = "<table><thead><tr><th>Principio</th><th>Dónde</th><th>Veredicto</th></tr></thead><tbody>" + "".join(f"<tr><td><strong>{a}</strong></td><td>{b}</td><td>{c}</td></tr>" for a, b, c in matriz) + "</tbody></table>"
+matriz_html = "<p>Los diez criterios se cumplen.</p><table><thead><tr><th>Principio</th><th>Dónde</th></tr></thead><tbody>" + "".join(f"<tr><td><strong>{a}</strong></td><td>{b}</td></tr>" for a, b, c in matriz) + "</tbody></table>"
 
 
 def cap(sub, nom, alt):
@@ -467,29 +467,29 @@ log_v3 = subprocess.run(["git", "-C", REPO, "log", "--oneline", "v2..main"], cap
 
 timeline = f'''<div class="timeline">
 <div class="hito"><div class="punto"></div><h4>V0</h4><p class="tema">Punto 0, proyecto inicial</p><p class="meta"><code>main@2a90af8</code> (repo Arreglos)</p>
-<ul><li>CRUD de clientes, créditos y cobranzas</li><li>Cuota con importe cargado a mano</li><li>Usuario como UserDetails</li><li>MetaCobranza (ABM sin uso)</li></ul></div>
+<ul><li>CRUD de clientes, créditos y cobranzas</li><li>Importe de cuota cargado a mano</li><li>Usuario como UserDetails</li><li>MetaCobranza sin uso</li></ul></div>
 <div class="hito"><div class="punto"></div><h4>V1</h4><p class="tema">Iteración 1: bad smells</p><p class="meta">Entregada 08/09 · <code>andrei-iteracion1@86c75cc</code> · 28 commits</p>
-<ul><li>13 smells corregidos (god class, data class, primitive obsession, encapsulamiento)</li><li>Sin <code>MetaCobranza</code>; <code>Cuota.estaPagada()</code> y <code>registrarCobranza</code></li><li><code>UsuarioDetails</code> como Adapter</li><li>Resueltos TPO-005, 006, 013, 015</li></ul></div>
+<ul><li>13 smells: god class, data class, primitive obsession, encapsulamiento</li><li>Sin <code>MetaCobranza</code>; <code>Cuota.estaPagada()</code> y <code>registrarCobranza</code></li><li><code>UsuarioDetails</code> como Adapter</li><li>Resueltos TPO-005, 006, 013, 015</li></ul></div>
 <div class="hito"><div class="punto"></div><h4>V2</h4><p class="tema">Iteración 2: GRASP + interfaces</p><p class="meta">Mergeada 15/09 · <code>main@45e228c</code> (tag <code>v2</code>) · 5 commits</p>
-<ul><li>Information Expert: <code>Cobranza.anular()</code>, <code>Credito.anular()</code></li><li>Creator: <code>Usuario.nuevo</code></li><li>Interfaz por cada clase del modelo y de servicio</li><li>Revierte §3.7 del informe 1 (Lazy class): interfaces de servicio restituidas</li></ul></div>
+<ul><li>Information Expert: <code>Cobranza.anular()</code>, <code>Credito.anular()</code></li><li>Creator: <code>Usuario.nuevo</code></li><li>Interfaz por cada clase del modelo y de servicio</li><li>Revierte §3.7 de V1 (Lazy class): restituye las interfaces de servicio</li></ul></div>
 <div class="hito actual"><div class="punto"></div><h4>V3</h4><p class="tema">Iteración 3: MVC + Strategy + Adapter</p><p class="meta">Entrega 13/10/2026 · repo V3, <code>main</code> · {n_v3} commits sin merges</p>
 <ul><li><strong>Strategy</strong>: cálculo de cuota, interés simple y sistema francés (M9)</li><li><strong>Adapter</strong>: <code>TokenService</code> sobre jjwt (M7)</li><li><code>EstadoCredito</code>, saldo, mora (M6, M8)</li><li>Permisos y errores HTTP en el backend (M4, M5)</li><li>Dashboard con saldo y vencido (M3, M10, O7); 40 tests</li><li>Revierte V2: el sistema francés, descartado el 15/09, vuelve como segunda estrategia</li><li>Swagger, perfiles dev/prod, UI, dark theme, UC06/UC09</li></ul></div>
 </div>
 <details><summary>Commits V2 → V3 (git log v2..main)</summary><pre><code>{e(log_v3)}</code></pre></details>'''
 
 mapeo = [
- ("model/*, model/interfaces/*, model/plan/*", "Modelo", "Datos y reglas de negocio (Expert); estrategias de M9 y agregado de M8."),
- ("repository/*", "Modelo", "Acceso a datos; Spring Data los implementa."),
- ("service/*, service/impl/*", "Modelo", "Orquestan casos de uso y la transacción (S1). <code>TokenService</code>: Target de M7."),
- ("exception/BusinessException, ResourceNotFoundException", "Modelo", "Señalan regla violada o recurso inexistente."),
- ("controller/*", "Controlador", "Reciben el evento HTTP, validan forma (<code>@Valid</code>), identifican al usuario (M4), invocan al modelo y devuelven DTO."),
- ("dto/request/*, dto/response/*", "Controlador (frontera)", "Contrato vista-controlador. El modelo no conoce los DTO."),
- ("exception/GlobalExceptionHandler", "Controlador", "Traduce excepciones a HTTP: 400, 401, 403, 404, 405, 406, 415 y 500 sin detalles internos (M5, S4, I3)."),
- ("security/*, config/SecurityConfig", "Controlador", "Filtran el evento antes del controlador: 401 sin token, 403 sin rol. <code>JwtUtil</code> y <code>UsuarioDetails</code>: Adapters."),
- ("config/OpenApiConfig + anotaciones <code>@Operation</code>", "Controlador (contrato)", "Publican el contrato en Swagger UI."),
- ("config/DataInitializer", "Modelo", "Siembra usuarios vía <code>Usuario.nuevo</code> (solo dev)."),
+ ("model/*, model/interfaces/*, model/plan/*", "Modelo", "Datos y reglas de negocio; estrategias (M9) y agregado (M8)."),
+ ("repository/*", "Modelo", "Acceso a datos; los implementa Spring Data."),
+ ("service/*, service/impl/*", "Modelo", "Casos de uso y transacción (S1). <code>TokenService</code>: Target de M7."),
+ ("exception/BusinessException, ResourceNotFoundException", "Modelo", "Regla violada o recurso inexistente."),
+ ("controller/*", "Controlador", "Reciben el evento HTTP, validan forma, identifican al usuario (M4), invocan al modelo, devuelven DTO."),
+ ("dto/request/*, dto/response/*", "Controlador (frontera)", "Contrato vista-controlador; el modelo no los conoce."),
+ ("exception/GlobalExceptionHandler", "Controlador", "Excepción → código HTTP, sin detalles internos (M5, S4, I3)."),
+ ("security/*, config/SecurityConfig", "Controlador", "Filtran antes del controlador: 401 sin token, 403 sin rol. <code>JwtUtil</code> y <code>UsuarioDetails</code>: Adapters."),
+ ("config/OpenApiConfig + anotaciones <code>@Operation</code>", "Controlador (contrato)", "Contrato publicado en Swagger UI."),
+ ("config/DataInitializer", "Modelo", "Semilla de usuarios vía <code>Usuario.nuevo</code>, solo en dev."),
  ("Frontend pages/*, components/*", "Vista", "Presentan y envían acciones; las decisiones vienen del modelo (O1)."),
- ("Frontend store/slices/*, api/*", "Vista", "Estado del cliente (Redux) y única puerta HTTP (<code>api/apiClient.js</code>)."),
+ ("Frontend store/slices/*, api/*", "Vista", "Estado del cliente (Redux) y única puerta HTTP."),
 ]
 rows = "\n".join(f"<tr><td><code>{a}</code></td><td><strong>{b}</strong></td><td>{c}</td></tr>" for a, b, c in mapeo)
 
