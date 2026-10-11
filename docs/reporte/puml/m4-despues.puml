@@ -17,14 +17,12 @@ actor Vista
 participant CreditoController as Ct
 participant CreditoServiceImpl as S
 participant "IUsuario" as U
-participant Permisos as P
 participant Credito as K
 Vista -> Vista : oculta el botón si\n!puedeAnularCredito
 Vista -> Ct : DELETE /anular/{id}
 Ct -> Ct : @AuthenticationPrincipal\nUsuarioDetails.getUsuario()
 Ct -> S : anularCredito(id, usuario)
-S -> U : getPermisos()
-S -> P : isPuedeAnularCredito()
+S -> U : puedeAnularCredito()
 alt sin permiso
   S --> Ct : AccessDeniedException
   Ct --> Vista : 403

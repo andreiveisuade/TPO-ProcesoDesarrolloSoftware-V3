@@ -22,13 +22,17 @@ enum TipoPlan {
 interface CalculoDeCuota <<Strategy>> {
   +importeCuota(capital, tasa, cuotas)
 }
-class InteresSimple <<ConcreteStrategy>>
-class SistemaFrances <<ConcreteStrategy>>
+class InteresSimple <<ConcreteStrategy>> {
+  +importeCuota(capital, tasa, cuotas)
+}
+class SistemaFrances <<ConcreteStrategy>> {
+  +importeCuota(capital, tasa, cuotas)
+}
 class CreditoRequest {
   -tipoPlan : TipoPlan
 }
 Credito --> TipoPlan
-Credito --> CalculoDeCuota : calculo()
+Credito ..> CalculoDeCuota : calculo()
 TipoPlan --> CalculoDeCuota
 CalculoDeCuota <|.. InteresSimple
 CalculoDeCuota <|.. SistemaFrances

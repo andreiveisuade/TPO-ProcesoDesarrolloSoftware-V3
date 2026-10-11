@@ -20,7 +20,7 @@ enum EstadoCredito #DDEBF7 {
 }
 class Credito #DDEBF7 {
   -anulado : boolean
-  +generarPlanDeCuotas()
+  -generarPlanDeCuotas()
   +getCuotas()
   +estado() : EstadoCredito
   +saldo() : BigDecimal

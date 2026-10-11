@@ -21,6 +21,6 @@ class GlobalExceptionHandler {
 }
 note right of GlobalExceptionHandler #FFE0E0
   login incorrecto, ruta inexistente
-  y acceso denegado caen en el 500
+  y método no soportado caen en el 500
 end note
 @enduml

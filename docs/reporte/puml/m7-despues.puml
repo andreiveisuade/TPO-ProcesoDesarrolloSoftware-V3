@@ -27,12 +27,14 @@ class JwtUtil <<Adapter>> #DDEBF7 {
   +esValido(token, username)
 }
 class "JwtParser (jjwt)" as JwtParser <<Adaptee>>
-class "SecretKey (jjwt)" as SecretKey <<Adaptee>>
+class "Jwts (jjwt)" as Jwts <<Adaptee>>
+class "SecretKey (javax.crypto)" as SecretKey
 class AuthServiceImpl <<Client>>
 class JwtAuthFilter <<Client>>
 TokenService <|.. JwtUtil
 JwtUtil *--> JwtParser
 JwtUtil *--> SecretKey
+JwtUtil ..> Jwts : builder()
 AuthServiceImpl --> TokenService
 JwtAuthFilter --> TokenService
 

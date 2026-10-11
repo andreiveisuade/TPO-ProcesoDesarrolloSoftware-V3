@@ -30,7 +30,7 @@ Rutas Java relativas a `backend/src/main/java/com/uade/tpejemplo/`. Reporte comp
 | M5 | Handlers 401/403/404/405 (TPO-001, TPO-002) | `exception/GlobalExceptionHandler.java` `handleAuth`, `handleDenied`, `handleNoResource`, `handleMetodo` | MVC |
 | M6 | Cuota vencida (mora) | `model/Cuota.java` `estaVencida`; `dto/response/CuotaResponse.java` | Information Expert |
 | M8 | EstadoCredito y Credito como agregado (estado, saldo, anulación) | `model/EstadoCredito.java`; `model/Credito.java` `estado`, `saldo`, `estaCancelado`, `puedeAnularse`, `anular`; `service/impl/CreditoServiceImpl.java` `buscarCredito` | Information Expert + Creator |
-| M10 | Dashboard también para ADMIN (TPO-010) | `config/SecurityConfig.java` `filterChain`; `frontend/src/pages/Dashboard.jsx`, `frontend/src/components/Navbar.jsx` | Control de acceso |
+| M10 | Dashboard también para ADMIN (TPO-010) | `config/SecurityConfig.java` `filterChain`; `frontend/src/pages/Dashboard.jsx`, `frontend/src/components/Navbar.jsx` | Corrección (control de acceso), sin patrón |
 | API | Swagger, 401 sin token, `@Valid` en admin/supervisor, `GET /api/creditos` | `config/OpenApiConfig.java`; `config/SecurityConfig.java`; `controller/AdminController.java`, `controller/SupervisorController.java`; `service/impl/CreditoServiceImpl.java` `listarTodos` | MVC (contrato del controlador) |
 | O1 | La vista usa `puedeAnularse` del modelo y recarga tras anular | `dto/response/CreditoResponse.java`; `frontend/src/pages/Creditos.jsx`; `frontend/src/store/slices/creditosSlice.js` | MVC + Expert |
 | O2 | El Adapter traduce las excepciones de jjwt; Target sin tipos externos | `security/JwtUtil.java` `extraerUsername`, `esValido`; `security/JwtAuthFilter.java` | Adapter, Protected Variations |
@@ -64,12 +64,12 @@ Rutas Java relativas a `backend/src/main/java/com/uade/tpejemplo/`. Reporte comp
 | T-1 | Tests de los códigos HTTP 400/401/403/404/405 con la seguridad JWT real y los servicios simulados | `backend/src/test/java/com/uade/tpejemplo/controller/CodigosHttpTest.java` (`@WebMvcTest`) | Tests |
 | T-5 | La fecha de hoy entra por parámetro: se testea anular una cobranza de otro día y el vencimiento sin depender del reloj | `model/Cobranza.java` `anular(LocalDate)`; `model/Cuota.java` `estaVencida(LocalDate)` | Tests |
 | DER | Diagrama entidad-relación de la base, con claves y restricciones | `docs/diagramas/der-v3.py` (genera `.svg` y `.png`) | Documentación |
-| Tests | 40 tests, 0 fallas | `backend/src/test/java/com/uade/tpejemplo/` | JUnit 5 + AssertJ, `@WebMvcTest` |
+| Tests | 41 tests, 0 fallas | `backend/src/test/java/com/uade/tpejemplo/` | JUnit 5 + AssertJ, `@WebMvcTest` |
 
-Desglose de los 40 tests:
+Desglose de los 41 tests:
 
 - `model/CreditoTest`: 8
-- `model/CuotaTest`: 8
+- `model/CuotaTest`: 9
 - `model/plan/InteresSimpleTest`: 4
 - `model/plan/SistemaFrancesTest`: 4
 - `model/CobranzaTest`: 3

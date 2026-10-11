@@ -103,7 +103,7 @@ m1 = bloque("m1", "M1. Rechazar el cobro sobre un crédito anulado",
     cb("v2", "model/Cuota.java", method("v2", "model/Cuota.java", r"public Cobranza registrarCobranza")),
     "Crédito anulado: <code>BusinessException</code> (400).",
     cb("main", "model/Cuota.java", method("main", "model/Cuota.java", r"public Cobranza registrarCobranza")),
-    "Es <strong>regla de dominio</strong>: pertenece a <code>Cuota</code>, no al servicio.",
+    "Es <strong>regla de dominio</strong>. Decide <code>Cuota</code> y no el servicio ni <code>Credito</code>: es quien <strong>crea la cobranza</strong> (Creator) y conoce su crédito.",
     "La regla vale para todo cobro desde <strong>un único lugar</strong>.",
     "Cierra TPO-004. Test: <code>CuotaTest</code>.")
 
@@ -145,13 +145,13 @@ m4 = bloque("m4", "M4. Permisos de anulación aplicados en el backend",
     cb("main", "controller/CreditoController.java", method("main", "controller/CreditoController.java", r"public ResponseEntity<Void> anularCredito"))
     + cb("main", "service/impl/CreditoServiceImpl.java", method("main", "service/impl/CreditoServiceImpl.java", r"public void anularCredito")),
     "La vista <strong>no es una barrera de seguridad</strong>.",
-    "Gana: el permiso vale sin el front. Cuesta: los servicios reciben el <code>IUsuario</code>.",
+    "Gana: el permiso vale sin el front. Cuesta: los servicios reciben el <code>IUsuario</code>. No alcanza <code>@PreAuthorize</code>: el permiso es por usuario, no por rol.",
     "Cierra TPO-007.",
     extra=figura("anular-credito", "Secuencia: anular un crédito"))
 
 m5 = bloque("m5", "M5. Handlers HTTP específicos",
     "<strong>MVC</strong>: el controlador traduce errores a <strong>códigos HTTP</strong>.",
-    "Login inválido, ruta inexistente o falta de permiso: <strong>todo daba 500</strong> (TPO-001, 002).",
+    "Login inválido, ruta inexistente o método no soportado: <strong>todo daba 500</strong>; sin token, 403 en vez de 401 (TPO-001, 002).",
     cb("v2", "exception/GlobalExceptionHandler.java", method("v2", "exception/GlobalExceptionHandler.java", r"handleGeneral")),
     "Handlers 401, 403, 404, 405, entre otros; el 500 no expone detalles (S4).",
     cb("main", "exception/GlobalExceptionHandler.java",
@@ -161,17 +161,17 @@ m5 = bloque("m5", "M5. Handlers HTTP específicos",
        method("main", "exception/GlobalExceptionHandler.java", r"handleMetodo"), "",
        method("main", "exception/GlobalExceptionHandler.java", r"handleGeneral")),
     "<strong>Un error del cliente no es una falla del servidor.</strong>",
-    "Swagger documenta los códigos reales.",
+    "Swagger documenta los códigos reales. Sin token o sin rol responde el filtro (<code>SecurityConfig</code>); el resto de los errores, este handler.",
     "Cierra TPO-001 y TPO-002.")
 
 m6 = bloque("m6", "M6. Cuota.estaVencida()",
-    "<strong>Information Expert</strong>: la cuota tiene la fecha y sabe si venció.",
+    "<strong>Information Expert</strong>: la cuota tiene la fecha, conoce su crédito y sabe si venció (la de un crédito anulado no entra en mora).",
     "<strong>No existía la mora</strong>: <code>fechaVencimiento</code> sin uso.",
     cb("v2", "model/Cuota.java", method("v2", "model/Cuota.java", r"public boolean estaPagada")),
     "<code>Cuota.estaVencida()</code>; la vista muestra Pagada / Vencida / Pendiente.",
     cb("main", "model/Cuota.java", method("main", "model/Cuota.java", r"public boolean estaPagada"), "", method("main", "model/Cuota.java", r"public boolean estaVencida")),
     "La mora es <strong>la consulta central</strong> de cobranzas.",
-    "Reutilizable (dashboard). La fecha entra por parámetro: <strong>testeable sin reloj</strong>.",
+    "Reutilizable: el dashboard y la vista usan la misma regla. La fecha entra por parámetro: <strong>testeable sin reloj</strong>.",
     "Archivos: <code>model/Cuota.java</code>, <code>dto/response/CuotaResponse.java</code>.")
 
 # ---- M7 Adapter (foco) ----
@@ -230,7 +230,7 @@ m7 = bloque("m7", "M7. Adapter: UsuarioDetails y JwtUtil",
       + '<h4>Caso V3: <code>JwtUtil</code> sobre jjwt</h4>')
 
 m8 = bloque("m8", "M8. EstadoCredito y Credito como agregado de sus cuotas",
-    "<strong>Information Expert</strong> + <strong>Creator</strong>: el crédito crea y conoce sus cuotas.",
+    "<strong>Information Expert</strong>: el crédito conoce sus cuotas y calcula estado y saldo (que las cree es O6).",
     "El estado era un boolean <code>anulado</code>: <strong>sin “cancelado” ni saldo</strong>.",
     cb("v2", "model/Credito.java", lines("v2", "model/Credito.java", r"private boolean anulado", 1, 1), "", method("v2", "model/Credito.java", r"public void anular"))
     + cb("v2", "service/impl/CreditoServiceImpl.java", method("v2", "service/impl/CreditoServiceImpl.java", r"public void anularCredito")),
@@ -371,10 +371,10 @@ indice = [
  ("m2", "“Tiene cobranzas” ignora anuladas (absorbida por M8)", "Information Expert", "revisión del dominio"),
  ("m3", "Dashboard con números verdaderos", "Corrección + Expert", "TPO-003"),
  ("m4", "Permisos de anulación en el backend", "MVC + Expert", "TPO-007"),
- ("m5", "Handlers HTTP 401/403/404/405", "MVC", "TPO-001, 002"),
+ ("m5", "Handlers HTTP 400 a 415", "MVC", "TPO-001, 002"),
  ("m6", "Cuota.estaVencida()", "Information Expert", "revisión del dominio"),
  ("m8", "EstadoCredito + Credito agregado", "Expert + Creator", "revisión del dominio"),
- ("m10", "Dashboard para ADMIN", "Control de acceso", "TPO-010"),
+ ("m10", "Dashboard para ADMIN", "Corrección, sin patrón", "TPO-010"),
 ]
 tabla_indice = "".join(f'<tr><td><a href="#{k}">{k.upper()}</a></td><td>{a}</td><td>{b}</td><td>{c}</td></tr>' for k, a, b, c in indice)
 
@@ -427,7 +427,7 @@ evol = [
   "el modelo es la autoridad sobre permisos (MVC, M4)."),
  ("Tests y validación", "6f552e0..82fc486, 4d35266, 77dec02, 90d0e5e, 8888df6",
   "<strong>Cero tests</strong> en V2; un DNI largo o una deuda enorme daban 500 (I-2).",
-  "40 tests; <code>@Size</code>/<code>@Digits</code> en los DTO; <code>Cuota.estaVencida(LocalDate)</code> recibe la fecha.",
+  "41 tests; <code>@Size</code>/<code>@Digits</code> en los DTO; <code>Cuota.estaVencida(LocalDate)</code> recibe la fecha.",
   "el dominio se prueba sin Spring ni reloj."),
  ("Limpieza", "ddbdebb, 3478af6, c36658f, 6a1c363, 4713828",
   "Javadoc redundante; archivos de IDE y de proceso en el zip.",
@@ -480,7 +480,7 @@ timeline = f'''<div class="timeline">
 <div class="hito"><div class="punto"></div><h4>V2</h4><p class="tema">Iteración 2: GRASP + interfaces</p><p class="meta">Mergeada 15/09 · <code>main@45e228c</code> (tag <code>v2</code>) · 5 commits</p>
 <ul><li>Information Expert: <code>Cobranza.anular()</code>, <code>Credito.anular()</code></li><li>Creator: <code>Usuario.nuevo</code></li><li>Interfaz por cada clase del modelo y de servicio</li><li>Revierte §3.7 de V1 (Lazy class): restituye las interfaces de servicio</li></ul></div>
 <div class="hito actual"><div class="punto"></div><h4>V3</h4><p class="tema">Iteración 3: MVC + Strategy + Adapter</p><p class="meta">Entrega 13/10/2026 · repo V3, <code>main</code> · {n_v3} commits sin merges</p>
-<ul><li><strong>Strategy</strong>: cálculo de cuota, interés simple y sistema francés (M9)</li><li><strong>Adapter</strong>: <code>TokenService</code> sobre jjwt (M7)</li><li><code>EstadoCredito</code>, saldo, mora (M6, M8)</li><li>Permisos y errores HTTP en el backend (M4, M5)</li><li>Dashboard con saldo y vencido (M3, M10, O7); 40 tests</li><li>Revierte V2: el sistema francés, descartado el 15/09, vuelve como segunda estrategia</li><li>Swagger, perfiles dev/prod, UI, dark theme, UC06/UC09</li></ul></div>
+<ul><li><strong>Strategy</strong>: cálculo de cuota, interés simple y sistema francés (M9)</li><li><strong>Adapter</strong>: <code>TokenService</code> sobre jjwt (M7)</li><li><code>EstadoCredito</code>, saldo, mora (M6, M8)</li><li>Permisos y errores HTTP en el backend (M4, M5)</li><li>Dashboard con saldo y vencido (M3, M10, O7); 41 tests</li><li>Revierte V2: el sistema francés, descartado el 15/09, vuelve como segunda estrategia</li><li>Swagger, perfiles dev/prod, UI, dark theme, UC06/UC09</li></ul></div>
 </div>
 <details><summary>Commits V2 → V3 (git log v2..main)</summary><pre><code>{e(log_v3)}</code></pre></details>'''
 
@@ -669,7 +669,7 @@ doc = f'''<!doctype html>
 
 <section id="verificacion"><h2>Verificación</h2>
 <ul>
-<li><strong>40 tests, 0 fallas</strong> (<code>mvn test</code>): 27 de dominio, 10 HTTP (<code>@WebMvcTest</code>), 2 de concurrencia, <code>contextLoads</code>.</li>
+<li><strong>41 tests, 0 fallas</strong> (<code>mvn test</code>): 28 de dominio, 10 HTTP (<code>@WebMvcTest</code>), 2 de concurrencia, <code>contextLoads</code>.</li>
 <li><strong>Smoke</strong>: API 12/12, recorrido visual 9/9; auditoría de API: 304 casos con 4 roles.</li>
 <li><strong>Fallas halladas y corregidas</strong>: 401/403 y 500 mal mapeados (F1, F2); 2 visuales (O1, <code>d35fc0e</code>).</li>
 </ul>

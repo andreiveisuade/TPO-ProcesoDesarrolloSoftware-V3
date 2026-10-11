@@ -27,8 +27,12 @@ interface CreditoRepository #DDEBF7 {
 interface CobranzaRepository #DDEBF7 {
   +sumarImporteVigente()
 }
+interface CuotaRepository #DDEBF7 {
+  +buscarTodasConCobranzas()
+}
 DashboardServiceImpl --> CreditoRepository
 DashboardServiceImpl --> CobranzaRepository
+DashboardServiceImpl --> CuotaRepository : precarga cobranzas
 note bottom of CreditoRepository #DDEBF7
   WHERE anulado = false
   SUM(deudaOriginal)

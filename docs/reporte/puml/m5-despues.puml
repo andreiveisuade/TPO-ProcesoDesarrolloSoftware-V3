@@ -17,10 +17,13 @@ class GlobalExceptionHandler {
   +handleNotFound(ResourceNotFoundException) : 404
   +handleBusiness(BusinessException) : 400
   +handleValidation(MethodArgumentNotValidException) : 400
+  +handleRequestInvalida(Exception) : 400
   +handleAuth(AuthenticationException) : 401
   +handleDenied(AccessDeniedException) : 403
   +handleNoResource(NoResourceFoundException) : 404
   +handleMetodo(HttpRequestMethodNotSupportedException) : 405
+  +handleNoAceptable(HttpMediaTypeNotAcceptableException) : 406
+  +handleTipoNoSoportado(HttpMediaTypeNotSupportedException) : 415
   +handleGeneral(Exception) : 500
 }
 hide GlobalExceptionHandler fields
