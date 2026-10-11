@@ -70,7 +70,7 @@ public class Cuota implements ICuota {
         return !credito.isAnulado() && !estaPagada() && fechaVencimiento.isBefore(hoy);
     }
 
-    // Creator: la cuota crea su cobranza
+    // Creator: la cuota crea su cobranza (sabe si ya esta pagada y cuanto vale)
     public Cobranza registrarCobranza(BigDecimal importe) {
         if (credito.isAnulado()) {
             throw new BusinessException(
