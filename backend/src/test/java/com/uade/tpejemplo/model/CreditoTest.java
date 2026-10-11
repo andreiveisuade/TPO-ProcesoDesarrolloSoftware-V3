@@ -58,6 +58,16 @@ class CreditoTest {
     }
 
     @Test
+    void elMontoVencidoSumaLasCuotasImpagasYaVencidas() {
+        Credito credito = Credito.nuevo(Cliente.nuevo("30111222", "Ana"), new BigDecimal("900"),
+            LocalDate.now().minusMonths(2).minusDays(1), BigDecimal.ZERO, 3, TipoPlan.INTERES_SIMPLE);
+
+        assertThat(credito.montoVencido()).isEqualByComparingTo("600.00");
+        pagar(credito.getCuotas().get(0));
+        assertThat(credito.montoVencido()).isEqualByComparingTo("300.00");
+    }
+
+    @Test
     void anuladoQuedaConSaldoCero() {
         Credito credito = creditoDeTresCuotas();
         credito.anular();

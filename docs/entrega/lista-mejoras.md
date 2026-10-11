@@ -25,9 +25,9 @@ Rutas Java relativas a `backend/src/main/java/com/uade/tpejemplo/`. Reporte comp
 |---|---|---|---|
 | M1 | Rechazar el cobro sobre un crédito anulado (TPO-004) | `model/Cuota.java` `registrarCobranza` | Information Expert |
 | M2 | "Tiene cobranzas" ignora las anuladas (absorbida por M8) | `model/Credito.java` `tieneCobranzas`; se borra `repository/CobranzaRepository.java` `existeCobranzaDelCredito` | Information Expert |
-| M3 | Dashboard: activos = `estado()` VIGENTE (modelo); financiado y cobrado = lo no anulado (query; el financiado incluye cancelados) (TPO-003) | `service/impl/DashboardServiceImpl.java` `obtenerEstadisticasGenerales`; `repository/CreditoRepository.java` `sumarDeudaOriginalVigente`; `repository/CobranzaRepository.java` `sumarImporteVigente` | Corrección + Expert |
+| M3 | Dashboard: activos = `estado()` VIGENTE (modelo); financiado y cobrado = lo no anulado (query; el financiado incluye cancelados) (TPO-003) | `service/impl/DashboardServiceImpl.java` `obtenerEstadisticasGenerales`; `repository/CreditoRepository.java` `sumarDeudaOriginalNoAnulada`; `repository/CobranzaRepository.java` `sumarImporteNoAnulado` | Corrección + Expert |
 | M4 | Permisos de anulación validados en el backend (TPO-007) | `controller/CreditoController.java` `anularCredito`, `service/impl/CreditoServiceImpl.java` `anularCredito`, `service/impl/CobranzaServiceImpl.java` `anularCobranza` | MVC + Information Expert |
-| M5 | Handlers 401/403/404/405 (TPO-001, TPO-002) | `exception/GlobalExceptionHandler.java` `handleAuth`, `handleDenied`, `handleNoResource`, `handleMetodo` | MVC |
+| M5 | Handlers 401/403/404/405 (TPO-001, TPO-002) | `exception/GlobalExceptionHandler.java` `handleNoAutenticado`, `handleAccesoDenegado`, `handleRutaNoEncontrada`, `handleMetodoNoPermitido` | MVC |
 | M6 | Cuota vencida (mora) | `model/Cuota.java` `estaVencida`; `dto/response/CuotaResponse.java` | Information Expert |
 | M8 | EstadoCredito y Credito como agregado (estado, saldo, anulación) | `model/EstadoCredito.java`; `model/Credito.java` `estado`, `saldo`, `estaCancelado`, `puedeAnularse`, `anular`; `service/impl/CreditoServiceImpl.java` `buscarCredito` | Information Expert + Creator |
 | M10 | Dashboard también para ADMIN (TPO-010) | `config/SecurityConfig.java` `filterChain`; `frontend/src/pages/Dashboard.jsx`, `frontend/src/components/Navbar.jsx` | Corrección (control de acceso), sin patrón |
@@ -49,7 +49,7 @@ Rutas Java relativas a `backend/src/main/java/com/uade/tpejemplo/`. Reporte comp
 | DF3 | Sacar `console.log` que imprimía el JWT | `frontend/src/pages/Creditos.jsx` | Código de depuración |
 | BSF1 | Borrar comentarios de copy-paste | `frontend/src/store/slices/permisosSlice.js`, `cobranzasSlice.js`; `frontend/src/pages/GestorPermisos.jsx` | Comentarios |
 | F1 | Usuario autenticado sin el rol recibe 403, no 401 | `config/SecurityConfig.java` `filterChain` (`accessDeniedHandler`) | MVC (controlador) |
-| F2 | Body mal formado o parámetro de tipo incorrecto responde 400, no 500 | `exception/GlobalExceptionHandler.java` `handleRequestInvalida` | MVC (controlador) |
+| F2 | Body mal formado o parámetro de tipo incorrecto responde 400, no 500 | `exception/GlobalExceptionHandler.java` `handleSolicitudInvalida` | MVC (controlador) |
 | UI | Moneda y fechas es-AR, crédito con badge de estado y datos rotulados, fecha de cobranza, todos los mensajes de error, tabla de clientes | `frontend/src/utils/formato.js`; `frontend/src/pages/Creditos.jsx`, `Cobranzas.jsx`, `Clientes.jsx`, `Dashboard.jsx`; `frontend/src/api/apiClient.js` | Vista (MVC) |
 | DT | Dark theme con variables CSS semánticas y `prefers-color-scheme` | `frontend/src/index.css`; `frontend/src/pages/*.jsx`, `frontend/src/components/Navbar.jsx` | Protected Variations (estilo) |
 | COM | Comentarios: 1-3 líneas por clase, una línea por patrón, una por componente del front | `backend/src/main/java/**`, `frontend/src/**` | Bad smell: comentarios |
@@ -57,18 +57,18 @@ Rutas Java relativas a `backend/src/main/java/com/uade/tpejemplo/`. Reporte comp
 | CU | Casos de uso V3: fichas, diagrama, trazabilidad y verificación por API | `docs/casos-de-uso/README.md`, `docs/casos-de-uso/verificar-cu.sh` | Documentación |
 | H1 | Anular una cobranza ya anulada se rechaza (400), como el crédito | `model/Cobranza.java` `anular` | Information Expert |
 | O6 | El crédito nace con su plan de cuotas: el constructor las genera y JPA las guarda por cascade; `generarPlanDeCuotas` pasa a privado y sale de `ICredito` | `model/Credito.java` constructor, `generarPlanDeCuotas`; `model/interfaces/ICredito.java`; `service/impl/CreditoServiceImpl.java` `crear` | Creator |
-| O7 | Saldo pendiente y monto vencido en el dashboard | `service/impl/DashboardServiceImpl.java` `obtenerEstadisticasGenerales`; `dto/response/DashboardStatsResponse.java`; `frontend/src/pages/Dashboard.jsx` | Information Expert |
+| O7 | Saldo pendiente y monto vencido en el dashboard; cada crédito suma su saldo y su vencido | `model/Credito.java` `saldo`, `montoVencido`; `service/impl/DashboardServiceImpl.java` `obtenerEstadisticasGenerales`; `dto/response/DashboardStatsResponse.java`; `frontend/src/pages/Dashboard.jsx` | Information Expert |
 | S5 | Spring arma el `DaoAuthenticationProvider` con los beans `UserDetailsService` y `PasswordEncoder`; se borra el armado a mano y el warning del arranque | `config/SecurityConfig.java` | Spring Security |
 | BS2 | El `ErrorResponse` se arma en un solo método; el código sale del `HttpStatus` | `exception/GlobalExceptionHandler.java` `error` | Código duplicado |
 | I-2 | Largo y escala acotados en los request: lo que no entra en la columna da 400 y no 500 ni un redondeo silencioso | `dto/request/ClienteRequest.java`, `CreditoRequest.java`, `CobranzaRequest.java`, `RegisterRequest.java` (`@Size`, `@Digits`) | Validación en el controlador (MVC) |
 | T-1 | Tests de los códigos HTTP 400/401/403/404/405 con la seguridad JWT real y los servicios simulados | `backend/src/test/java/com/uade/tpejemplo/controller/CodigosHttpTest.java` (`@WebMvcTest`) | Tests |
 | T-5 | La fecha de hoy entra por parámetro: se testea anular una cobranza de otro día y el vencimiento sin depender del reloj | `model/Cobranza.java` `anular(LocalDate)`; `model/Cuota.java` `estaVencida(LocalDate)` | Tests |
 | DER | Diagrama entidad-relación de la base, con claves y restricciones | `docs/diagramas/der-v3.py` (genera `.svg` y `.png`) | Documentación |
-| Tests | 41 tests, 0 fallas | `backend/src/test/java/com/uade/tpejemplo/` | JUnit 5 + AssertJ, `@WebMvcTest` |
+| Tests | 42 tests, 0 fallas | `backend/src/test/java/com/uade/tpejemplo/` | JUnit 5 + AssertJ, `@WebMvcTest` |
 
-Desglose de los 41 tests:
+Desglose de los 42 tests:
 
-- `model/CreditoTest`: 8
+- `model/CreditoTest`: 9
 - `model/CuotaTest`: 9
 - `model/plan/InteresSimpleTest`: 4
 - `model/plan/SistemaFrancesTest`: 4
@@ -110,8 +110,8 @@ Salen de recorrer cada caso de uso por la UI (incluido H4).
 | ID | Qué | Clase y método | Patrón / concepto |
 |---|---|---|---|
 | R1 | Aviso de éxito al crear crédito o cobranza; el error de búsqueda queda en el bloque de búsqueda | `frontend/src/components/Aviso.jsx`; `frontend/src/pages/Creditos.jsx` `buscar`, `handleSubmit`; `Cobranzas.jsx` `buscar`, `handleSubmit`; `creditosSlice.js`, `cobranzasSlice.js` (`fetch...rejected`) | Vista (MVC) |
-| R2 | Validación sin prefijo de campo; título del dashboard como el resto | `exception/GlobalExceptionHandler.java` `handleValidation`; `frontend/src/pages/Dashboard.jsx` | Vista (MVC) |
-| R3 | `GET /api/auth/me` y refresco de permisos al entrar a cada pantalla (H4) | `controller/AuthController.java` `me`; `service/impl/AuthServiceImpl.java` `actual`; `config/SecurityConfig.java`; `frontend/src/components/PrivateRoute.jsx`; `authSlice.js` `refrescarUsuario` | MVC + Information Expert |
+| R2 | Validación sin prefijo de campo; título del dashboard como el resto | `exception/GlobalExceptionHandler.java` `handleValidacion`; `frontend/src/pages/Dashboard.jsx` | Vista (MVC) |
+| R3 | `GET /api/auth/me` y refresco de permisos al entrar a cada pantalla (H4) | `controller/AuthController.java` `actual`; `service/impl/AuthServiceImpl.java` `actual`; `config/SecurityConfig.java`; `frontend/src/components/PrivateRoute.jsx`; `authSlice.js` `refrescarUsuario` | MVC + Information Expert |
 | R4 | Pantallas de UC06 y UC09 | `frontend/src/pages/Clientes.jsx` `buscar`; `frontend/src/pages/Creditos.jsx` `consultar`, `fichaCredito` | Vista (MVC) |
 
 **R1. Avisos bien ubicados.**

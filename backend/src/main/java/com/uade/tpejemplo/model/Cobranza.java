@@ -42,7 +42,6 @@ public class Cobranza implements ICobranza {
         this.cuota = cuota;
         this.importe = importe;
         this.fechaCobranza = LocalDate.now();
-        this.anulada = false;
     }
 
     // Visible solo dentro del paquete model: una cobranza no se crea

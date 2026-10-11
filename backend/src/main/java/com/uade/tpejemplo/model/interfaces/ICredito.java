@@ -35,6 +35,8 @@ public interface ICredito {
 
     BigDecimal saldo();
 
+    BigDecimal montoVencido();
+
     boolean estaCancelado();
 
     boolean tieneCobranzas();

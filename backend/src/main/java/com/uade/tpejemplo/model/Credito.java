@@ -78,7 +78,6 @@ public class Credito implements ICredito {
         this.cantidadCuotas = cantidadCuotas;
         this.tipoPlan = tipoPlan;
         this.importeCuota = calculo().importeCuota(deudaOriginal, tasaInteres, cantidadCuotas);
-        this.anulado = false;
         // Creator: el credito nace con su plan de cuotas
         generarPlanDeCuotas();
     }
@@ -89,6 +88,11 @@ public class Credito implements ICredito {
     public static Credito nuevo(Cliente cliente, BigDecimal deudaOriginal, LocalDate fecha,
                                 BigDecimal tasaInteres, Integer cantidadCuotas, TipoPlan tipoPlan) {
         return new Credito(cliente, deudaOriginal, fecha, tasaInteres, cantidadCuotas, tipoPlan);
+    }
+
+    // Strategy: el contexto delega el cálculo de la cuota en la estrategia elegida al otorgar (no cambia después)
+    private CalculoDeCuota calculo() {
+        return tipoPlan.calculo();
     }
 
     public BigDecimal totalADevolver() {
@@ -107,17 +111,12 @@ public class Credito implements ICredito {
         return Collections.unmodifiableList(cuotas);
     }
 
-    // Information Expert: el credito calcula su estado y su saldo
+    // Information Expert: el credito calcula su estado, su saldo y su monto vencido
     public EstadoCredito estado() {
         if (anulado) {
             return EstadoCredito.ANULADO;
         }
         return estaCancelado() ? EstadoCredito.CANCELADO : EstadoCredito.VIGENTE;
-    }
-
-    // Strategy: el contexto delega el cálculo de la cuota en la estrategia elegida al otorgar (no cambia después)
-    private CalculoDeCuota calculo() {
-        return tipoPlan.calculo();
     }
 
     public BigDecimal saldo() {
@@ -126,6 +125,14 @@ public class Credito implements ICredito {
         }
         return cuotas.stream()
             .filter(cuota -> !cuota.estaPagada())
+            .map(Cuota::getImporte)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    // Information Expert: suma lo que la cuota sabe que esta vencido
+    public BigDecimal montoVencido() {
+        return cuotas.stream()
+            .filter(Cuota::estaVencida)
             .map(Cuota::getImporte)
             .reduce(BigDecimal.ZERO, BigDecimal::add);
     }

@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -27,45 +28,45 @@ import java.util.List;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleNotFound(ResourceNotFoundException ex) {
+    public ResponseEntity<ErrorResponse> handleNoEncontrado(ResourceNotFoundException ex) {
         return error(HttpStatus.NOT_FOUND, "No encontrado", List.of(ex.getMessage()));
     }
 
     @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<ErrorResponse> handleBusiness(BusinessException ex) {
+    public ResponseEntity<ErrorResponse> handleNegocio(BusinessException ex) {
         return error(HttpStatus.BAD_REQUEST, "Error de negocio", List.of(ex.getMessage()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
+    public ResponseEntity<ErrorResponse> handleValidacion(MethodArgumentNotValidException ex) {
         List<String> errores = ex.getBindingResult().getFieldErrors().stream()
-            .map(fe -> fe.getDefaultMessage())
+            .map(FieldError::getDefaultMessage)
             .toList();
         return error(HttpStatus.BAD_REQUEST, "Error de validación", errores);
     }
 
     @ExceptionHandler({HttpMessageNotReadableException.class, MethodArgumentTypeMismatchException.class})
-    public ResponseEntity<ErrorResponse> handleRequestInvalida(Exception ex) {
+    public ResponseEntity<ErrorResponse> handleSolicitudInvalida(Exception ex) {
         return error(HttpStatus.BAD_REQUEST, "Solicitud inválida", List.of("Solicitud inválida"));
     }
 
     @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<ErrorResponse> handleAuth(AuthenticationException ex) {
+    public ResponseEntity<ErrorResponse> handleNoAutenticado(AuthenticationException ex) {
         return error(HttpStatus.UNAUTHORIZED, "No autenticado", List.of(ex.getMessage()));
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ErrorResponse> handleDenied(AccessDeniedException ex) {
+    public ResponseEntity<ErrorResponse> handleAccesoDenegado(AccessDeniedException ex) {
         return error(HttpStatus.FORBIDDEN, "Acceso denegado", List.of(ex.getMessage()));
     }
 
     @ExceptionHandler(NoResourceFoundException.class)
-    public ResponseEntity<ErrorResponse> handleNoResource(NoResourceFoundException ex) {
+    public ResponseEntity<ErrorResponse> handleRutaNoEncontrada(NoResourceFoundException ex) {
         return error(HttpStatus.NOT_FOUND, "No encontrado", List.of(ex.getMessage()));
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-    public ResponseEntity<ErrorResponse> handleMetodo(HttpRequestMethodNotSupportedException ex) {
+    public ResponseEntity<ErrorResponse> handleMetodoNoPermitido(HttpRequestMethodNotSupportedException ex) {
         return error(HttpStatus.METHOD_NOT_ALLOWED, "Método no permitido", List.of(ex.getMessage()));
     }
 
