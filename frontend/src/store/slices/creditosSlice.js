@@ -47,7 +47,7 @@ const creditosSlice = createSlice({
       .addCase(addCredito.rejected,               (state, action) => { state.loading = false; state.error = action.payload; })
       
       .addCase(anularCreditoThunk.pending,        (state) => { state.loading = true; state.error = null; })
-            .addCase(anularCreditoThunk.fulfilled,      (state) => { state.loading = false; })
+      .addCase(anularCreditoThunk.fulfilled,      (state) => { state.loading = false; })
       .addCase(anularCreditoThunk.rejected,       (state, action) => { state.loading = false; state.error = action.payload; });
   },
 });

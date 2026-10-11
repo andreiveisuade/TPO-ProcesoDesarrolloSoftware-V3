@@ -1,5 +1,5 @@
 import { formatMoneda } from '../utils/formato';
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchEstadisticas } from '../store/slices/dashboardSlice'; 
 import { ROLES } from '../utils/roles';

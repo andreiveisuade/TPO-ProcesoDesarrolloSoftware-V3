@@ -4,11 +4,13 @@ import { fetchClientes, addCliente } from '../store/slices/clientesSlice';
 import { getCliente } from '../api/clientes';
 import Aviso from '../components/Aviso';
 
+const FORM_VACIO = { dni: '', nombre: '' };
+
 // Alta, busqueda por DNI y listado de clientes.
 export default function Clientes() {
   const dispatch = useDispatch();
   const { lista, loading, error } = useSelector((state) => state.clientes);
-  const [form, setForm] = useState({ dni: '', nombre: '' });
+  const [form, setForm] = useState(FORM_VACIO);
   const [dniBuscado, setDniBuscado] = useState('');
   const [encontrado, setEncontrado] = useState(null);
   const [errorBusqueda, setErrorBusqueda] = useState(null);
@@ -29,7 +31,7 @@ export default function Clientes() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const result = await dispatch(addCliente(form));
-    if (result.meta.requestStatus === 'fulfilled') setForm({ dni: '', nombre: '' });
+    if (result.meta.requestStatus === 'fulfilled') setForm(FORM_VACIO);
   };
 
   return (
@@ -48,7 +50,7 @@ export default function Clientes() {
 
       <div style={styles.card}>
         <h3>Nuevo cliente</h3>
-        {error && <div style={styles.error}>{error}</div>}
+        <Aviso>{error}</Aviso>
         <form onSubmit={handleSubmit} style={styles.form}>
           <input style={styles.input} placeholder="DNI" value={form.dni} onChange={e => setForm({...form, dni: e.target.value})} required />
           <input style={styles.input} placeholder="Nombre completo" value={form.nombre} onChange={e => setForm({...form, nombre: e.target.value})} required />
@@ -82,7 +84,6 @@ const styles = {
   form:  { display:'flex', gap:'12px', flexWrap:'wrap', alignItems:'center' },
   input: { padding:'10px', border:'1px solid var(--color-border-strong)', borderRadius:'6px', flex:'1', minWidth:'140px' },
   btn:   { padding:'10px 20px', backgroundColor:'var(--color-primary)', color:'var(--color-on-primary)', border:'none', borderRadius:'6px', cursor:'pointer', fontWeight:'bold' },
-  error: { background:'var(--color-danger-bg)', color:'var(--color-danger)', padding:'10px', borderRadius:'6px', marginBottom:'12px', fontSize:'0.9rem' },
   empty: { color:'var(--color-text-muted)' },
   table: { width:'100%', borderCollapse:'collapse', textAlign:'left', marginTop:'10px' },
   trHead: { borderBottom:'2px solid var(--color-border)' },

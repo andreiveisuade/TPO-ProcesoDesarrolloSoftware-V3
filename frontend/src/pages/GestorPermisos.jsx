@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchUsuariosSupervisor, togglePermiso } from '../store/slices/permisosSlice';
+import { fetchUsuariosSupervisor, actualizarPermisos } from '../store/slices/permisosSlice';
 
 // Tabla del SUPERVISOR para otorgar o quitar permisos de anulacion.
 const GestorPermisos = () => {
@@ -18,7 +18,7 @@ const GestorPermisos = () => {
       [campoPermiso]: !usuario[campoPermiso]
     };
     
-    dispatch(togglePermiso({ id: usuario.id, permisos: nuevosPermisos }));
+    dispatch(actualizarPermisos({ id: usuario.id, permisos: nuevosPermisos }));
   };
 
   return (
@@ -44,33 +44,31 @@ const GestorPermisos = () => {
               </tr>
             </thead>
             <tbody>
-              {usuarios.map(u => {
-                return (
-                  <tr key={u.id} style={styles.tr}>
-                    <td style={styles.td}>
-                      {u.username}
-                    </td>
-                    <td style={styles.tdCenter}>
-                      <input 
-                        type="checkbox" 
-                        checked={u.puedeAnularCredito} 
-                        onChange={() => handleCheckboxChange(u, 'puedeAnularCredito')}
-                        disabled={loading}
-                        style={styles.checkbox}
-                      />
-                    </td>
-                    <td style={styles.tdCenter}>
-                      <input 
-                        type="checkbox" 
-                        checked={u.puedeAnularCobranza}
-                        onChange={() => handleCheckboxChange(u, 'puedeAnularCobranza')}
-                        disabled={loading}
-                        style={styles.checkbox}
-                      />
-                    </td>
-                  </tr>
-                );
-              })}
+              {usuarios.map(u => (
+                <tr key={u.id} style={styles.tr}>
+                  <td style={styles.td}>
+                    {u.username}
+                  </td>
+                  <td style={styles.tdCenter}>
+                    <input 
+                      type="checkbox" 
+                      checked={u.puedeAnularCredito} 
+                      onChange={() => handleCheckboxChange(u, 'puedeAnularCredito')}
+                      disabled={loading}
+                      style={styles.checkbox}
+                    />
+                  </td>
+                  <td style={styles.tdCenter}>
+                    <input 
+                      type="checkbox" 
+                      checked={u.puedeAnularCobranza}
+                      onChange={() => handleCheckboxChange(u, 'puedeAnularCobranza')}
+                      disabled={loading}
+                      style={styles.checkbox}
+                    />
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         )}
