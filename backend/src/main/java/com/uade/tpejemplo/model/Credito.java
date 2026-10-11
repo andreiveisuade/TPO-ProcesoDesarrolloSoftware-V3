@@ -78,7 +78,6 @@ public class Credito implements ICredito {
         this.cantidadCuotas = cantidadCuotas;
         this.tipoPlan = tipoPlan;
         this.importeCuota = calculo().importeCuota(deudaOriginal, tasaInteres, cantidadCuotas);
-        this.anulado = false;
         // Creator: el credito nace con su plan de cuotas
         generarPlanDeCuotas();
     }
@@ -89,6 +88,11 @@ public class Credito implements ICredito {
     public static Credito nuevo(Cliente cliente, BigDecimal deudaOriginal, LocalDate fecha,
                                 BigDecimal tasaInteres, Integer cantidadCuotas, TipoPlan tipoPlan) {
         return new Credito(cliente, deudaOriginal, fecha, tasaInteres, cantidadCuotas, tipoPlan);
+    }
+
+    // Strategy: el contexto delega el cálculo de la cuota en la estrategia elegida al otorgar (no cambia después)
+    private CalculoDeCuota calculo() {
+        return tipoPlan.calculo();
     }
 
     public BigDecimal totalADevolver() {
@@ -113,11 +117,6 @@ public class Credito implements ICredito {
             return EstadoCredito.ANULADO;
         }
         return estaCancelado() ? EstadoCredito.CANCELADO : EstadoCredito.VIGENTE;
-    }
-
-    // Strategy: el contexto delega el cálculo de la cuota en la estrategia elegida al otorgar (no cambia después)
-    private CalculoDeCuota calculo() {
-        return tipoPlan.calculo();
     }
 
     public BigDecimal saldo() {
