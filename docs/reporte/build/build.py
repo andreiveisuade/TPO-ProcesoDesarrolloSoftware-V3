@@ -373,7 +373,7 @@ indice = [
  ("m4", "Permisos de anulación en el backend", "MVC + Expert", "TPO-007"),
  ("m5", "Handlers HTTP 400 a 415", "MVC", "TPO-001, 002"),
  ("m6", "Cuota.estaVencida()", "Information Expert", "revisión del dominio"),
- ("m8", "EstadoCredito + Credito agregado", "Expert + Creator", "revisión del dominio"),
+ ("m8", "EstadoCredito + Credito agregado", "Information Expert", "revisión del dominio"),
  ("m10", "Dashboard para ADMIN", "Corrección, sin patrón", "TPO-010"),
 ]
 tabla_indice = "".join(f'<tr><td><a href="#{k}">{k.upper()}</a></td><td>{a}</td><td>{b}</td><td>{c}</td></tr>' for k, a, b, c in indice)
@@ -447,7 +447,7 @@ convenciones = """<p>Convención: <strong>una <code>I&lt;Clase&gt;</code> por cl
 
 matriz = [
  ("Information Expert", "<code>model/Credito.java</code> <code>estado</code>, <code>saldo</code>, <code>montoVencido</code>, <code>puedeAnularse</code>; <code>model/Cuota.java</code> <code>estaVencida</code>", "Cumple"),
- ("Creator", "<code>model/Credito.java</code> genera sus cuotas (O6); <code>Cuota.registrarCobranza</code> crea la <code>Cobranza</code>", "Cumple"),
+ ("Creator", "<code>model/Credito.java</code> genera sus cuotas (O6); <code>Cuota.registrarCobranza</code> crea la <code>Cobranza</code>; <code>Usuario.nuevo</code> es la única fábrica de usuarios. Qué rol recibe quien se registra solo (USER, sin permisos) es política del caso de uso: la decide <code>AuthServiceImpl.registrar</code>, no una segunda fábrica con un solo uso.", "Cumple"),
  ("Controller", "<code>controller/*Controller</code> por caso de uso, delegan en <code>XService</code>", "Cumple"),
  ("Bajo acoplamiento / Alta cohesión", "controllers → interfaces de servicio; clientes → <code>service/TokenService.java</code>", "Cumple"),
  ("Polymorphism", "<code>model/interfaces/CalculoDeCuota.java</code>, sin <code>if</code> por plan", "Cumple"),

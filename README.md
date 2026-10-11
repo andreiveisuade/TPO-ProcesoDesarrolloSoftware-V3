@@ -59,7 +59,7 @@ Detalle completo, con clase y método de cada una: [lista de mejoras](docs/entre
 | M3 | Dashboard solo con lo vigente (TPO-003) | Corrección + Expert | [`DashboardServiceImpl`](backend/src/main/java/com/uade/tpejemplo/service/impl/DashboardServiceImpl.java) |
 | M4 | Permisos de anulación validados en el backend (TPO-007) | MVC + Expert | [`CreditoServiceImpl`](backend/src/main/java/com/uade/tpejemplo/service/impl/CreditoServiceImpl.java) |
 | M5 | Respuestas 401/403/404/405 (TPO-001, TPO-002) | MVC | [`GlobalExceptionHandler`](backend/src/main/java/com/uade/tpejemplo/exception/GlobalExceptionHandler.java) |
-| M8 | Estado, saldo y anulación en el agregado `Credito` | Expert + Creator | [`EstadoCredito`](backend/src/main/java/com/uade/tpejemplo/model/EstadoCredito.java) |
+| M8 | Estado, saldo y anulación en el agregado `Credito` | Information Expert | [`EstadoCredito`](backend/src/main/java/com/uade/tpejemplo/model/EstadoCredito.java) |
 
 <details>
 <summary>El resto</summary>
