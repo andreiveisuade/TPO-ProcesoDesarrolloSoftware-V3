@@ -126,10 +126,12 @@ body.lb-locked{overflow:hidden}
 <ul><li>13 smells: god class, data class, primitive obsession, encapsulamiento</li><li>Sin <code>MetaCobranza</code>; <code>Cuota.estaPagada()</code> y <code>registrarCobranza</code></li><li><code>UsuarioDetails</code> como Adapter</li><li>Resueltos TPO-005, 006, 013, 015</li></ul></div>
 <div class="hito"><div class="punto"></div><h4>V2</h4><p class="tema">Iteración 2: GRASP + interfaces</p><p class="meta">Mergeada 15/09 · <code>main@45e228c</code> (tag <code>v2</code>) · 5 commits</p>
 <ul><li>Information Expert: <code>Cobranza.anular()</code>, <code>Credito.anular()</code></li><li>Creator: <code>Usuario.nuevo</code></li><li>Interfaz por cada clase del modelo y de servicio</li><li>Revierte §3.7 de V1 (Lazy class): restituye las interfaces de servicio</li></ul></div>
-<div class="hito actual"><div class="punto"></div><h4>V3</h4><p class="tema">Iteración 3: MVC + Strategy + Adapter</p><p class="meta">Entrega 13/10/2026 · repo V3, <code>main</code> · 189 commits sin merges</p>
+<div class="hito actual"><div class="punto"></div><h4>V3</h4><p class="tema">Iteración 3: MVC + Strategy + Adapter</p><p class="meta">Entrega 13/10/2026 · repo V3, <code>main</code> · 191 commits sin merges</p>
 <ul><li><strong>Strategy</strong>: cálculo de cuota, interés simple y sistema francés (M9)</li><li><strong>Adapter</strong>: <code>TokenService</code> sobre jjwt (M7)</li><li><code>EstadoCredito</code>, saldo, mora (M6, M8)</li><li>Permisos y errores HTTP en el backend (M4, M5)</li><li>Dashboard con saldo y vencido (M3, M10, O7); 43 tests</li><li>Revierte V2: el sistema francés, descartado el 15/09, vuelve como segunda estrategia</li><li>Swagger, perfiles dev/prod, UI, dark theme, UC06/UC09</li></ul></div>
 </div>
-<details><summary>Commits V2 → V3 (git log v2..main)</summary><pre><code>52e9be0 Fuera esValido: era tautológico y el parseo ya valida firma y vencimiento (Target, Adapter, filtro, diagramas y docs)
+<details><summary>Commits V2 → V3 (git log v2..main)</summary><pre><code>18b571f Cuota: el comentario Creator vuelve a decir por qué
+163c259 Reporte regenerado
+52e9be0 Fuera esValido: era tautológico y el parseo ya valida firma y vencimiento (Target, Adapter, filtro, diagramas y docs)
 af280f7 Credito: saldo y montoVencido suman con un solo sumarCuotas(filtro)
 7ebaf91 404 legible: &quot;No se encontró &lt;recurso&gt; con &lt;campo&gt; &lt;valor&gt;&quot;, sin género fijo ni nombres técnicos de campo
 9da1653 Comentarios: solo la regla vigente en Usuario y ClienteRepository, sin prosa duplicada en Cobranza y Cuota
@@ -1427,7 +1429,7 @@ DaoAuthenticationProvider ..&gt; UserDetails
         cobranzas.add(cobranza);
         return cobranza;
     }</code></pre></dd>
-<dt>Solución (código después)</dt><dd><p>Crédito anulado: <code>BusinessException</code> (400).</p><div class="ruta">backend/src/main/java/com/uade/tpejemplo/model/Cuota.java <span class="ver">· V3 (main)</span></div><pre><code>    // Creator: la cuota crea su cobranza
+<dt>Solución (código después)</dt><dd><p>Crédito anulado: <code>BusinessException</code> (400).</p><div class="ruta">backend/src/main/java/com/uade/tpejemplo/model/Cuota.java <span class="ver">· V3 (main)</span></div><pre><code>    // Creator: la cuota crea su cobranza (sabe si ya esta pagada y cuanto vale)
     public Cobranza registrarCobranza(BigDecimal importe) {
         if (credito.isAnulado()) {
             throw new BusinessException(
