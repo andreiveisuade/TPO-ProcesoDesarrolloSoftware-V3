@@ -32,7 +32,7 @@ public class AuthController {
     @ApiResponse(responseCode = "201", description = "Creado")
     @ApiResponse(responseCode = "400", description = "Error de validación o regla de negocio")
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
+    public ResponseEntity<AuthResponse> registrar(@Valid @RequestBody RegisterRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(authService.registrar(request));
     }
 
@@ -50,7 +50,7 @@ public class AuthController {
     @ApiResponse(responseCode = "200", description = "OK")
     @ApiResponse(responseCode = "401", description = "Sin token o token inválido")
     @GetMapping("/me")
-    public ResponseEntity<AuthResponse> me(@AuthenticationPrincipal UserDetails usuario) {
+    public ResponseEntity<AuthResponse> actual(@AuthenticationPrincipal UserDetails usuario) {
         return ResponseEntity.ok(authService.actual(usuario.getUsername()));
     }
 }
