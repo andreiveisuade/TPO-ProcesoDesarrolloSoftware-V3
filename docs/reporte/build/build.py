@@ -373,65 +373,61 @@ tabla_indice = "".join(f'<tr><td><a href="#{k}">{k.upper()}</a></td><td>{a}</td>
 
 # ---------------- revisión ----------------
 rev = [
- ("API", "f551cbc, 1ea0375, 1737bd9, 940958e", "Sin token respondía 403; requests de admin sin <code>@Valid</code>.", "401 vía <code>HttpStatusEntryPoint</code> (<code>config/SecurityConfig.java</code>); <code>@Valid</code> en <code>AdminController</code> y <code>SupervisorController</code>; <code>GET /api/creditos</code>.", "<strong>MVC</strong>: el controlador valida la forma."),
- ("H1", "fcc9bf6", "Una cobranza anulada podía <strong>anularse otra vez</strong>.", "<code>Cobranza.anular</code> la rechaza.", "<strong>Information Expert</strong>."),
- ("O1", "444031f, 64cee96", "La vista <strong>decidía</strong> si un crédito era anulable.", "<code>CreditoResponse</code> expone <code>puedeAnularse</code>; <code>Creditos.jsx</code> lo usa.", "<strong>MVC</strong>: decide el modelo."),
- ("O2", "de78c07", "El Target <strong>exponía tipos de jjwt</strong>.", "<code>TokenService.extraerUsername</code> devuelve <code>Optional</code>; <code>JwtUtil</code> absorbe las excepciones.", "<strong>Adapter</strong>: el Target no filtra el Adaptado."),
- ("O3", "1f9fc50", "El total <strong>recalculaba con la estrategia</strong> y no coincidía con las cuotas.", "<code>Credito.totalADevolver</code> = cuota × cantidad.", "<strong>Strategy</strong> solo al otorgar."),
- ("O4", "87f0631", "“Activos” <strong>contaba cancelados</strong>.", "<code>DashboardServiceImpl</code> cuenta <code>estado() == VIGENTE</code>.", "<strong>Information Expert</strong>."),
- ("O5", "5b7f165", "La API permitía <strong>modificar permisos del ADMIN</strong>.", "<code>Usuario.otorgarPermisos</code> y <code>asignarRol</code> lo rechazan.", "<strong>Regla en el modelo</strong>."),
- ("S1", "67ba784", "Escrituras <strong>sin transacción</strong>.", "<code>@Transactional</code> en <code>service/impl/*</code>; <code>readOnly</code> en lecturas.", "<strong>Unidad de trabajo</strong> en el servicio."),
- ("S2", "1e87795", "Open-in-view <strong>ocultaba</strong> servicios sin transacción.", "<code>spring.jpa.open-in-view=false</code>.", "Carga explícita."),
- ("S3", "45a35c9, e8a1372", "<code>jwt.secret</code> <strong>en un repo público</strong> (TPO-009); prod arrancaba con ese valor y creaba <code>admin/admin</code>.", "<code>application-prod.properties</code> exige <code>${JWT_SECRET}</code>; <code>DataInitializer</code> solo en <code>@Profile(\"dev\")</code>.", "<strong>Configuración fuera del código</strong>."),
- ("S4", "904fa1e", "El 500 <strong>exponía</strong> SQL y clases.", "Mensaje genérico y log en <code>GlobalExceptionHandler</code>.", "<strong>No exponer internos</strong>."),
- ("D1, D2", "5ac2155, 3bd8b61", "<code>UsuarioRepository.findByRol</code> y anotaciones de <code>AuthResponse</code> sin uso.", "Eliminados.", "<strong>Código muerto</strong>."),
- ("BS1", "5f2c334", "<code>AdminService.listarTodos</code> duplicaba <code>listarUsuarios</code>.", "Eliminado.", "<strong>Código duplicado</strong>."),
- ("DF1, DF3", "830a998, 5d2dbc4", "Store huérfano; un <code>console.log</code> <strong>imprimía el JWT</strong>.", "Eliminados.", "<strong>Código muerto y de depuración</strong>."),
- ("BSF1", "c19e707", "Comentarios copiados en <code>store/slices/*</code>.", "Eliminados.", "<strong>Bad smell: comentarios</strong>."),
- ("F1", "f0e5c59", "Un usuario autenticado sin rol recibía <strong>401 en lugar de 403</strong>.", "<code>accessDeniedHandler</code> en <code>SecurityConfig</code>.", "<strong>401: no autenticado; 403: no autorizado.</strong>"),
- ("F2", "06fc842", "Un JSON malformado daba <strong>500</strong>.", "<code>handleRequestInvalida</code> responde 400.", "<strong>Error del cliente = 4xx</strong>."),
- ("I1", "9c3d4ae", "Anular y cobrar en paralelo dejaba un crédito <strong>ANULADO con una cobranza vigente</strong>.", "<code>@Lock(PESSIMISTIC_WRITE)</code> sobre el crédito en ambos caminos, en el mismo orden (crédito, luego cuota). Test: <code>AnulacionConcurrenteTest</code>.", "<strong>Bloqueo pesimista</strong>."),
- ("I3", "8e01d49", "<code>Content-Type</code> o <code>Accept</code> no JSON daba <strong>500</strong>.", "<strong>415</strong> y <strong>406</strong> con <code>ErrorResponse</code>; casos en <code>CodigosHttpTest</code>.", "<strong>Error del cliente = 4xx</strong>."),
- ("I4", "3eae70f", "Un alta <strong>aparecía en la lista filtrada</strong> de otro cliente o crédito.", "Los slices de créditos y cobranzas ya no agregan en <code>fulfilled</code>; la página recarga la lista.", "<strong>MVC</strong>: la vista refleja el modelo."),
- ("DER", "8eb2106", "<strong>Sin DER</strong> ni revisión del esquema.", "<code>docs/diagramas/der-v3.puml</code>; detectó I-1, I-2 e I-3, todas resueltas.", "El esquema garantiza identidad; las entidades, las reglas."),
- ("Provider y error único", "013c07a, 0df40d1", "Provider armado a mano (S5); <code>ErrorResponse</code> <strong>repetido 9 veces</strong> (BS2).", "Spring arma el provider; un único método <code>error</code> en <code>GlobalExceptionHandler</code>.", "<strong>Convención del framework</strong>; código duplicado."),
- ("Creator, saldo y mora", "d89d62d, 6cc5e17", "Un crédito podía quedar <strong>sin cuotas</strong> (O6); el dashboard no mostraba saldo ni mora (O7).", "El constructor de <code>Credito</code> genera las cuotas; <code>DashboardServiceImpl</code> calcula saldo y vencido.", "<strong>Creator</strong>; <strong>Information Expert</strong>."),
- ("Concurrencia, Tell don't ask, Primitive obsession", "8888df6, 5246f27, 7c6dd63, f96f53a", "Dos cobros simultáneos <strong>duplicaban la cobranza</strong> (I-1); el servicio consultaba permisos (BS3); rol como <code>String</code> (BS4).", "<code>@Lock(PESSIMISTIC_WRITE)</code> en <code>CuotaRepository</code>, con test de 20 hilos; <code>Usuario.puedeAnularCredito</code>; <code>Rol</code> en los DTO.", "<strong>Bloqueo pesimista</strong>; <strong>Tell, don't ask</strong>; primitive obsession."),
- ("Front: RoleRoute y ROLES", "dfa2c12, d9b0b8f, a085f66, f5c8d05, 0e3284e", "Rutas por rol <strong>duplicadas</strong>; roles como strings sueltos.", "<code>components/RoleRoute.jsx</code>, <code>utils/roles.js</code>; todo HTTP pasa por <code>src/api</code>.", "<strong>Código duplicado</strong>; strings mágicos."),
+ ("API", "f551cbc, 1ea0375, 1737bd9, 940958e", "Sin token respondía 403; admin sin <code>@Valid</code>.", "401 con <code>HttpStatusEntryPoint</code>; <code>@Valid</code> en admin y supervisor; <code>GET /api/creditos</code>."),
+ ("H1", "fcc9bf6", "Una cobranza anulada podía <strong>anularse otra vez</strong>.", "<code>Cobranza.anular</code> la rechaza."),
+ ("O1", "444031f, 64cee96", "La vista <strong>decidía</strong> si un crédito era anulable.", "El DTO expone <code>puedeAnularse</code>."),
+ ("O2", "de78c07", "El Target <strong>exponía tipos de jjwt</strong>.", "<code>extraerUsername</code> devuelve <code>Optional</code>; <code>JwtUtil</code> absorbe las excepciones."),
+ ("O3", "1f9fc50", "El total <strong>no coincidía con las cuotas</strong>.", "<code>totalADevolver</code> = cuota × cantidad; la estrategia actúa solo al otorgar."),
+ ("O4", "87f0631", "“Activos” <strong>contaba cancelados</strong>.", "Cuenta <code>estado() == VIGENTE</code>."),
+ ("O5", "5b7f165", "La API permitía <strong>modificar permisos del ADMIN</strong>.", "<code>Usuario</code> lo rechaza."),
+ ("S1, S2", "67ba784, 1e87795", "Escrituras <strong>sin transacción</strong>, ocultas por open-in-view.", "<code>@Transactional</code> en <code>service/impl</code>; <code>open-in-view=false</code>."),
+ ("S3", "45a35c9, e8a1372", "<code>jwt.secret</code> <strong>en un repo público</strong> (TPO-009); prod creaba <code>admin/admin</code>.", "Prod exige <code>${JWT_SECRET}</code>; la semilla solo corre en dev."),
+ ("S4", "904fa1e", "El 500 <strong>exponía</strong> SQL y clases.", "Mensaje genérico y log."),
+ ("S5, BS2", "013c07a, 0df40d1", "Provider armado a mano; <code>ErrorResponse</code> <strong>repetido 9 veces</strong>.", "Spring arma el provider; un único método <code>error</code>."),
+ ("D1, D2, BS1, DF1, DF3, BSF1", "5ac2155, 3bd8b61, 5f2c334, 830a998, 5d2dbc4, c19e707", "Código sin uso o duplicado; un <code>console.log</code> <strong>imprimía el JWT</strong>.", "Eliminados."),
+ ("F1", "f0e5c59", "Autenticado sin rol recibía <strong>401 en lugar de 403</strong>.", "<code>accessDeniedHandler</code>."),
+ ("F2, I3", "06fc842, 8e01d49", "JSON malformado o <code>Content-Type</code>/<code>Accept</code> no JSON daban <strong>500</strong>.", "400, 415 y 406."),
+ ("I1", "9c3d4ae", "Anular y cobrar en paralelo dejaba un crédito <strong>ANULADO con cobranza vigente</strong>.", "Bloqueo pesimista del crédito en ambos caminos, mismo orden."),
+ ("I-1", "8888df6", "Dos cobros simultáneos <strong>duplicaban la cobranza</strong>.", "Bloqueo pesimista de la cuota; test de 20 hilos."),
+ ("I4", "3eae70f", "Un alta <strong>aparecía en la lista filtrada</strong> de otro cliente.", "La página recarga la lista en vez de agregar."),
+ ("O6, O7", "d89d62d, 6cc5e17", "Crédito <strong>sin cuotas</strong>; dashboard sin saldo ni mora.", "El constructor de <code>Credito</code> crea las cuotas; saldo y vencido en el dashboard."),
+ ("BS3, BS4", "5246f27, 7c6dd63, f96f53a", "El servicio consultaba permisos; rol como <code>String</code>.", "<code>Usuario.puedeAnularCredito</code>; enum <code>Rol</code> en los DTO."),
+ ("Front", "dfa2c12, d9b0b8f, a085f66, f5c8d05, 0e3284e", "Rutas por rol <strong>duplicadas</strong>; roles como strings.", "<code>RoleRoute</code> y <code>utils/roles.js</code>."),
+ ("DER", "8eb2106", "<strong>Sin DER</strong>.", "<code>der-v3.puml</code>; detectó I-1, I-2 e I-3, resueltas."),
 ]
-rev_html = "".join(f'<div class="rev" id="{re.sub(r'[^a-z0-9]+', '-', i.lower())}"><h4>{i} <span class="ref">· <code>{c}</code></span></h4><p><strong>Problema.</strong> {p} <strong>Cambio.</strong> {s} <strong>Concepto.</strong> {k}</p></div>' for i, c, p, s, k in rev)
+rev_html = '<table><thead><tr><th>ID · commits</th><th>Problema</th><th>Cambio</th></tr></thead><tbody>' + "".join(f'<tr><td><strong>{i}</strong><br><span class="ref"><code>{c}</code></span></td><td>{p}</td><td>{s}</td></tr>' for i, c, p, s in rev) + '</tbody></table>'
 
 evol = [
- ("Swagger (contrato de la API)", "f551cbc, a4b2077",
+ ("Swagger", "f551cbc, a4b2077",
   "<strong>Sin contrato</strong>: el front deducía endpoints y códigos.",
-  "springdoc publica <code>/swagger-ui.html</code>: 20 operaciones, esquema Bearer JWT y códigos reales (<code>config/OpenApiConfig.java</code>, <code>@Operation</code>).",
-  "<strong>MVC</strong>: contrato vista-controlador explícito."),
+  "<code>/swagger-ui.html</code>: 20 operaciones, Bearer JWT, códigos reales.",
+  "contrato vista-controlador explícito (MVC)."),
  ("Perfiles dev/prod y CORS", "e744600, 45a35c9",
-  "Una sola configuración para demo y producción; <strong>consola H2 abierta sin login</strong>; CORS sin origen (TPO-008).",
-  "<code>application-dev.properties</code> (H2, SQL en logs, CORS a <code>localhost:5173</code>) y <code>application-prod.properties</code> (sin consola, <code>CORS_ORIGIN</code> obligatoria). Secret y semilla: S3.",
-  "<strong>Configuración externalizada</strong>. Prod sigue en H2 en memoria (ver Pendientes)."),
- ("UI: moneda, fechas, badges, avisos", "01fabb9, 08c8fda, 1ec4ccb, f0d2372, 4f42ebd, 86b7083",
-  "Importes sin formato, fechas ISO, <strong>sin aviso</strong> al crear, mensajes con nombres técnicos de campo.",
-  "Formato es-AR (<code>utils/formato.js</code>), badge de estado y progreso, <code>components/Aviso.jsx</code>, mensajes centralizados en <code>api/apiClient.js</code>.",
-  "<strong>MVC</strong>: cambia solo la vista."),
+  "Una configuración para demo y producción; <strong>consola H2 sin login</strong>; CORS sin origen (TPO-008).",
+  "Perfil dev (H2, SQL en logs) y prod (sin consola, <code>CORS_ORIGIN</code> obligatoria).",
+  "configuración externalizada; prod sigue en H2 en memoria."),
+ ("UI", "01fabb9, 08c8fda, 1ec4ccb, f0d2372, 4f42ebd, 86b7083",
+  "Importes sin formato, fechas ISO, <strong>sin aviso</strong> al crear, nombres técnicos en los mensajes.",
+  "Formato es-AR, badge de estado, avisos, mensajes centralizados en <code>apiClient.js</code>.",
+  "cambia solo la vista (MVC)."),
  ("Dark theme", "979ab37",
-  "Colores <strong>fijos</strong> en cada <code>.jsx</code>.",
-  "Variables CSS semánticas en <code>index.css</code>; <code>prefers-color-scheme</code> elige el tema. Contraste WCAG AA.",
-  "La <strong>paleta varía en un solo lugar</strong>."),
- ("Casos de uso y pantallas nuevas", "0e7a1ad, 1210424, 28840ac",
-  "UC06 y UC09 <strong>sin pantalla</strong>; un permiso otorgado no se veía hasta volver a iniciar sesión (H4).",
-  "Búsqueda por DNI y por número de crédito. <code>PrivateRoute</code> consulta <code>GET /api/auth/me</code> en cada pantalla.",
-  "<strong>MVC</strong>: el modelo es la autoridad (M4)."),
- ("Tests (40) y validación", "6f552e0..82fc486, 4d35266, 77dec02, 90d0e5e, 8888df6",
+  "Colores <strong>fijos</strong> en cada componente.",
+  "Variables CSS semánticas; <code>prefers-color-scheme</code> elige el tema. Contraste WCAG AA.",
+  "la paleta varía en un solo lugar."),
+ ("UC06, UC09 y permisos", "0e7a1ad, 1210424, 28840ac",
+  "UC06 y UC09 <strong>sin pantalla</strong>; un permiso nuevo no se veía hasta reiniciar sesión (H4).",
+  "Búsqueda por DNI y por número de crédito; <code>PrivateRoute</code> consulta <code>/api/auth/me</code>.",
+  "el modelo es la autoridad sobre permisos (MVC, M4)."),
+ ("Tests y validación", "6f552e0..82fc486, 4d35266, 77dec02, 90d0e5e, 8888df6",
   "<strong>Cero tests</strong> en V2; un DNI largo o una deuda enorme daban 500 (I-2).",
-  "Desglose en Verificación. <code>@Size</code>/<code>@Digits</code> en <code>dto/request/</code>. La fecha actual entra por parámetro: <code>Cuota.estaVencida(LocalDate)</code>.",
-  "<strong>Testeabilidad</strong>: el dominio se prueba sin Spring ni reloj."),
+  "40 tests; <code>@Size</code>/<code>@Digits</code> en los DTO; <code>Cuota.estaVencida(LocalDate)</code> recibe la fecha.",
+  "el dominio se prueba sin Spring ni reloj."),
  ("Limpieza", "ddbdebb, 3478af6, c36658f, 6a1c363, 4713828",
-  "Javadoc redundante, <code>.factorypath</code> versionado, documentos de proceso en el zip.",
-  "Comentarios de 1-3 líneas por clase y <strong>una línea por patrón</strong>; <code>export-ignore</code> en <code>.gitattributes</code>.",
-  "<strong>Bad smell: comentarios</strong>. El zip lleva solo código vigente."),
+  "Javadoc redundante; archivos de IDE y de proceso en el zip.",
+  "Una línea por patrón; <code>.factorypath</code> fuera del repo; <code>export-ignore</code> para docs de proceso.",
+  "el zip lleva solo código vigente."),
 ]
-evol_html = "".join(f'<div class="rev"><h4>{t} <span class="ref">· <code>{c}</code></span></h4><p><strong>Problema.</strong> {p} <strong>Solución.</strong> {s} <strong>Práctica.</strong> {k}</p></div>' for t, c, p, s, k in evol)
+evol_html = '<table><thead><tr><th>Mejora · commits</th><th>Problema</th><th>Solución</th></tr></thead><tbody>' + "".join(f'<tr><td><strong>{t}</strong><br><span class="ref"><code>{c}</code></span></td><td>{p}</td><td>{s}</td></tr>' for t, c, p, s, k in evol) + '</tbody></table>'
 
 convenciones = """<p>Convención: <strong>una <code>I&lt;Clase&gt;</code> por clase de modelo</strong> en <code>model/interfaces/</code> y <strong><code>XService</code> + <code>service/impl/XServiceImpl</code></strong>. Excepciones, a propósito:</p>
 <table><thead><tr><th>Clase</th><th>Excepción</th><th>Motivo</th></tr></thead><tbody>
@@ -460,7 +456,7 @@ matriz_html = "<table><thead><tr><th>Principio</th><th>Dónde</th><th>Veredicto<
 def cap(sub, nom, alt):
     return f'<figure><figcaption>{alt}</figcaption><a href="capturas/{sub}/{nom}.png"><img src="capturas/{sub}/{nom}.png" alt="{alt}" style="width:100%;border:1px solid var(--linea);border-radius:4px"></a></figure>'
 
-capturas_ui = ('<h3>Capturas de la UI</h3><p>Antes y después de las mejoras de presentación, y el tema oscuro.</p>'
+capturas_ui = (''
     + '<div class="par">' + cap("ui-antes", "03-creditos", "Créditos, antes") + cap("ui-despues", "03-creditos", "Créditos, después") + '</div>'
     + '<div class="par">' + cap("ui-antes", "04-cobranzas", "Cobranzas, antes") + cap("ui-despues", "04-cobranzas", "Cobranzas, después") + '</div>'
     + '<div class="par">' + cap("dark", "creditos", "Créditos, dark theme") + cap("dark", "dashboard", "Dashboard, dark theme") + '</div>')
@@ -473,42 +469,42 @@ timeline = f'''<div class="timeline">
 <div class="hito"><div class="punto"></div><h4>V0</h4><p class="tema">Punto 0, proyecto inicial</p><p class="meta"><code>main@2a90af8</code> (repo Arreglos)</p>
 <ul><li>CRUD de clientes, créditos y cobranzas</li><li>Cuota con importe cargado a mano</li><li>Usuario como UserDetails</li><li>MetaCobranza (ABM sin uso)</li></ul></div>
 <div class="hito"><div class="punto"></div><h4>V1</h4><p class="tema">Iteración 1: bad smells</p><p class="meta">Entregada 08/09 · <code>andrei-iteracion1@86c75cc</code> · 28 commits</p>
-<ul><li>13 smells corregidos (god class, data class, primitive obsession, encapsulamiento)</li><li><code>MetaCobranza</code> eliminada; <code>Cuota.estaPagada()</code> y <code>registrarCobranza</code></li><li><code>UsuarioDetails</code> como Adapter</li><li>Resueltos TPO-005, 006, 013, 015</li></ul></div>
+<ul><li>13 smells corregidos (god class, data class, primitive obsession, encapsulamiento)</li><li>Sin <code>MetaCobranza</code>; <code>Cuota.estaPagada()</code> y <code>registrarCobranza</code></li><li><code>UsuarioDetails</code> como Adapter</li><li>Resueltos TPO-005, 006, 013, 015</li></ul></div>
 <div class="hito"><div class="punto"></div><h4>V2</h4><p class="tema">Iteración 2: GRASP + interfaces</p><p class="meta">Mergeada 15/09 · <code>main@45e228c</code> (tag <code>v2</code>) · 5 commits</p>
 <ul><li>Information Expert: <code>Cobranza.anular()</code>, <code>Credito.anular()</code></li><li>Creator: <code>Usuario.nuevo</code></li><li>Interfaz por cada clase del modelo y de servicio</li><li>Revierte §3.7 del informe 1 (Lazy class): interfaces de servicio restituidas</li></ul></div>
 <div class="hito actual"><div class="punto"></div><h4>V3</h4><p class="tema">Iteración 3: MVC + Strategy + Adapter</p><p class="meta">Entrega 13/10/2026 · repo V3, <code>main</code> · {n_v3} commits sin merges</p>
-<ul><li><strong>Strategy</strong>: cálculo de cuota, interés simple y sistema francés (M9)</li><li><strong>Adapter</strong>: <code>TokenService</code> sobre jjwt (M7)</li><li><code>EstadoCredito</code>, saldo, mora (M6, M8)</li><li>Permisos y errores HTTP en el backend (M4, M5), Swagger</li><li>Dashboard corregido y con saldo y vencido (M3, M10, O7); el crédito crea sus cuotas (O6); 40 tests</li><li>Revierte V2: sistema francés descartado el 15/09</li><li>Swagger, perfiles dev/prod, UI, dark theme, UC06/UC09</li></ul></div>
+<ul><li><strong>Strategy</strong>: cálculo de cuota, interés simple y sistema francés (M9)</li><li><strong>Adapter</strong>: <code>TokenService</code> sobre jjwt (M7)</li><li><code>EstadoCredito</code>, saldo, mora (M6, M8)</li><li>Permisos y errores HTTP en el backend (M4, M5)</li><li>Dashboard con saldo y vencido (M3, M10, O7); 40 tests</li><li>Revierte V2: el sistema francés, descartado el 15/09, vuelve como segunda estrategia</li><li>Swagger, perfiles dev/prod, UI, dark theme, UC06/UC09</li></ul></div>
 </div>
 <details><summary>Commits V2 → V3 (git log v2..main)</summary><pre><code>{e(log_v3)}</code></pre></details>'''
 
 mapeo = [
- ("model/*, model/interfaces/*, model/plan/*", "Modelo", "Datos y reglas de negocio (Expert). Acá viven las estrategias de M9 y el agregado de M8."),
- ("repository/*", "Modelo", "Acceso a datos con Spring Data JPA (interfaces que Spring implementa a partir de los nombres y las <code>@Query</code>)."),
- ("service/*, service/impl/*", "Modelo", "Orquestan casos de uso y fijan la transacción (S1). <code>TokenService</code> es el Target del Adapter de M7."),
- ("exception/BusinessException, ResourceNotFoundException", "Modelo", "Las lanza el modelo para decir “viola una regla” / “no existe”."),
- ("controller/*", "Controlador", "Reciben el evento HTTP, validan forma (<code>@Valid</code>), identifican al usuario (<code>@AuthenticationPrincipal</code>, M4), invocan al modelo y devuelven DTO."),
- ("dto/request/*, dto/response/*", "Controlador (frontera)", "Contrato vista-controlador (DTO/VO). Se arman desde las interfaces del modelo: el modelo no conoce el DTO."),
- ("exception/GlobalExceptionHandler", "Controlador", "Traduce excepciones a HTTP: 400 regla, 401 sin autenticar, 403 sin permiso, 404, 405, 500 sin detalles internos (M5, S4)."),
- ("security/*, config/SecurityConfig", "Controlador", "Se ejecutan antes del controller y deciden si el evento entra. Sin token responde 401 (<code>HttpStatusEntryPoint</code>); con token y sin rol, 403. <code>JwtUtil</code> y <code>UsuarioDetails</code> son Adapters."),
- ("config/OpenApiConfig + anotaciones <code>@Operation</code>", "Controlador (contrato)", "Publica el contrato de la API en Swagger UI (<code>/swagger-ui.html</code>), con esquema Bearer JWT."),
- ("config/DataInitializer", "Modelo", "Siembra usuarios vía <code>Usuario.nuevo</code>; no atiende eventos."),
- ("Frontend pages/*, components/*", "Vista", "Presentan datos y envían acciones; la decisión (<code>puedeAnularse</code>, O1) viene del modelo."),
- ("Frontend store/slices/*, api/*", "Vista", "Estado del cliente (Redux) y única puerta HTTP (<code>api/apiClient.js</code>) hacia los <code>@RestController</code>."),
+ ("model/*, model/interfaces/*, model/plan/*", "Modelo", "Datos y reglas de negocio (Expert); estrategias de M9 y agregado de M8."),
+ ("repository/*", "Modelo", "Acceso a datos; Spring Data los implementa."),
+ ("service/*, service/impl/*", "Modelo", "Orquestan casos de uso y la transacción (S1). <code>TokenService</code>: Target de M7."),
+ ("exception/BusinessException, ResourceNotFoundException", "Modelo", "Señalan regla violada o recurso inexistente."),
+ ("controller/*", "Controlador", "Reciben el evento HTTP, validan forma (<code>@Valid</code>), identifican al usuario (M4), invocan al modelo y devuelven DTO."),
+ ("dto/request/*, dto/response/*", "Controlador (frontera)", "Contrato vista-controlador. El modelo no conoce los DTO."),
+ ("exception/GlobalExceptionHandler", "Controlador", "Traduce excepciones a HTTP: 400, 401, 403, 404, 405, 406, 415 y 500 sin detalles internos (M5, S4, I3)."),
+ ("security/*, config/SecurityConfig", "Controlador", "Filtran el evento antes del controlador: 401 sin token, 403 sin rol. <code>JwtUtil</code> y <code>UsuarioDetails</code>: Adapters."),
+ ("config/OpenApiConfig + anotaciones <code>@Operation</code>", "Controlador (contrato)", "Publican el contrato en Swagger UI."),
+ ("config/DataInitializer", "Modelo", "Siembra usuarios vía <code>Usuario.nuevo</code> (solo dev)."),
+ ("Frontend pages/*, components/*", "Vista", "Presentan y envían acciones; las decisiones vienen del modelo (O1)."),
+ ("Frontend store/slices/*, api/*", "Vista", "Estado del cliente (Redux) y única puerta HTTP (<code>api/apiClient.js</code>)."),
 ]
 rows = "\n".join(f"<tr><td><code>{a}</code></td><td><strong>{b}</strong></td><td>{c}</td></tr>" for a, b, c in mapeo)
 
 tecnologias = '''<dl class="tec">
 <dt>Spring Boot</dt><dd>Framework Java del backend: REST, servicios, seguridad.</dd>
-<dt>Spring Security</dt><dd>Autenticación y autorización: filtra cada request, decide 401/403.</dd>
-<dt>JWT y jjwt</dt><dd>Token firmado del login; jjwt lo genera y valida. Adaptee de M7.</dd>
-<dt>JPA / Hibernate / Spring Data</dt><dd>Mapea clases a tablas; Spring Data genera los repositorios.</dd>
-<dt>H2</dt><dd>Base en memoria: corre sin instalar motor.</dd>
-<dt>Lombok</dt><dd>Genera getters, constructores y loggers por anotación.</dd>
-<dt>springdoc / Swagger UI</dt><dd>Publica el contrato de la API en una página navegable.</dd>
-<dt>React, Redux, Vite</dt><dd>Interfaz por componentes, estado del cliente, servidor de desarrollo y build.</dd>
-<dt>JUnit 5, AssertJ, Mockito</dt><dd>Tests, aserciones y objetos simulados; <code>@WebMvcTest</code> levanta solo la capa web.</dd>
-<dt>Bean Validation</dt><dd><code>@NotBlank</code>, <code>@Size</code>, <code>@Digits</code> en los DTO; lo inválido sale 400.</dd>
-<dt>Maven</dt><dd>Build: dependencias, compilación, tests.</dd>
+<dt>Spring Security</dt><dd>Autenticación y autorización por request (401/403).</dd>
+<dt>JWT y jjwt</dt><dd>Token firmado de sesión; jjwt es el Adaptado de M7.</dd>
+<dt>JPA / Hibernate / Spring Data</dt><dd>Mapeo objeto-relacional y repositorios generados.</dd>
+<dt>H2</dt><dd>Base en memoria, sin instalación.</dd>
+<dt>Lombok</dt><dd>Getters, constructores y loggers por anotación.</dd>
+<dt>springdoc / Swagger UI</dt><dd>Contrato de la API navegable.</dd>
+<dt>React, Redux, Vite</dt><dd>Componentes, estado del cliente, build.</dd>
+<dt>JUnit 5, AssertJ, Mockito</dt><dd>Tests, aserciones y dobles; <code>@WebMvcTest</code> carga solo la capa web.</dd>
+<dt>Bean Validation</dt><dd>Restricciones en los DTO; lo inválido responde 400.</dd>
+<dt>Maven</dt><dd>Dependencias, compilación y tests.</dd>
 <dt>PlantUML y d2</dt><dd>Diagramas a partir de texto.</dd>
 </dl>'''
 
@@ -525,10 +521,10 @@ der_svg = re.sub(r"<\?xml[^>]*\?>", "", open(os.path.join(REPO, "docs/diagramas/
 der_svg = re.sub(r'(<svg[^>]*?) style="[^"]*" width="[^"]*" height="[^"]*"', r'\1 style="width:100%;height:auto"', der_svg, count=1)
 
 pendientes = '''<ul>
-<li><strong>H8</strong>: trazabilidad. <code>model/Cobranza.java</code> no sabe qué usuario cobró ni quién anuló; es modelo nuevo y cambia la API.</li>
-<li><strong>O8</strong>: pagos parciales. Cambia <code>Cuota.estaPagada()</code> a saldo por cuota; fuera de alcance de V3, hoy se exige el importe exacto (TPO-006).</li>
-<li><strong>Base persistente para prod</strong>: el perfil prod sigue con <strong>H2 en memoria</strong>; al reiniciar se pierden los datos y no hay alta de admin. Falta una base real (PostgreSQL) y migraciones.</li>
-<li><strong>TPO-014</strong>: el paquete <code>com.uade.tpejemplo</code> y <code>TpEjemploApplication</code> no nombran el sistema. Es un diff ruidoso que taparía los cambios reales: se evalúa para el 17/11.</li>
+<li><strong>H8</strong>: trazabilidad. <code>Cobranza</code> no registra quién cobró ni quién anuló; requiere cambio de modelo y de API.</li>
+<li><strong>O8</strong>: pagos parciales. Hoy se exige el importe exacto (TPO-006); requiere saldo por cuota.</li>
+<li><strong>Base persistente</strong>: prod usa H2 en memoria; los datos se pierden al reiniciar. Falta PostgreSQL con migraciones.</li>
+<li><strong>TPO-014</strong>: el paquete <code>com.uade.tpejemplo</code> no nombra el sistema. El renombre ocultaría los cambios reales en el diff; se evalúa para el 17/11.</li>
 </ul>'''
 
 doc = f'''<!doctype html>
@@ -537,7 +533,7 @@ doc = f'''<!doctype html>
 <body>
 <div id="barra"><strong style="color:var(--navy)">Reporte V3</strong>
 <nav><a href="#portada">Portada</a><a href="#timeline">Timeline</a><a href="#tecnologias">Tecnologías</a><a href="#mvc">MVC</a><a href="#mejoras">Mejoras</a><a href="#m9">Strategy</a><a href="#m7">Adapter</a><a href="#convenciones">Convenciones</a><a href="#matriz">GRASP/SOLID</a><a href="#evolucion">Evolución</a><a href="#revision">Revisión</a><a href="#verificacion">Verificación</a><a href="#casos-de-uso">Casos de uso</a><a href="#clases">Diagramas</a><a href="#pendientes">Pendientes</a></nav>
-<button class="sec" onclick="window.print()">Exportar PDF</button></div>
+<button class="sec" onclick="document.querySelectorAll('details.detalle').forEach(d=>d.open=true);window.print()">Exportar PDF</button></div>
 <main>
 
 <section id="portada" class="portada">
@@ -558,15 +554,15 @@ doc = f'''<!doctype html>
 {tecnologias}</section>
 
 <section id="mvc"><h2>MVC en Spring Boot</h2>
-<p><strong>MVC distribuido</strong>: modelo y controlador en Spring Boot, vista en React. Vista y controlador se hablan <strong>por DTO</strong> (clase 9).</p>
+<p><strong>MVC distribuido</strong>: modelo y controlador en Spring Boot, vista en React; se comunican <strong>por DTO</strong> (clase 9).</p>
 <div class="clases">{archify_svg("mvc")}</div>
 <table><thead><tr><th>Clase / paquete</th><th>Componente</th><th>Justificación</th></tr></thead><tbody>{rows}</tbody></table>
 <h3>Qué cambió en V3</h3>
 <ul>
 <li><strong>Contrato publicado</strong>: Swagger (<code>config/OpenApiConfig.java</code>).</li>
-<li><strong>Todos los errores traducidos</strong> a HTTP (<code>exception/GlobalExceptionHandler.java</code>).</li>
+<li><strong>Errores traducidos</strong> a HTTP (<code>exception/GlobalExceptionHandler.java</code>).</li>
 <li><strong>401 ≠ 403</strong> (<code>config/SecurityConfig.java</code>).</li>
-<li><strong>La regla en el modelo, la vista solo oculta</strong> (M4, O1, O5).</li>
+<li><strong>La regla vive en el modelo; la vista solo oculta</strong> (M4, O1, O5).</li>
 </ul>
 </section>
 
@@ -585,22 +581,31 @@ doc = f'''<!doctype html>
 </section>
 
 <section id="evolucion"><h2>Evolución del sistema: mejoras propuestas e implementadas</h2>
-<p>Problemas del sistema que <strong>supimos resolver</strong>, más allá del patrón de la iteración.</p>
-{evol_html}
-{capturas_ui}
+<ul>{"".join(f"<li><strong>{t}</strong>: {k}</li>" for t, _, _, _, k in evol)}</ul>
+<details class="detalle"><summary>Detalle: problema, solución, commits</summary>{evol_html}</details>
+<details class="detalle"><summary>Capturas de la UI</summary>{capturas_ui}</details>
 </section>
 
 <section id="revision"><h2>Mejoras de la revisión</h2>
-<p><strong>Correcciones chicas que tapaban un hueco visible.</strong> Lo abierto va al <a href="../backlog.md">backlog</a>.</p>
-{rev_html}
+<p>Correcciones puntuales posteriores a la revisión. Lo abierto queda en el <a href="../backlog.md">backlog</a>.</p>
+<ul>
+<li><strong>Error del cliente = 4xx; 401 ≠ 403</strong>: API, F1, F2, I3, S4.</li>
+<li><strong>MVC: decide el modelo, la vista lo refleja</strong>: O1, I4.</li>
+<li><strong>Expert, Creator, Tell don't ask</strong>: H1, O4, O5, O6, O7, BS3.</li>
+<li><strong>Adapter y Strategy bien aplicados</strong>: O2, O3.</li>
+<li><strong>Transacciones y bloqueo pesimista</strong>: S1, S2, I1, I-1.</li>
+<li><strong>Configuración fuera del código</strong>: S3, S5.</li>
+<li><strong>Bad smells</strong> (muerto, duplicado, primitive obsession): D1, D2, BS1, BS2, BS4, DF1, DF3, BSF1, front.</li>
+<li><strong>Esquema revisado</strong>: DER.</li>
+</ul>
+<details class="detalle"><summary>Detalle por corrección</summary>{rev_html}</details>
 </section>
 
 <section id="verificacion"><h2>Verificación</h2>
 <ul>
 <li><strong>40 tests, 0 fallas</strong> (<code>mvn test</code>): 27 de dominio, 10 HTTP (<code>@WebMvcTest</code>), 2 de concurrencia, <code>contextLoads</code>.</li>
-<li><strong>Smoke</strong>: API 12/12 y recorrido visual 9/9. Auditoría final: 304 casos de API con 4 roles.</li>
-<li><strong>Verificación final</strong>: encontró 401/403 y 500 mal mapeados; corregidos en F1, F2.</li>
-<li><strong>Recorrido visual</strong>: 2 fallas, corregidas en O1 y <code>d35fc0e</code>.</li>
+<li><strong>Smoke</strong>: API 12/12, recorrido visual 9/9; auditoría de API: 304 casos con 4 roles.</li>
+<li><strong>Fallas halladas y corregidas</strong>: 401/403 y 500 mal mapeados (F1, F2); 2 visuales (O1, <code>d35fc0e</code>).</li>
 </ul>
 </section>
 
@@ -610,22 +615,22 @@ doc = f'''<!doctype html>
 </section>
 
 <section id="clases"><h2>Diagramas de clases y DER</h2>
-<p>Entregable UML: <a href="../diagramas/clases-v3-general.svg">vista general</a> y <a href="../diagramas/clases-v3-modelo.svg">modelo</a> (<code>docs/diagramas/clases-v3.puml</code>). Abajo, vistas en d2 (diagramas desde texto).</p>
+<p>Entregable UML: <a href="../diagramas/clases-v3-general.svg">vista general</a> y <a href="../diagramas/clases-v3-modelo.svg">modelo</a> (<code>docs/diagramas/clases-v3.puml</code>). Abajo, vistas parciales en d2.</p>
 <h3>Strategy</h3>
 <div class="clases">{d2svg("strategy")}</div>
 <h3>Adapter</h3>
 <div class="clases">{d2svg("adapter")}</div>
 <h3>Modelo de dominio</h3>
-<p>El rombo lleno es composición: el todo crea y contiene a sus partes.</p>
+<p>Rombo lleno: composición (el todo crea y contiene a sus partes).</p>
 <div class="clases">{d2svg("dominio")}</div>
 <h3>DER</h3>
-<p>Las tablas que genera JPA, con claves y restricciones. Fuente: <code>docs/diagramas/der-v3.puml</code>.</p>
+<p>Tablas generadas por JPA, con claves y restricciones (<code>docs/diagramas/der-v3.puml</code>).</p>
 <div class="clases">{der_svg}</div>
 </section>
 
 <section id="pendientes"><h2>Cambios pendientes</h2>
 {pendientes}
-<p>Lista completa de hechos y pendientes para Teams: <code>docs/entrega/lista-mejoras.md</code>.</p>
+<p>Lista completa de cambios hechos y pendientes: <code>docs/entrega/lista-mejoras.md</code>.</p>
 </section>
 </main>
 </body></html>'''
