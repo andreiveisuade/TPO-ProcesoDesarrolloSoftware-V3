@@ -8,7 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import com.uade.tpejemplo.model.TipoPlan;
 import jakarta.validation.constraints.Digits;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -18,7 +18,7 @@ import java.time.LocalDate;
 public class CreditoRequest {
 
     @NotBlank(message = "El DNI del cliente es obligatorio")
-    @Size(max = 15, message = "El DNI admite hasta 15 caracteres")
+    @Pattern(regexp = "\\d{7,8}", message = "El DNI debe tener 7 u 8 dígitos, sin puntos ni letras")
     private String dniCliente;
 
     @NotNull(message = "La deuda original es obligatoria")

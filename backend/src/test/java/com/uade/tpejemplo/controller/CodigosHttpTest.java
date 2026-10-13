@@ -46,11 +46,11 @@ class CodigosHttpTest {
 
     @Test
     @WithMockUser
-    void dniDeMasDe15CaracteresDa400() throws Exception {
+    void dniConLetrasDa400() throws Exception {
         mvc.perform(post("/api/clientes").contentType(MediaType.APPLICATION_JSON)
-                .content("{\"dni\":\"1234567890123456\",\"nombre\":\"Ana\"}"))
+                .content("{\"dni\":\"sdfg\",\"nombre\":\"Ana\"}"))
             .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.mensajes[0]").value("El DNI admite hasta 15 caracteres"));
+            .andExpect(jsonPath("$.mensajes[0]").value("El DNI debe tener 7 u 8 dígitos, sin puntos ni letras"));
     }
 
     @Test

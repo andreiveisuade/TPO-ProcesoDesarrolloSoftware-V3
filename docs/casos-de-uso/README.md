@@ -60,12 +60,12 @@ Fuente: `casos-de-uso-v3.puml` (renderizado con `plantuml -tsvg` y `-tpng`). Sup
 - **Actor**: Usuario. **RF V0**: RF-CL-01.
 - **Precondición**: sesión iniciada.
 - **Flujo principal**: 1. El usuario carga DNI y nombre. 2. El sistema valida que no estén vacíos. 3. Verifica que no exista otro cliente con ese DNI. 4. Lo guarda y responde **201**. 5. El listado se actualiza.
-- **Errores**: DNI repetido → **400** "Ya existe un cliente con DNI: x". DNI o nombre vacío, DNI de más de 15 caracteres o nombre de más de 255 → **400** de validación (`dto/request/ClienteRequest.java`, I-2). Sin sesión → **401**.
+- **Errores**: DNI repetido → **400** "Ya existe un cliente con DNI: x". DNI o nombre vacío, DNI que no sea de 7 u 8 dígitos (letras, puntos) o nombre de más de 255 → **400** de validación (`dto/request/ClienteRequest.java`, I-2). Sin sesión → **401**.
 - **Postcondición**: el cliente existe y se le pueden otorgar créditos.
 - **Reglas**: unicidad del DNI (es la clave primaria) en `service/impl/ClienteServiceImpl.java` `crear`; alta por `model/Cliente.java` `nuevo`.
 - **Endpoint**: `POST /api/clientes` → `controller/ClienteController.java` `crear`.
 - **Pantalla**: `pages/Clientes.jsx` (formulario).
-- **Verificación**: Smoke "Crear cliente 111"; Final "Crear cliente"; API (UC04 x4); Test `controller/CodigosHttpTest.java` `dniDeMasDe15CaracteresDa400`, `sinTokenDa401`.
+- **Verificación**: Smoke "Crear cliente 111"; Final "Crear cliente"; API (UC04 x4); Test `controller/CodigosHttpTest.java` `dniConLetrasDa400`, `sinTokenDa401`.
 - **Hueco**: el DNI tiene largo máximo (15, I-2) pero no formato; `"abc"` se acepta con 201 (API). No hay modificación ni baja de clientes (A-09 de V0, ver P3).
 
 ### UC05 Listar clientes
@@ -305,7 +305,7 @@ Además: `mvn test` → 43 tests, 0 fallas (contando los agregados después de e
 - **H2 (UC14)**: `GET /api/cobranzas/credito/999` responde 200 con lista vacía; `service/impl/CobranzaServiceImpl.java` `listarPorCredito` no verifica que el crédito exista. UC10, en el mismo caso, responde 404.
 - **H3 (UC16)**: "Créditos activos" y "Monto total financiado" miden cosas distintas (cartera vigente vs. todo lo prestado y no anulado). Ver la observación de UC16.
 - **H4 (UC19, UC20)**: backend y front no ven los permisos y el rol al mismo tiempo. El backend usa el valor nuevo desde la request siguiente (`security/JwtAuthFilter.java` `autenticar`); el front sigue mostrando el que tenía al loguear. Del lado de la seguridad está bien (manda el backend); el costo es de usabilidad: el botón o el link aparece recién al volver a iniciar sesión. **Resuelto en** `GET /api/auth/me` (`controller/AuthController.java` `actual`): `components/PrivateRoute.jsx` lo llama al navegar y actualiza el usuario del front (`store/slices/authSlice.js` `refrescarUsuario`).
-- **Ya conocidos, confirmados**: fecha de crédito libre (UC07) y DNI sin formato (UC04). **Resuelto en parte** con I-2: los DTO tienen `@Size`/`@Digits` y un DNI de más de 15 caracteres da 400 (`controller/CodigosHttpTest.java` `dniDeMasDe15CaracteresDa400`); el formato sigue libre.
+- **Ya conocidos, confirmados**: fecha de crédito libre (UC07). DNI sin formato (UC04) **resuelto** con BS14: solo 7 u 8 dígitos, si no da 400 (`controller/CodigosHttpTest.java` `dniConLetrasDa400`).
 
 ## 7. Casos de uso propuestos
 
